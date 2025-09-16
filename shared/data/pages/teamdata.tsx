@@ -16,11 +16,11 @@ export const TeamMembers: TeamMember[] = [
     id:1,
     imgSrc: "../../assets/images/faces/team/1.png",
     name: "Luis Zárate",
-    role: "Senior Developer",
+    role: "Scrum Master",
     socials: {
       facebook: "https://facebook.com/johnsmith",
       twitter: "https://twitter.com/johnsmith",
-      linkedin: "https://linkedin.com/in/johnsmith"
+      linkedin: "https://www.linkedin.com/in/luisalejandrozarategamarra/"
     }
   },
   {
@@ -129,11 +129,11 @@ export const TeamMembersLanding: TeamMember[] = [
     id:1,
     imgSrc: "../assets/images/faces/team/1.png",
     name: "Luis Zárate",
-    role: "Senior Developer",
+    role: "Scrum Master",
     socials: {
       facebook: "https://facebook.com/johnsmith",
       twitter: "https://twitter.com/johnsmith",
-      linkedin: "https://linkedin.com/in/johnsmith"
+      linkedin: "https://www.linkedin.com/in/luisalejandrozarategamarra/"
     }
   },
   {

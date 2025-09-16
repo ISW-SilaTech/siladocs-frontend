@@ -58,7 +58,7 @@ const Layout = ({ children }: any) => {
                 style={customstyles}
             >
                 <head>
-                    <title>Vyzor NextJs App-Router Typescript React Bootstrap Admin Dashboard Template</title>
+                    <title>siladocs | MVP</title>
                     <meta name="keywords" content="admin dashboard react, admin panel template, bootstrap dashboard template, dashboard nextjs, next js admin panel, next js dashboard, next js typescript, nextjs admin dashboard template , nextjs dashboard template, nextjs framework, nextjs styled components, nextjs template, nextjs ui, react bootstrap template, react typescript template" />
                     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
                 </head>

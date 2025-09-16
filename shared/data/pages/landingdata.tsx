@@ -13,8 +13,8 @@ interface WorkflowCard {
 
 export const WorkflowCards: WorkflowCard[] = [
     {
-        title: "Configuración del panel",
-        description: "Configure rápidamente su panel con widgets, gráficos y módulos para realizar un seguimiento de métricas esenciales.",
+        title: "Registro de sílabos",
+        description: "Cargue y organice sílabos digitales con plantillas prediseñadas para cada curso o carrera.",
         icon: (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none" /><path d="M104,208V104H32v96a8,8,0,0,0,8,8H96" opacity="0.2" /><line x1="32" y1="104" x2="224" y2="104" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><line x1="104" y1="104" x2="104" y2="208" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><rect x="32" y="48" width="192" height="160" rx="8" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /></svg>
         ),
@@ -22,8 +22,8 @@ export const WorkflowCards: WorkflowCard[] = [
         iconClass: "svg-primary text-primary",
     },
     {
-        title: "Gestión de usuarios",
-        description: "Administre fácilmente los roles de usuario, los permisos y los niveles de acceso para mantener a su equipo organizado.",
+        title: "Validación y trazabilidad",
+        description: "Garantice la autenticidad con registros inmutables en blockchain que documentan cada cambio.",
         icon: (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none" /><circle cx="84" cy="108" r="52" opacity="0.2" /><path d="M10.23,200a88,88,0,0,1,147.54,0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><path d="M172,160a87.93,87.93,0,0,1,73.77,40" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><circle cx="84" cy="108" r="52" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><path d="M152.69,59.7A52,52,0,1,1,172,160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /></svg>
         ),
@@ -31,8 +31,8 @@ export const WorkflowCards: WorkflowCard[] = [
         iconClass: "svg-warning text-warning",
     },
     {
-        title: "Análisis de datos",
-        description: "Supervise datos en tiempo real y genere informes detallados para tomar decisiones informadas.",
+        title: "Reportes en tiempo real",
+        description: "Genere informes académicos instantáneos para mejorar la toma de decisiones institucionales.",
         icon: (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none" /><path d="M32,48H208a16,16,0,0,1,16,16V208a0,0,0,0,1,0,0H32a0,0,0,0,1,0,0V48A0,0,0,0,1,32,48Z" opacity="0.2" /><polyline points="224 208 32 208 32 48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><polyline points="224 96 160 152 96 104 32 160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /></svg>
         ),
@@ -53,59 +53,62 @@ export const LandingFaqs: FAQItem[] = [
         title: (
             <>
                 <i className="ri-layout-4-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-                ¿Cómo personalizo el diseño de mi panel?
+                ¿Cómo personalizo el panel académico?
             </>
         ),
-        content: "Puedes personalizar fácilmente el panel arrastrando y soltando widgets. Ve al menú de configuración y selecciona Personalizar panel para reorganizar el diseño.",
+        content: "Cada rol (administrativo, docente o directivo) puede organizar su panel con widgets personalizados para gestionar sílabos, solicitudes y reportes."
     },
     {
         id: 2,
         title: (
             <>
-                <i className="ri-plug-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-                ¿Puedo integrar aplicaciones de terceros con la plantilla de administración?
+                <i className="ri-shield-check-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
+                ¿Qué nivel de seguridad ofrece la plataforma?
             </>
         ),
-        content: '¡Sí! Nuestra plantilla de administración se integra perfectamente con tu software. Puedes conectar fácilmente herramientas como Google Analytics, software CRM y más.',
+        content: "La información se respalda en blockchain, garantizando la trazabilidad, autenticidad y que ningún sílabo pueda ser alterado sin registro."
     },
     {
         id: 3,
         title: (
             <>
-                <i className="ri-phone-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-                ¿Esta plantilla de administración responde a dispositivos móviles?
+                <i className="ri-smartphone-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
+                ¿Puedo acceder desde cualquier dispositivo?
             </>
         ),
-        content: ' ¡Por supuesto! La plantilla de administración es totalmente responsiva y está optimizada para dispositivos móviles, lo que garantiza su perfecto funcionamiento en todo dispositivo.',
+        content: "Sí, el sistema es 100% web y responsivo, optimizado para computadoras, tablets y móviles sin necesidad de instalaciones."
     },
     {
         id: 4,
         title: (
             <>
                 <i className="ri-user-settings-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-                ¿Cómo administro los roles y permisos de los usuarios?
+                ¿Cómo administro usuarios y permisos?
             </>
         ),
-        content: "Puedes administrar los roles y permisos de los usuarios en la sección Administración de usuarios. Simplemente asigna roles para controlar el acceso.",
+        content: "Desde el módulo de gestión de usuarios puedes asignar roles a docentes, administrativos y estudiantes para controlar accesos."
     },
     {
         id: 5,
-        title: <>
-            <i className="ri-file-excel-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-            ¿Puedo exportar datos de la sección de informes?
-        </>,
-
-        content: 'Sí, puede exportar informes fácilmente como archivos CSV, PDF o Excel. Simplemente haga clic en el botón de exportación en la parte superior de la página de informes.',
+        title: (
+            <>
+                <i className="ri-bar-chart-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
+                ¿Puedo generar y exportar reportes académicos?
+            </>
+        ),
+        content: "Sí, la plataforma permite generar reportes en tiempo real sobre sílabos, aprobaciones y trazabilidad, exportables en PDF o Excel."
     },
     {
         id: 6,
-        title: <>
-            <i className="ri-notification-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
-            ¿Cómo activo las notificaciones de actualizaciones?
-        </>,
+        title: (
+            <>
+                <i className="ri-notification-line fw-medium avatar avatar-sm avatar-rounded bg-primary-transparent fs-5 me-2 text-primary"></i>
+                ¿El sistema envía notificaciones?
+            </>
+        ),
+        content: "Sí, puedes configurar notificaciones y alertas en tiempo real sobre solicitudes, aprobaciones y actualizaciones de documentos."
+    }
 
-        content: "Las notificaciones se pueden activar en la sección Configuración. Puedes elegir recibir alertas en tiempo real por correo electrónico o en la aplicación.",
-    },
 ];
 
 interface ServiceCard {
@@ -120,7 +123,7 @@ interface ServiceCard {
 export const ServiceCards: ServiceCard[] = [
     {
         title: "Paneles personalizables",
-        description: "Personalice su panel de control con widgets personalizables.",
+        description: "Organice la gestión con paneles adaptados a cada institución.",
         cardClass: "primary",
         iconBgClass: "bg-primary-transparent",
         iconColorClass: "svg-primary",
@@ -136,7 +139,7 @@ export const ServiceCards: ServiceCard[] = [
     },
     {
         title: "Análisis en tiempo real",
-        description: "Acceda a datos en tiempo real para mejorar la gestión.",
+        description: "Obtenga métricas inmediatas sobre sílabos y su trazabilidad.",
         cardClass: "secondary",
         iconBgClass: "bg-secondary-transparent",
         iconColorClass: "svg-secondary",
@@ -150,8 +153,8 @@ export const ServiceCards: ServiceCard[] = [
         ),
     },
     {
-        title: "Gestión de usuarios",
-        description: "Gestione de forma eficiente roles, permisos y acceso del equipo.",
+        title: "Gestión de sílabos",
+        description: "Administre solicitudes y validaciones de forma segura.",
         cardClass: "warning",
         iconBgClass: "bg-warning-transparent",
         iconColorClass: "svg-warning",
@@ -166,7 +169,7 @@ export const ServiceCards: ServiceCard[] = [
     },
     {
         title: "Integración simple",
-        description: "Integre sin esfuerzo con el software su institución.",
+        description: "Conecte la plataforma fácilmente con sistemas existentes.",
         cardClass: "success",
         iconBgClass: "bg-success-transparent",
         iconColorClass: "svg-success",
@@ -208,111 +211,111 @@ interface Feature {
     description: string;
     bgClass: string;
     svgClass: string;
-    svgIcon:React.ReactNode;
-  }
-  
+    svgIcon: React.ReactNode;
+}
+
 export const LandingFeatures: Feature[] = [
     {
-      title: 'Dashboard personalizado',
-      description: 'Personalice el diseño y los widgets de su panel de adminsitración para una mejor experiencia.',
-      bgClass: 'bg-primary-transparent',
-      svgClass: 'svg-primary',
-      svgIcon: (
-        <>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M104,208V104H32v96a8,8,0,0,0,8,8H96" opacity="0.2"></path><line x1="32" y1="104" x2="224" y2="104" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="104" y1="104" x2="104" y2="208" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><rect x="32" y="48" width="192" height="160" rx="8" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></rect></svg>
-        </>
-      )
+        title: 'Dashboard personalizado',
+        description: 'Personalice el diseño y los widgets de su panel de adminsitración para una mejor experiencia.',
+        bgClass: 'bg-primary-transparent',
+        svgClass: 'svg-primary',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M104,208V104H32v96a8,8,0,0,0,8,8H96" opacity="0.2"></path><line x1="32" y1="104" x2="224" y2="104" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="104" y1="104" x2="104" y2="208" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><rect x="32" y="48" width="192" height="160" rx="8" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></rect></svg>
+            </>
+        )
     },
     {
-      title: 'Gráficos y tablas interactivas',
-      description: 'Muestre datos de forma dinámica con gráficos y tablas totalmente personalizables.',
-      bgClass: 'bg-secondary-transparent',
-      svgClass: 'svg-secondary',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M32,48H208a16,16,0,0,1,16,16V208a0,0,0,0,1,0,0H32a0,0,0,0,1,0,0V48A0,0,0,0,1,32,48Z" opacity="0.2"></path><polyline points="224 208 32 208 32 48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline><polyline points="224 96 160 152 96 104 32 160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
-        </>
-      )
+        title: 'Gráficos y tablas interactivas',
+        description: 'Muestre datos de forma dinámica con gráficos y tablas totalmente personalizables.',
+        bgClass: 'bg-secondary-transparent',
+        svgClass: 'svg-secondary',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M32,48H208a16,16,0,0,1,16,16V208a0,0,0,0,1,0,0H32a0,0,0,0,1,0,0V48A0,0,0,0,1,32,48Z" opacity="0.2"></path><polyline points="224 208 32 208 32 48" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline><polyline points="224 96 160 152 96 104 32 160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
+            </>
+        )
     },
     {
-      title: 'Componentes de interfaz de usuario',
-      description: 'Acceda a una amplia gama de componentes para crear interfaces limpias y consistentes.',
-      bgClass: 'bg-success-transparent',
-      svgClass: 'svg-success',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M128,129.09,32.7,76.93a8,8,0,0,0-.7,3.25v95.64a8,8,0,0,0,4.16,7l88,48.18a8,8,0,0,0,3.84,1Z" opacity="0.2"></path><polyline points="32.7 76.92 128 129.08 223.3 76.92" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline><line x1="128" y1="129.09" x2="128" y2="231.97" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><path d="M219.84,182.84l-88,48.18a8,8,0,0,1-7.68,0l-88-48.18a8,8,0,0,1-4.16-7V80.18a8,8,0,0,1,4.16-7l88-48.18a8,8,0,0,1,7.68,0l88,48.18a8,8,0,0,1,4.16,7v95.64A8,8,0,0,1,219.84,182.84Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><polyline points="81.56 48.31 176 100 176 152" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
-        </>
-      )
+        title: 'Componentes de interfaz de usuario',
+        description: 'Acceda a una amplia gama de componentes para crear interfaces limpias y consistentes.',
+        bgClass: 'bg-success-transparent',
+        svgClass: 'svg-success',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M128,129.09,32.7,76.93a8,8,0,0,0-.7,3.25v95.64a8,8,0,0,0,4.16,7l88,48.18a8,8,0,0,0,3.84,1Z" opacity="0.2"></path><polyline points="32.7 76.92 128 129.08 223.3 76.92" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline><line x1="128" y1="129.09" x2="128" y2="231.97" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><path d="M219.84,182.84l-88,48.18a8,8,0,0,1-7.68,0l-88-48.18a8,8,0,0,1-4.16-7V80.18a8,8,0,0,1,4.16-7l88-48.18a8,8,0,0,1,7.68,0l88,48.18a8,8,0,0,1,4.16,7v95.64A8,8,0,0,1,219.84,182.84Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><polyline points="81.56 48.31 176 100 176 152" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
+            </>
+        )
     },
     {
-      title: 'Diseño Responsivo',
-      description: 'Asegúrese de que su panel de administración se vea bien en todos los dispositivos.',
-      bgClass: 'bg-warning-transparent',
-      svgClass: 'svg-warning',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><rect x="64" y="56" width="128" height="144" opacity="0.2"></rect><rect x="64" y="24" width="128" height="208" rx="16" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></rect><line x1="64" y1="56" x2="192" y2="56" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="64" y1="200" x2="192" y2="200" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
-        </>
-      )
+        title: 'Diseño Responsivo',
+        description: 'Asegúrese de que su panel de administración se vea bien en todos los dispositivos.',
+        bgClass: 'bg-warning-transparent',
+        svgClass: 'svg-warning',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><rect x="64" y="56" width="128" height="144" opacity="0.2"></rect><rect x="64" y="24" width="128" height="208" rx="16" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></rect><line x1="64" y1="56" x2="192" y2="56" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="64" y1="200" x2="192" y2="200" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
+            </>
+        )
     },
     {
-      title: 'Gestión de información',
-      description: 'Administre y muestre grandes conjuntos de datos con componentes de tabla avanzados.',
-      bgClass: 'bg-info-transparent',
-      svgClass: 'svg-info',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><rect x="32" y="104" width="56" height="96" opacity="0.2"></rect><path d="M32,56H224a0,0,0,0,1,0,0V192a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V56A0,0,0,0,1,32,56Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><line x1="32" y1="104" x2="224" y2="104" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="32" y1="152" x2="224" y2="152" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="88" y1="104" x2="88" y2="200" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
-        </>
-      )
+        title: 'Gestión de información',
+        description: 'Administre y muestre grandes conjuntos de datos con componentes de tabla avanzados.',
+        bgClass: 'bg-info-transparent',
+        svgClass: 'svg-info',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><rect x="32" y="104" width="56" height="96" opacity="0.2"></rect><path d="M32,56H224a0,0,0,0,1,0,0V192a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V56A0,0,0,0,1,32,56Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><line x1="32" y1="104" x2="224" y2="104" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="32" y1="152" x2="224" y2="152" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="88" y1="104" x2="88" y2="200" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
+            </>
+        )
     },
     {
-      title: 'Formularios y Validación',
-      description: 'Cree formularios sólidos con funciones de validación para recopilar y procesar sílabos.',
-      bgClass: 'bg-danger-transparent',
-      svgClass: 'svg-danger',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M192,120,136,64l29.66-29.66a8,8,0,0,1,11.31,0L221.66,79a8,8,0,0,1,0,11.31Z" opacity="0.2"></path><path d="M92.69,216H48a8,8,0,0,1-8-8V163.31a8,8,0,0,1,2.34-5.65L165.66,34.34a8,8,0,0,1,11.31,0L221.66,79a8,8,0,0,1,0,11.31L98.34,213.66A8,8,0,0,1,92.69,216Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><line x1="136" y1="64" x2="192" y2="120" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="164" y1="92" x2="68" y2="188" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="95.49" y1="215.49" x2="40.51" y2="160.51" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
-        </>
-      )
+        title: 'Formularios y Validación',
+        description: 'Cree formularios sólidos con funciones de validación para recopilar y procesar sílabos.',
+        bgClass: 'bg-danger-transparent',
+        svgClass: 'svg-danger',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M192,120,136,64l29.66-29.66a8,8,0,0,1,11.31,0L221.66,79a8,8,0,0,1,0,11.31Z" opacity="0.2"></path><path d="M92.69,216H48a8,8,0,0,1-8-8V163.31a8,8,0,0,1,2.34-5.65L165.66,34.34a8,8,0,0,1,11.31,0L221.66,79a8,8,0,0,1,0,11.31L98.34,213.66A8,8,0,0,1,92.69,216Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><line x1="136" y1="64" x2="192" y2="120" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="164" y1="92" x2="68" y2="188" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line><line x1="95.49" y1="215.49" x2="40.51" y2="160.51" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></line></svg>
+            </>
+        )
     },
     {
-      title: 'Modo oscuro / Modo claro',
-      description: 'Cambie entre los modos oscuro y claro para adaptarse a las preferencias del usuario.',
-      bgClass: 'bg-teal-transparent',
-      svgClass: 'svg-teal',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M108.11,28.11A96.09,96.09,0,0,0,227.89,147.89,96,96,0,1,1,108.11,28.11Z" opacity="0.2"></path><path d="M108.11,28.11A96.09,96.09,0,0,0,227.89,147.89,96,96,0,1,1,108.11,28.11Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
-        </>
-      )
+        title: 'Modo oscuro / Modo claro',
+        description: 'Cambie entre los modos oscuro y claro para adaptarse a las preferencias del usuario.',
+        bgClass: 'bg-teal-transparent',
+        svgClass: 'svg-teal',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M108.11,28.11A96.09,96.09,0,0,0,227.89,147.89,96,96,0,1,1,108.11,28.11Z" opacity="0.2"></path><path d="M108.11,28.11A96.09,96.09,0,0,0,227.89,147.89,96,96,0,1,1,108.11,28.11Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
+            </>
+        )
     },
     {
-      title: 'Notificaciones y alertas',
-      description: 'Configure notificaciones y alertas en tiempo real para mantener a los usuarios informados.',
-      bgClass: 'bg-orange-transparent',
-      svgClass: 'svg-orange',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" opacity="0.2"></path><path d="M96,192a32,32,0,0,0,64,0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
-        </>
-      )
+        title: 'Notificaciones y alertas',
+        description: 'Configure notificaciones y alertas en tiempo real para mantener a los usuarios informados.',
+        bgClass: 'bg-orange-transparent',
+        svgClass: 'svg-orange',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" opacity="0.2"></path><path d="M96,192a32,32,0,0,0,64,0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
+            </>
+        )
     },
     {
-      title: 'Plantillas de sílabos',
-      description: 'Elija entre una variedad de plantillas de sílabos prediseñadas para ahorrar tiempo.',
-      bgClass: 'bg-purple-transparent',
-      svgClass: 'svg-purple',
-      svgIcon: (
-        <>
-       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><polygon points="152 32 152 88 208 88 152 32" opacity="0.2"></polygon><path d="M200,224H56a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h96l56,56V216A8,8,0,0,1,200,224Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><polyline points="152 32 152 88 208 88" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
-        </>
-      )
+        title: 'Plantillas de sílabos',
+        description: 'Elija entre una variedad de plantillas de sílabos prediseñadas para ahorrar tiempo.',
+        bgClass: 'bg-purple-transparent',
+        svgClass: 'svg-purple',
+        svgIcon: (
+            <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><polygon points="152 32 152 88 208 88 152 32" opacity="0.2"></polygon><path d="M200,224H56a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h96l56,56V216A8,8,0,0,1,200,224Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><polyline points="152 32 152 88 208 88" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></polyline></svg>
+            </>
+        )
     },
-  ];
-  interface CustomReview {
+];
+interface CustomReview {
     title: string;
     stars: any;
     description: string;

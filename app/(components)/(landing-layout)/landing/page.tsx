@@ -4,7 +4,7 @@ import SpkButton from '@/shared/@spk-reusable-components/general-reusable/reusab
 import SpkBasicPriceCard from '@/shared/@spk-reusable-components/reusable-pages/spk-basicpricecard'
 import SpkTeamCard from '@/shared/@spk-reusable-components/reusable-pages/spk-teamcard'
 import SpkSwiperJs from '@/shared/@spk-reusable-components/reusable-plugins/spk-swiperjs'
-import { LandingFaqs, LandingFeatures, laningSwiper, ServiceCards, WorkflowCards,CustomReviewdata } from '@/shared/data/pages/landingdata'
+import { LandingFaqs, LandingFeatures, laningSwiper, ServiceCards, WorkflowCards, CustomReviewdata } from '@/shared/data/pages/landingdata'
 import { BasicPricing1data, BasicPricingdata } from '@/shared/data/pages/pricingdata'
 import { TeamMembersLanding } from '@/shared/data/pages/teamdata'
 import { data$, getState, setState } from '@/shared/layouts-components/services/switcherServices'
@@ -38,19 +38,19 @@ const Landing = () => {
         320: {
             slidesPerView: 1,
             spaceBetween: 10,
-          },
-          480: {
+        },
+        480: {
             slidesPerView: 1,
             spaceBetween: 10,
-          },
-          1112: {
+        },
+        1112: {
             slidesPerView: 2,
             spaceBetween: 10,
-          },
-          1300: {
+        },
+        1300: {
             slidesPerView: 2,
             spaceBetween: 30,
-          }
+        }
     }
 
     let [variable, setVariable] = useState(getState());
@@ -107,8 +107,8 @@ const Landing = () => {
             dataVerticalStyle: "",
             dataWidth: "",
             dataHeaderStyles: '',
-            bodyBg:'',
-            bodyBg2:'',
+            bodyBg: '',
+            bodyBg2: '',
 
         }
         setState(newState);
@@ -483,7 +483,7 @@ const Landing = () => {
 
                                 <li className="slide">
                                     <Link scroll={false} href="#price" className="side-menu__item">
-                                        <span className="side-menu__label">Subscripción</span>
+                                        <span className="side-menu__label">Suscripción</span>
                                     </Link>
                                 </li>
 
@@ -536,16 +536,25 @@ const Landing = () => {
                         <Row>
                             <Col xl={6} className="my-auto">
                                 <div className="d-inline-flex align-items-center gap-2 text-default badge bg-white border fs-13 rounded-pill"><span className="avatar avatar-xs avatar-rounded bg-warning"><i className="ri-flashlight-fill fs-14"></i></span>Nueva Startup</div>
-                                <h1 className="fw-semibold mt-3 landing-banner-heading">Gesiona tus sílabos <br /> y <span className="text-primary">optimiza</span> tus metas</h1>
-                                <span className="d-block fs-18">Sabemos la importancia de estos documentos para los procesos de convalidación y trazlado estudiantil</span>
+                                <h1 className="fw-semibold mt-3 landing-banner-heading">Gestiona tus sílabos <br /> con <span className="text-primary">trazabilidad</span> y <span className="text-primary">seguridad</span> garantizada</h1>
+                                <span className="d-block fs-18">Plataforma con tecnología blockchain que asegura la integridad, autenticidad y disponibilidad de tus documentos académicos, optimizando la gestión en tu institución.</span>
                                 <div className="btn-list banner-buttons">
-                                    <Link scroll={false} href="/dashboards/sales" className="btn btn-primary btn-lg rounded-pill btn-w-lg">Empieza gratis</Link>
+                                    <Link scroll={false} href="/landing" className="btn btn-primary btn-lg rounded-pill btn-w-lg">Probar gratis</Link>
                                     <Link scroll={false} className="btn btn-lg btn-light border rounded-pill btn-w-lg" href="#!">Ver Demo</Link>
                                 </div>
                             </Col>
                             <Col xl={6}>
-                                <div className="banner-main-img text-end d-xl-block d-none grid-cards">
-                                    <Image fill src="../assets/images/media/backgrounds/7.png" alt="" className="img-fluid" />
+                                <div className="banner-main-img text-end d-xl-block d-none grid-cards position-relative">
+                                    {/* Video */}
+                                    <video
+                                        src="../assets/videos/banner-video.mp4"
+                                        className="img-fluid rounded shadow"
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        style={{ maxWidth: '100%', height: 'auto', zIndex: 2, position: 'relative' }}
+                                    />
                                 </div>
                             </Col>
                         </Row>
@@ -560,10 +569,9 @@ const Landing = () => {
                     <div className="container">
                         <div className="heading-section">
                             <div className="heading-subtitle">Instituciones</div>
-                            <div className="heading-title">Con la confianza de empresas líderes <br /> al rededor del Perú</div>
+                            <div className="heading-title">Con la confianza de instituciones educativas <br /> líderes en el Perú</div>
                             <div className="heading-description">
-                                Desde ahora más de 20 empresas confían en nuestro producto <br /> para optimizar e impulsar su gestión administrativa.
-                            </div>
+                                Más de 20 instituciones confían en nosotros para asegurar<br /> la integridad y disponibilidad de sus documentos académicos.</div>
                         </div>
                         <SpkSwiperJs slides={laningSwiper} breakpoint={breakpoints} loop={true} slidesPerView={5} spaceBetween={30} centeredSlides={true} autoplay={true} className="mySwiper swiper trusted-clients" />
                     </div>
@@ -577,9 +585,9 @@ const Landing = () => {
                     <div className="container">
                         <div className="heading-section">
                             <div className="heading-subtitle">Características</div>
-                            <div className="heading-title">Funciones potentes para administrar tus documentos</div>
+                            <div className="heading-title">Funciones que transforman la gestión académica</div>
                             <div className="heading-description">
-                                Aumente la productividad y simplifique la gestión con tecnología blockchain.
+                                Funciones potentes basadas en blockchain para optimizar la trazabilidad, seguridad y eficiencia en la gestión de sílabos.
                             </div>
                         </div>
                         <Row className="">
@@ -610,9 +618,9 @@ const Landing = () => {
                     <div className="container">
                         <div className="heading-section">
                             <div className="heading-subtitle">Servicios</div>
-                            <div className="heading-title">Soluciones integrales para las necesidades de la institución</div>
+                            <div className="heading-title">Servicios diseñados para instituciones educativas</div>
                             <div className="heading-description">
-                                Descubra nuestros servicios para optimizar las operaciones, aumentar la productividad <br /> e impulsar el crecimiento, desde la gestión hasta la emisión de documentos.
+                                Soluciones integrales que modernizan la gestión académica, aseguran <br /> la trazabilidad de la información y fortalecen la confianza institucional.
                             </div>
                         </div>
                         <Row>
@@ -640,8 +648,17 @@ const Landing = () => {
                                 </Row>
                             </Col>
                             <Col xl={5} className="my-auto">
-                                <div className="services-image-container text-end d-xl-block d-none">
-                                    <Image fill src="../assets/images/media/media-67.png" alt="" className="img-fluid" />
+                                <div className="services-image-container text-end d-xl-block d-none position-relative">
+                                    {/* Video */}
+                                    <video
+                                        src="../assets/videos/banner-video.mp4"
+                                        className="img-fluid rounded shadow"
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        style={{ maxWidth: '100%', height: 'auto', zIndex: 2, position: 'relative' }}
+                                    />
                                 </div>
                             </Col>
                         </Row>
@@ -659,12 +676,12 @@ const Landing = () => {
                     <div className="container">
                         <div className="d-flex align-items-center gap-2 justify-content-between flex-wrap">
                             <div>
-                                <h4 className="fw-semibold text-fixed-white">Transforma la Gestión desde Hoy</h4>
-                                <span className="d-block fs-16 op-8">Desbloquee todas las funciones de nuestra sistema de administración. <br /> ¡Suscríbete ahora o prueba la demostración para verla en acción!</span>
+                                <h4 className="fw-semibold text-fixed-white">Transforma la gestión académica de tu institución</h4>
+                                <span className="d-block fs-16 op-8">Desbloquea todo el potencial de nuestra plataforma con blockchain  <br /> y lleva la trazabilidad de tus sílabos al siguiente nivel.</span>
                             </div>
                             <div className="btn-list">
                                 <Link scroll={false} href="/dashboards/sales/" className="btn btn-danger btn-lg btn-w-md d-inline-flex align-items-center">Ver Demo<i className="ti ti-arrow-narrow-right ms-2"></i></Link>
-                                <button className="btn btn-success btn-lg btn-w-md d-inline-flex align-items-center">Suscríbete<i className="ti ti-shopping-cart ms-2"></i></button>
+                                <button className="btn btn-success btn-lg btn-w-md d-inline-flex align-items-center">Suscríbete ahora<i className="ti ti-user-plus ms-2"></i></button>
                             </div>
                         </div>
                     </div>
@@ -681,7 +698,7 @@ const Landing = () => {
                                 <div className="heading-subtitle">Nuestro Planes</div>
                                 <div className="heading-title">Elige el plan que se ajuste a tus necesidades</div>
                                 <div className="heading-description mb-3">
-                                    Seleccione el ajuste más adecuado y disfrute de un acceso perfecto a todas las funciones.
+                                    Selecciona la plan que mejor se adapte a tu institución y accede a todas las funciones de gestión académica con blockchain.
                                 </div>
                                 <div className="tab-style-1 border bg-white rounded-0 d-inline-block">
                                     <Nav className="nav nav-pills" role="tablist">
@@ -755,7 +772,7 @@ const Landing = () => {
                                 Lea testimonios reales de clientes que han mejorado su negocio con nuestra plataforma.
                             </div>
                         </div>
-                        <SpkSwiperJs slides={CustomReviewdata} loop={true} pagination={{ dynamicBullets: true, clickable: true }} breakpoint={breakpoints1} slidesPerView={2} spaceBetween={30}  autoplay={true} className="mySwiper swiper testimonial-style-2-card" />
+                        <SpkSwiperJs slides={CustomReviewdata} loop={true} pagination={{ dynamicBullets: true, clickable: true }} breakpoint={breakpoints1} slidesPerView={2} spaceBetween={30} autoplay={true} className="mySwiper swiper testimonial-style-2-card" />
                     </div>
                 </section>
 
@@ -801,10 +818,10 @@ const Landing = () => {
                 <section className="section">
                     <div className="container">
                         <div className="heading-section">
-                            <div className="heading-subtitle">Flujo de trabajo</div>
-                            <div className="heading-title">Flujo de trabajo optimizado para resultados eficientes</div>
+                            <div className="heading-subtitle">Flujo</div>
+                            <div className="heading-title">Flujo de trabajo académico optimizado</div>
                             <div className="heading-description">
-                                Descubra cómo nuestro flujo de trabajo estructurado impulsa la productividad, <br/> garantizando una ejecución perfecta de principio a fin.
+                                Descubre cómo nuestro sistema estructurado con blockchain <br />impulsa la productividad y garantiza trazabilidad en cada etapa.
                             </div>
                         </div>
                         <Row className="justify-content-between">
@@ -838,9 +855,9 @@ const Landing = () => {
                     <div className="container">
                         <div className="heading-section">
                             <div className="heading-subtitle">Nuestro Equipo</div>
-                            <div className="heading-title">Conozca a nuestro equipo de expertos</div>
+                            <div className="heading-title">Conoce a las personas que hicieron posible este proyecto académico</div>
                             <div className="heading-description">
-                                Conozca a las personas talentosas que están detrás de nuestro éxito, <br/> trabajando juntas para ofrecer resultados excepcionales.
+                                Un grupo de profesionales en ingeniería de software y gestión de proyectos, <br /> trabajando juntos para transformar la administración de sílabos con tecnología blockchain.
                             </div>
                         </div>
                         <Row>
@@ -861,9 +878,9 @@ const Landing = () => {
                     <div className="container">
                         <div className="heading-section">
                             <div className="heading-subtitle">Contáctanos</div>
-                            <div className="heading-title">Ponte en contacto con nosotros</div>
+                            <div className="heading-title">Estamos aquí para ayudarte</div>
                             <div className="heading-description">
-                                ¿Tienes preguntas o necesitas ayuda? Nuestro equipo está aquí para ayudarte. <br /> Contáctanos en cualquier momento para obtener ayuda o realizar consultas.
+                                ¿Tienes preguntas sobre la gestión académica con blockchain? <br /> Nuestro equipo está listo para asesorarte y brindarte la mejor solución para tu institución.
                             </div>
                         </div>
                         <Row className="gy-4 justify-content-between">
@@ -880,15 +897,15 @@ const Landing = () => {
                                     </Col>
                                     <Col xl={12}>
                                         <label htmlFor="contact-address-email" className="form-label">Email</label>
-                                        <Form.Control type="email" className="" id="contact-address-email" placeholder="Ingresa tu email" />
+                                        <Form.Control type="email" className="" id="contact-address-email" placeholder="Ingresa tu correo institucional" />
                                     </Col>
                                     <Col xl={12}>
                                         <label htmlFor="contact-address-phone" className="form-label">Teléfono</label>
-                                        <Form.Control type="text" className="" id="contact-address-phone" placeholder="Ingresa tu número telefónico" />
+                                        <Form.Control type="text" className="" id="contact-address-phone" placeholder="Ingresa tu número de contacto" />
                                     </Col>
                                     <Col xl={12}>
                                         <label htmlFor="contact-mail-message" className="form-label">Mensaje</label>
-                                        <Form.Control as="textarea" className="form-control" id="contact-mail-message" rows={4} placeholder="Ingresa una consulta" />
+                                        <Form.Control as="textarea" className="form-control" id="contact-mail-message" rows={4} placeholder="Cuéntanos tu consulta" />
                                     </Col>
                                 </Row>
                                 <div className="d-grid mt-3">
@@ -906,7 +923,7 @@ const Landing = () => {
                                             </div>
                                             <div>
                                                 <h5 className="fs-13 text-muted text-uppercase">Dirección :</h5>
-                                                <span className="d-block fs-12 text-muted mb-2">Visítanos de Lunes a Viernes de 09:00 am - 18:00 pm</span>
+                                                <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
                                                 <div className="fw-semibold">UPC San Miguel</div>
                                             </div>
                                         </div>
@@ -920,7 +937,7 @@ const Landing = () => {
                                             </div>
                                             <div>
                                                 <h5 className="fs-13 text-muted text-uppercase">Teléfono :</h5>
-                                                <span className="d-block fs-12 text-muted mb-2">Llámanos de Lunes a Viernes de 09:00 am - 18:00 pm</span>
+                                                <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
                                                 <div className="fw-semibold">+51 902 352 015</div>
                                             </div>
                                         </div>
@@ -949,13 +966,13 @@ const Landing = () => {
                                                 <h5 className="fs-13 text-muted text-uppercase">Habla con nosotros :</h5>
                                                 <div className="fw-semibold lh-1 chat-platforms">
                                                     <a href="https://www.facebook.com" target="_blank" className="d-block">
-                                                        Mensajes por Facebook
+                                                        Facebook
                                                     </a>
                                                     <a href="https://www.twitter.com" target="_blank" className="d-block">
-                                                        Mensajes por Twitter
+                                                        Twitter
                                                     </a>
                                                     <a href="javascript:void(0);" target="_blank">
-                                                        Agendemos una reunión
+                                                        Agenda una reunión
                                                     </a>
                                                 </div>
                                             </div>
@@ -979,9 +996,11 @@ const Landing = () => {
                         <div className="d-flex align-items-center gap-2 justify-content-between">
                             <div>
                                 <h4 className="fw-semibold text-fixed-white">Cree y administre con facilidad</h4>
-                                <span className="d-block fs-16 op-8">Cree, administre y optimice sin esfuerzo con nuestra plantilla de administración.</span>
+                                <span className="d-block fs-16 op-8">Cree, administre y optimice sílabos digitales sin esfuerzo con nuestra plataforma académica basada en blockchain.</span>
                             </div>
-                            <SpkButton Buttonvariant='secondary' Customclass="btn btn-lg btn-w-md d-inline-flex align-items-center">Agendemos<i className="ti ti-shopping-cart ms-2"></i></SpkButton>
+                            <SpkButton Buttonvariant='secondary' Customclass="btn btn-lg btn-w-md d-inline-flex align-items-center">
+                                Agendemos <i className="ti ti-calendar ms-2"></i>
+                            </SpkButton>
                         </div>
                     </div>
                 </section>
@@ -998,8 +1017,8 @@ const Landing = () => {
                 <div className="container">
                     <Row className="my-auto justify-content-between align-items-center mb-5 pb-5 newsletter-area gap-3">
                         <Col lg={6} className="">
-                            <h3 className="mb-2 text-fixed-white">Suscríbete a nuestra revista</h3>
-                            <div className="op-6">Manténgase al día con las últimas noticias y actualizaciones <br /> sobre nuestros productos y servicios.</div>
+                            <h3 className="mb-2 text-fixed-white">Suscríbete a nuestro boletín</h3>
+                            <div className="op-6">Mantente al día con las últimas novedades sobre gestión académica, <br /> trazabilidad con blockchain e innovación educativa.</div>
                         </Col>
                         <Col lg={4}>
                             <div className="form mb-0">
@@ -1014,9 +1033,8 @@ const Landing = () => {
                         <Col xl={4}>
                             <p className="fw-semibold mb-3 brand-image"><Link scroll={false} href="/dashboards/sales"><Image fill src="../assets/images/brand-logos/desktop-dark.png" alt="" /></Link></p>
                             <p className="mb-2 op-6 fw-normal">
-                                Siladocs es una plataforma innovadora diseñada para digitalizar, organizar y proteger la gestión de documentos en instituciones educativas y organizaciones. Nuestro objetivo es simplificar procesos administrativos mediante tecnología segura y eficiente.
+                                Siladocs es una plataforma que digitaliza y protege la gestión académica. Centraliza documentos, automatiza flujos de trabajo y garantiza transparencia con tecnología segura y eficiente.
                             </p>
-                            <p className="mb-0 op-6 fw-normal">Con Siladocs, las instituciones pueden centralizar sus documentos, automatizar flujos de trabajo y asegurar la transparencia en cada etapa.</p>
                         </Col>
                         <Col sm={3} xl={2} className="col-6">
                             <h6 className="fw-semibold mb-3 text-fixed-white">Producto</h6>
