@@ -121,9 +121,10 @@ const Cover: React.FC<CoverProps> = () => {
                                                     isInvalid={!!errors.institutionId}
                                                 >
                                                     <option value="">-- Selecciona una institución --</option>
-                                                    <option value="1">Universidad Continental</option>
-                                                    <option value="2">Universidad Católica</option>
-                                                    <option value="3">Universidad de Lima</option>
+                                                    <option value="1">Universidad Peruana de Ciencias Aplicadas</option>
+                                                    <option value="2">Pontifica Universidad Católica</option>
+                                                    <option value="3">Universidad Continental</option>
+                                                    <option value="4">Universidad de Lima</option>
                                                 </Form.Select>
                                                 <Form.Control.Feedback type="invalid">
                                                     {errors.institutionId}
@@ -216,7 +217,7 @@ const Cover: React.FC<CoverProps> = () => {
                                         </SpkButton>
                                     </div>
                                     <div className="text-center mt-3 fw-medium">
-                                        Ya tienes una cuenta? <Link scroll={false} href="/authentication/sign-in/basic/" className="text-primary">Ingresa</Link>
+                                        Ya tienes una cuenta? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary">Ingresa</Link>
                                     </div>
                                 </Card.Body>
                             </Card>

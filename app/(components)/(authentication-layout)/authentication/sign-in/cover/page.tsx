@@ -60,7 +60,7 @@ const Cover: React.FC<CoverProps> = () => {
                         autoClose: 1500,
                     });
                     localStorage.setItem("token", data.token); // 🔑 Guardar JWT
-                    router.push("/dashboards/sales/");
+                    router.push("/dashboards/school/");
                 } else {
                     toast.error("Credenciales inválidas");
                 }

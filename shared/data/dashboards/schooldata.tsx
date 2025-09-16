@@ -13,7 +13,7 @@ interface SchoolCardData {
 export const SchoolCardsData: SchoolCardData[] = [
     {
         id: 1,
-        title: "Students",
+        title: "Estudiantes",
         count: "28,754",
         percent: "12.75%",
         percentColor: "success",
@@ -63,17 +63,17 @@ export const SchoolCardsData: SchoolCardData[] = [
 
 //School Revenue
 export const SchoolSeries = [{
-    name: 'This Year',
+    name: '2026',
     type: "column",
     data: [44, 30, 57, 80, 90, 55, 70, 43, 23, 54, 77, 34]
 }, {
-    name: 'Last Year',
+    name: '2025',
     type: "area",
     data: [30, 25, 36, 30, 45, 35, 64, 51, 59, 36, 39, 51]
 }]
 export const SchoolOptions = {
     chart: {
-        height: 320,
+        height: 320,    
         type: 'line',
         stacked: !1,
         toolbar: {
@@ -161,15 +161,15 @@ export const SchoolOptions = {
         curve: "smooth",
         dashArray: [0, 4]
     },
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'],
     // legend: {
     //     show: true,
     //     position: 'top'
     // },
     plotOptions: {
         bar: {
-            columnWidth: "25%",
-            borderRadius: 2
+            columnWidth: "35%",
+            borderRadius: 3
         }
     },
     tooltip: {
@@ -190,55 +190,55 @@ interface SchoolEvent {
 export const SchoolEvents: SchoolEvent[] = [
     {
         id: 1,
-        title: "School Timings Update",
+        title: "Solicitud Pendiente",
         date: "Mar 10, 2025",
-        description: "New school hours are now in effect. Check the updated schedule.",
+        description: "Estudiante ha solicitado sílabo",
         icon: "ti-alarm",
         bgClass: "bg-primary-transparent",
     },
     {
         id: 2,
-        title: "Exam Guidelines",
-        date: "March 18, 2025",
-        description: "Students must adhere to exam rules and bring valid ID cards.",
+        title: "Emisión Pendiente",
+        date: "Mar 18, 2025",
+        description: "Documento listo para enviar",
         icon: "ti-file-text",
         bgClass: "bg-secondary-transparent",
     },
     {
         id: 3,
-        title: "Lost & Found",
-        date: "March 20, 2025",
-        description: "A wallet was found near the library. Contact the admin office to claim.",
+        title: "Búsqueda Pendiente",
+        date: "Mar 20, 2025",
+        description: "Sílabo pendiente de selección",
         icon: "ti-search",
         bgClass: "bg-warning-transparent"
     },
     {
         id: 4,
-        title: "School Uniform",
-        date: "March 25, 2025",
-        description: "Students must follow proper uniform guidelines.",
-        icon: "ti-hanger-2",
+        title: "Sincronización Ejecutada",
+        date: "Mar 25, 2025",
+        description: "Blockchain actualizado",
+        icon: "ti-link",
         bgClass: "bg-info-transparent"
     },
     {
         id: 5,
-        title: "Canteen Menu Change",
-        date: "March 28, 2025",
-        description: "The new weekly cafeteria menu is now available.",
-        icon: "ti-tools-kitchen",
+        title: "Carga Ejecutada",
+        date: "Mar 28, 2025",
+        description: "Sílabos disponibles en la nube",
+        icon: "ti-cloud",
         bgClass: "bg-success-transparent"
     },
     {
         id: 6,
-        title: "Emergency Update",
-        date: "March 25, 2025",
-        description: "Parents must update emergency contact details in the portal.",
-        icon: "ti-phone",
+        title: "Configuración pendiente",
+        date: "Mar 25, 2025",
+        description: "Se requiere validar credenciales",
+        icon: "ti-settings",
         bgClass: "bg-danger-transparent"
     }
 ];
 
-//Students Activity
+//Actividad de Usuario
 interface StudentActivity {
     id: number;
     name: string;
@@ -252,47 +252,47 @@ interface StudentActivity {
 export const StudentActivities: StudentActivity[] = [
     {
         id: 1,
-        name: "Aarav Sharma",
-        date: "Mar 10, 2025",
-        description: "Submitted the Math Assignment on time",
-        avatar: "../../assets/images/faces/12.jpg",
-        badgeClass: "bg-primary-transparent",
+        name: "Luis Zárate",
+        date: "Abr 10, 2025",
+        description: "Envío de Sílabo - Fundamentos 1",
+        initials: "LZ",
+        badgeClass: "bg-success",
         listClass:""
     },
     {
         id: 2,
-        name: "Sophia Patel",
-        date: "Mar 11, 2025",
-        description: 'Borrowed "Physics Essentials" from the library',
-        avatar: "../../assets/images/faces/2.jpg",
-        badgeClass: "bg-secondary-transparent",
+        name: "Sharon Barrial",
+        date: "May 11, 2025",
+        description: 'Envío de Sílabo - TP 1',
+        initials: "SB",
+        badgeClass: "bg-success",
         listClass:""
     },
     {
         id: 3,
-        name: "Ryan Verma",
-        date: "Mar 11, 2025",
-        description: "Won 1st place in the Inter-School Debate Competition",
-        initials: "RV",
-        badgeClass: "bg-warning-transparent",
+        name: "Alfredo Barrientos",
+        date: "Jun 11, 2025",
+        description: "Solicitud de Sílabo - TP 2",
+        initials: "AB",
+        badgeClass: "bg-warning",
         listClass:""
     },
     {
         id: 4,
-        name: "Neha Kapoor",
-        date: "Mar 13, 2025",
-        description: "Uploaded a new Art Project for review.",
-        avatar: "../../assets/images/faces/5.jpg",
-        badgeClass: "bg-info-transparent",
+        name: "Sebastián Méndez",
+        date: "Jul 13, 2025",
+        description: "Carga de Sílabo - TP 1",
+        initials: "SM",
+        badgeClass: "bg-info",
         listClass:""
     },
     {
         id: 5,
-        name: "Karan Singh",
-        date: "Mar 14, 2025",
-        description: "Missed the deadline for the Science Project Submission.",
-        avatar: "../../assets/images/faces/15.jpg",
-        badgeClass: "bg-success-transparent",
+        name: "Jorge Delgado",
+        date: "Ago 14, 2025",
+        description: "Error en Sílabo - TP 1",
+        initials: "JD",
+        badgeClass: "bg-danger",
         listClass:""
     }
 ];
@@ -301,17 +301,17 @@ export const StudentActivities: StudentActivity[] = [
 export const SchoolOverviewSeries = [6560, 3354]
 export const SchoolOverviewOptions = {
     chart: {
-        height: 227,
+        height: 200,
         type: 'donut',
     },
     colors: ["var(--primary-color)", "rgba(255, 73, 205, 1)"],
-    labels: ["Boys", "Girls"],
+    labels: ["Solicitudes", "Cargas"],
     legend: {
         show: false,
     },
     plotOptions: {
         pie: {
-            offsetY: 10,
+            offsetY: 5,
             expandOnClick: false,
             donut: {
                 size: '85%',
@@ -337,8 +337,8 @@ export const SchoolOverviewOptions = {
                     total: {
                         show: true,
                         showAlways: true,
-                        label: 'Total Students',
-                        fontSize: '14px',
+                        label: 'Total Operaciones',
+                        fontSize: '16px',
                         fontWeight: 400,
                         color: '#495057',
                     }
@@ -370,52 +370,52 @@ interface TopStudent {
 export const TopStudents: TopStudent[] = [
     {
         id: 1,
-        name: "Aarav Sharma",
-        grade: "Grade-10",
+        name: "TP1",
+        grade: "Ciclo - 9",
         gpa: 9.8,
         avatar: "../../assets/images/faces/13.jpg",
-        achievement: "Science Olympiad Winner",
+        achievement: "Ingeniería de Software",
         achievementClass: "text-primary"
     },
     {
         id: 2,
-        name: "Sophia Patel",
-        grade: "Grade-9",
+        name: "TDP",
+        grade: "Ciclo - 8",
         gpa: 9.7,
         avatar: "../../assets/images/faces/5.jpg",
-        achievement: "Best Speaker in Debate",
+        achievement: "Ingeniería de Sistemas",
         achievementClass: "text-secondary"
     },
     {
         id: 3,
-        name: "Ryan Verma",
-        grade: "Grade-12",
+        name: "Fundamentos de Arq.",
+        grade: "Ciclo - 7",
         gpa: 9.6,
         avatar: "../../assets/images/faces/3.jpg",
-        achievement: "Top Scorer in Math",
+        achievement: "Ingeniería de Sistemas",
         achievementClass: "text-warning"
     },
     {
         id: 4,
-        name: "Neha Kapoor",
-        grade: "Grade-11",
+        name: "Diseño de Patrones",
+        grade: "Ciclo - 5",
         gpa: 9.5,
         avatar: "../../assets/images/faces/7.jpg",
-        achievement: "Art Competition Champion",
+        achievement: "Ciencias de la Computación",
         achievementClass: "text-info"
     },
     {
         id: 5,
-        name: "Karan Singh",
-        grade: "Grade-8",
+        name: "Desarrollo Agile",
+        grade: "Ciclo - 9",
         gpa: 9.4,
         avatar: "../../assets/images/faces/14.jpg",
-        achievement: "Chess Tournament Winner",
+        achievement: "Ingeniería de Software",
         achievementClass: "text-success"
     }
 ];
 
-//Students Fee Analytics
+// Peticiones de Usuario
 interface Payment {
     id: string;
     name: string;
@@ -427,36 +427,36 @@ interface Payment {
  export const Analyticspayments: Payment[] = [
     {
       id: '#SP01',
-      name: 'Aarav Sharma',
-      feeType: 'Tuition Fees',
+      name: 'Luis Zárate',
+      feeType: 'ISW',
       status: 'Paid',
       imageUrl: '../../assets/images/faces/12.jpg',
     },
     {
       id: '#SP02',
-      name: 'Sophia Patel',
-      feeType: 'Library Fees',
+      name: 'Sharon Barrial',
+      feeType: 'ISC',
       status: 'Pending',
       imageUrl: '../../assets/images/faces/4.jpg',
     },
     {
       id: '#SP03',
-      name: 'Ryan Verma',
-      feeType: 'Exam Fees',
+      name: 'Alfredo Barrientos',
+      feeType: 'ISW',
       status: 'Paid',
       imageUrl: '../../assets/images/faces/15.jpg',
     },
     {
       id: '#SP04',
-      name: 'Neha Kapoor',
-      feeType: 'Sports Fees',
+      name: 'Sebastian Méndez',
+      feeType: 'CCI',
       status: 'Overdue',
       imageUrl: '../../assets/images/faces/8.jpg',
     },
     {
       id: '#SP05',
-      name: 'Karan Singh',
-      feeType: 'Lab Fees',
+      name: 'Jorge Delgado',
+      feeType: 'ISW',
       status: 'Paid',
       imageUrl: '../../assets/images/faces/10.jpg',
     },
@@ -628,7 +628,7 @@ export const SchoolCards = [
       cardClass: "dashboard-main-card primary school-card",
       bodyClass: "",
       school: {
-        title: "Students",
+        title: "Estudiantes",
         value: "28,754",
         percent: "12.75%",
         badgeColor: "success",
@@ -645,7 +645,7 @@ export const SchoolCards = [
       cardClass: "dashboard-main-card secondary school-card flex-wrap",
       bodyClass: "",
       school: {
-        title: "Teachers",
+        title: "Docentes",
         value: "385",
         percent: "8.65%",
         badgeColor: "success",
@@ -662,7 +662,7 @@ export const SchoolCards = [
       cardClass: "dashboard-main-card success school-card flex-wrap",
       bodyClass: "",
       school: {
-        title: "Awards",
+        title: "Auditores",
         value: "32",
         percent: "0.75%",
         badgeColor: "danger",
@@ -679,7 +679,7 @@ export const SchoolCards = [
       cardClass: "dashboard-main-card warning school-card flex-wrap",
       bodyClass: "",
       school: {
-        title: "Earning",
+        title: "Ingresos",
         value: "$12,765,233",
         percent: "4.07%",
         badgeColor: "success",

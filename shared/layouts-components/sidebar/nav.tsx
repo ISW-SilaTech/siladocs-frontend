@@ -16,8 +16,9 @@ export const MENUITEMS: any = [
      menutitle:'MAIN'
   },
   {
-    title: "Dashboards", icon: Svgicons.Dashboardicon, type: "sub", active: false, dirchange: false, children: [
+    title: "MVP", icon: Svgicons.Dashboardicon, type: "sub", active: false, dirchange: false, children: [
 
+      { path: "/dashboards/school", type: "link", icon: Svgicons.Schoolicon, active: false, selected: false, dirchange: false, title: "School" },
       { path: "/dashboards/sales", icon: Svgicons.Salesicon, type: "link", active: false, selected: false, dirchange: false, title: "Sales" },
       { path: "/dashboards/analytics", icon: Svgicons.Analyticsicon, type: "link", active: false, selected: false, dirchange: false, title: "Analytics" },
 
@@ -100,7 +101,6 @@ export const MENUITEMS: any = [
       },
       { path: "/dashboards/podcast", type: "link", icon: Svgicons.Podcasticon, active: false, selected: false, dirchange: false, title: "Podcast" },
       { path: "/dashboards/social-media", type: "link", icon: Svgicons.Socialicon, active: false, selected: false, dirchange: false, title: "Social Media" },
-      { path: "/dashboards/school", type: "link", icon: Svgicons.Schoolicon, active: false, selected: false, dirchange: false, title: "School" },
       { path: "/dashboards/medical", type: "link", icon: Svgicons.Medicalicon, active: false, selected: false, dirchange: false, title: "Medical" },
       { path: "/dashboards/pos-system", type: "link", icon: Svgicons.Posicon, active: false, selected: false, dirchange: false, title: "POS System" },
     ]

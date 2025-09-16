@@ -30,7 +30,7 @@ const SpkSchoolCard: React.FC<SchoolCardProps> = ({ cardClass, bodyClass, school
                 <div className="fs-12 text-muted">
                   <SpkBadge variant="" Customclass={`bg-${school.badgeColor}-transparent rounded-pill d-inline-flex align-items-center`}>
                     <i className={`ti ti-trending-${school.icon} me-1 align-middle`}></i>{school.percent}
-                  </SpkBadge>   This Year
+                  </SpkBadge>   Año Actual
                 </div>
               </div>
             </div>
