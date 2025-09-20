@@ -1,13 +1,11 @@
-"use client"
-
-import React, { Fragment, useState } from 'react'
+"use client"; // mantenemos el layout como cliente
+import React, { Fragment, useState } from 'react';
 import "./globals.scss";
-import { Provider } from 'react-redux'
+import { Provider } from 'react-redux';
 import { store } from '@/shared/redux/store';
 import { Initialload } from '@/shared/contextapi';
 
-const RootLayout = ({ children, }: any) => {
-
+const RootLayout = ({ children }: any) => {
   const [pageloading, setpageloading] = useState(false);
 
   return (
@@ -18,7 +16,7 @@ const RootLayout = ({ children, }: any) => {
         </Initialload.Provider>
       </Provider>
     </Fragment>
-  )
-}
+  );
+};
 
 export default RootLayout;

@@ -1,7 +1,7 @@
 
 export const Option1 = [
     { value: 'Sort By', label: 'Sort By' },
-    { value: 'Newest', label: 'Newest' },
+    { value: 'Reiente', label: 'Reciente' },
     { value: 'Date Added', label: 'Date Added' },
     { value: 'Type', label: 'Type' },
     { value: 'A - Z', label: 'A - Z' },

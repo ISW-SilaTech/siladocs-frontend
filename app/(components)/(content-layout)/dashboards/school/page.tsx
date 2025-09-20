@@ -24,7 +24,41 @@ const School: React.FC<SchoolProps> = () => {
 
             <Seo title="Dashboards-School" />
 
-            <Pageheader title="SilaDocs" currentpage="Sílabos" activepage="Sílabos" />
+            <Pageheader title="Dashboard" currentpage="Dashboard" activepage="Dashboard" />
+
+            {/* Header de institución y accesos rápidos */}
+            <Card className="custom-card mb-4">
+                <Card.Body className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    {/* Información de la institución */}
+                    <div className="d-flex align-items-center gap-4">
+                        <Image
+                            src="/assets/images/brand-logos/universities/upc-logo.png" // coloca aquí el logo real
+                            alt="Logo Institución"
+                            width={45}
+                            height={45}
+                            className="rounded"
+                        />
+                        <div>
+                            <h5 className="mb-1 fw-semibold">Universidad Peruana de Ciencias Aplicadas</h5>
+                            <span className="text-muted">Bienvenido, Juan Pérez</span>
+                        </div>
+                    </div>
+
+                    {/* Accesos rápidos */}
+                    <div className="d-flex gap-2">
+                        <Link href="/gestion-academica" className="btn btn-primary btn-sm">
+                            Gestión Académica
+                        </Link>
+                        <Link href="/silabos/cargar" className="btn btn-outline-primary btn-sm">
+                            Cargar Sílabos
+                        </Link>
+                        <Link href="/procesos" className="btn btn-light btn-sm">
+                            Ver Procesos
+                        </Link>
+                    </div>
+                </Card.Body>
+            </Card>
+
 
             {/* <!-- Page Header Close --> */}
 

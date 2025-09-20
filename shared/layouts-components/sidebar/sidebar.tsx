@@ -769,7 +769,7 @@ const Sidebar = () => {
 
 								</Fragment>
 							))}
-							<li>
+							{/* <li>
 								<ul className="slide-menu child1 doublemenu_slide-menu">
 									<li className="text-center p-3 text-fixed-white">
 										<div className="doublemenu_slide-menu-background">
@@ -792,7 +792,7 @@ const Sidebar = () => {
 										</div>
 									</li>
 								</ul>
-							</li>
+							</li> */}
 
 							{/* <!-- End::slide --> */}
 

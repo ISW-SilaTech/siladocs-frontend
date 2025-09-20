@@ -40046,3 +40046,8 @@ input.react-datepicker-time__input {
 }
 
 /*# sourceMappingURL=styles.css.map */
+
+* {
+  user-select: none;   /* Nadie puede seleccionar texto */
+  cursor: default;     /* Siempre flecha normal */
+}

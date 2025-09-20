@@ -103,9 +103,14 @@ const Cover: React.FC<CoverProps> = () => {
                     <Row className="justify-content-center align-items-center h-100">
                         <Col xxl={4} xl={5} lg={6} md={6} sm={8} className="col-12">
                             <Card className="custom-card border-0  shadow-none my-4">
+                                {/* Link simple a /dashboard/school */}
+                                        <Link href="/dashboards/school" className="btn btn-primary">
+                                            Ir al sistema
+                                        </Link>
                                 <Card.Body className="p-5">
                                     <div>
                                         <h4 className="mb-1 fw-semibold">Asocia una cuenta educativa</h4>
+                                        
                                         <p className="mb-4 text-muted fw-normal">Por favor ingresar credenciales válidas</p>
                                     </div>
                                     <Form onSubmit={handleSubmit}>

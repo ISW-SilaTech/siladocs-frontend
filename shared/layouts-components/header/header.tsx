@@ -301,7 +301,7 @@ const Header = () => {
     const [InputValue, setInputValue] = useState("");
     const [show2, setShow2] = useState(false);
     const [searchcolor, setsearchcolor] = useState("text-dark");
-    const [searchval, setsearchval] = useState("Type something");
+    const [searchval, setsearchval] = useState("Escribe algo");
     const [NavData, setNavData] = useState([]);
 
     useEffect(() => {
@@ -362,13 +362,13 @@ const Header = () => {
         if (!allElement2.length || inputvalue === "") {
             if (inputvalue === "") {
                 setShow2(false);
-                setsearchval("Type something");
+                setsearchval("Escribe algo");
                 setsearchcolor("text-dark");
             }
             if (!allElement2.length) {
                 setShow2(false);
                 setsearchcolor("text-danger");
-                setsearchval("There is no component with this name");
+                setsearchval("No existe elemento con ese nombre");
             }
         }
         setNavData(allElement2);
@@ -456,7 +456,7 @@ const Header = () => {
                         {/* <!-- Start::header-element --> */}
 
                         <div className="header-element mx-lg-0 mx-2">
-                            <Link scroll={false} aria-label="Hide Sidebar" onClick={toggleSidebar} className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle" data-bs-toggle="sidebar" href="#!"><span></span></Link>
+                            <Link scroll={false} aria-label="Hide Sidebar" onClick={toggleSidebar} className="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle" data-bs-toggle="sidebar" href=""><span></span></Link>
                         </div>
 
                         {/* <!-- End::header-element --> */}
@@ -467,7 +467,7 @@ const Header = () => {
 
                             <div className='autoComplete_wrapper'>
 
-                                <input type="text" className="header-search-bar form-control" onClick={() => { }} ref={searchRef} defaultValue={InputValue} onChange={(ele => { myfunction(ele.target.value); setInputValue(ele.target.value); })} id="header-search" placeholder="Search" spellCheck={false} autoComplete="off" autoCapitalize="off" />
+                                <input type="text" className="header-search-bar form-control" onClick={() => { }} ref={searchRef} defaultValue={InputValue} onChange={(ele => { myfunction(ele.target.value); setInputValue(ele.target.value); })} id="header-search" placeholder="Buscar" spellCheck={false} autoComplete="off" autoCapitalize="off" />
                             </div>
                             <a href="#!;" className="header-search-icon border-0">
                                 <i className="bi bi-search fs-12"></i>
@@ -475,7 +475,7 @@ const Header = () => {
                             {showa ?
                                 <div className="card custom-card search-result position-absolute z-index-9 search-fix  border" ref={searchResultRef}>
                                     <div className="card-header p-2">
-                                        <div className="card-title mb-0 text-break">Search result of {InputValue}</div>
+                                        <div className="card-title mb-0 text-break">Buscando resultados de {InputValue}</div>
                                     </div>
                                     <div className='card-body overflow-auto p-2'>
                                         <ListGroup className='m-2 header-searchdropdown'>
@@ -525,9 +525,9 @@ const Header = () => {
 
                             {/* <!-- Start::header-link|dropdown-toggle --> */}
 
-                            <DropdownToggle as="a" variant='' className="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown">
+                            {/* <DropdownToggle as="a" variant='' className="header-link dropdown-toggle" data-bs-auto-close="outside" data-bs-toggle="dropdown">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="header-link-icon" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M215,168.71a96.42,96.42,0,0,1-30.54,37l-9.36-9.37a8,8,0,0,0-3.63-2.09L150,188.59a8,8,0,0,1-5.88-8.9l2.38-16.2a8,8,0,0,1,4.85-6.22l30.45-12.66a8,8,0,0,1,8.47,1.49Z" opacity="0.2"></path><path d="M184,74a8,8,0,0,1-1.94,5.22L159.89,105a8,8,0,0,1-5,2.71l-31.46,4.26a8.06,8.06,0,0,1-5.77-1.45l-19.81-13a8,8,0,0,0-11.34,2l-20.94,31.3a8.06,8.06,0,0,0-1.35,4.41L64,171.49a8,8,0,0,1-3.61,6.64l-9.92,6.52A96,96,0,0,1,184,50Z" opacity="0.2"></path><circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></circle><path d="M184.42,205.68l-9.36-9.37a8,8,0,0,0-3.63-2.09L150,188.59a8,8,0,0,1-5.88-8.9l2.38-16.2a8,8,0,0,1,4.85-6.22l30.45-12.66a8,8,0,0,1,8.47,1.49L215,168.71" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><path d="M50.49,184.65l9.92-6.52A8,8,0,0,0,64,171.49l.21-36.23a8.06,8.06,0,0,1,1.35-4.41l20.94-31.3a8,8,0,0,1,11.34-2l19.81,13a8.06,8.06,0,0,0,5.77,1.45l31.46-4.26a8,8,0,0,0,5-2.71L182.06,79.2A8,8,0,0,0,184,74V50" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
-                            </DropdownToggle>
+                            </DropdownToggle> */}
 
                             {/* <!-- End::header-link|dropdown-toggle --> */}
 
@@ -588,10 +588,10 @@ const Header = () => {
 
                             {/* <!-- Start::header-link|dropdown-toggle --> */}
 
-                            <DropdownToggle as="a" href="#!" variant='' className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
+                            {/* <DropdownToggle as="a" href="#!" variant='' className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="header-link-icon" viewBox="0 0 256 256"><rect width="256" height="256" fill="none"></rect><path d="M70.55,144H196.1a16,16,0,0,0,15.74-13.14L224,64H56Z" opacity="0.2"></path><path d="M188,184H91.17a16,16,0,0,1-15.74-13.14L48.73,24H24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path><circle cx="92" cy="204" r="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></circle><circle cx="188" cy="204" r="20" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></circle><path d="M70.55,144H196.1a16,16,0,0,0,15.74-13.14L224,64H56" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"></path></svg>
                                 <span className="badge bg-primary rounded-pill header-icon-badge" id="cart-icon-badge">{note.length}</span>
-                            </DropdownToggle>
+                            </DropdownToggle> */}
 
                             {/* <!-- End::header-link|dropdown-toggle --> */}
 
@@ -690,10 +690,10 @@ const Header = () => {
 
                             {/* <!-- Start::header-link|dropdown-toggle --> */}
 
-                            <Dropdown.Toggle as="a" variant='' href="#!" className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
+                            {/* <Dropdown.Toggle as="a" variant='' href="#!" className="header-link dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="header-link-icon" viewBox="0 0 256 256"><rect width="256" height="256" fill="none" /><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" opacity="0.2" /><path d="M96,192a32,32,0,0,0,64,0" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><path d="M56,104a72,72,0,0,1,144,0c0,35.82,8.3,64.6,14.9,76A8,8,0,0,1,208,192H48a8,8,0,0,1-6.88-12C47.71,168.6,56,139.81,56,104Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /></svg>
                                 <span className="header-icon-pulse bg-secondary rounded pulse pulse-secondary"></span>
-                            </Dropdown.Toggle>
+                            </Dropdown.Toggle> */}
 
                             {/* <!-- End::header-link|dropdown-toggle --> */}
 
@@ -853,7 +853,7 @@ const Header = () => {
                             <Dropdown.Menu className="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end" aria-labelledby="mainHeaderProfile">
                                 <div className="p-3 bg-primary text-fixed-white">
                                     <div className="d-flex align-items-center justify-content-between">
-                                        <p className="mb-0 fs-16">Profile</p>
+                                        <p className="mb-0 fs-16">Perfil</p>
                                         <Link scroll={false} href="#!" className="text-fixed-white"><i className="ti ti-settings-cog"></i></Link>
                                     </div>
                                 </div>
@@ -866,8 +866,8 @@ const Header = () => {
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="d-block fw-semibold lh-1">Tom Phillip</span>
-                                            <span className="text-muted fs-12">tomphillip32@gmail.com</span>
+                                            <span className="d-block fw-semibold lh-1">Juan Pérez</span>
+                                            <span className="text-muted fs-12">juan@upc.edu.pe</span>
                                         </div>
                                     </div>
                                 </div>
@@ -876,27 +876,27 @@ const Header = () => {
                                     <li>
                                         <ul className="list-unstyled mb-0 sub-list">
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile"><i className="ti ti-user-circle me-2 fs-18"></i>View Profile</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile"><i className="ti ti-user-circle me-2 fs-18"></i>Ver Perfil</Link>
                                             </li>
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings"><i className="ti ti-settings-cog me-2 fs-18"></i>Account Settings</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings"><i className="ti ti-settings-cog me-2 fs-18"></i>Configuración</Link>
                                             </li>
                                         </ul>
                                     </li>
                                     <li>
                                         <ul className="list-unstyled mb-0 sub-list">
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-lifebuoy me-2 fs-18"></i>Support</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-lifebuoy me-2 fs-18"></i>Soporte</Link>
                                             </li>
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-bolt me-2 fs-18"></i>Activity Log</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-bolt me-2 fs-18"></i>Registros</Link>
                                             </li>
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-calendar me-2 fs-18"></i>Events</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-calendar me-2 fs-18"></i>Eventos</Link>
                                             </li>
                                         </ul>
                                     </li>
-                                    <li><Link scroll={false} className="dropdown-item d-flex align-items-center" href="/"><i className="ti ti-logout me-2 fs-18"></i>Log Out</Link></li>
+                                    <li><Link scroll={false} className="dropdown-item d-flex align-items-center" href="/"><i className="ti ti-logout me-2 fs-18"></i>Cerrar Sesión</Link></li>
                                 </ul>
                             </Dropdown.Menu>
                         </Dropdown>
@@ -909,9 +909,9 @@ const Header = () => {
 
                             {/* <!-- Start::header-link|switcher-icon --> */}
 
-                            <Link scroll={false} href="#!" className="header-link switcher-icon" data-bs-toggle="offcanvas" data-bs-target="#switcher-canvas" onClick={handleShow} >
+                            {/* <Link scroll={false} href="#!" className="header-link switcher-icon" data-bs-toggle="offcanvas" data-bs-target="#switcher-canvas" onClick={handleShow} >
                                 <svg xmlns="http://www.w3.org/2000/svg" className="header-link-icon" viewBox="0 0 256 256"><rect width="256" height="256" fill="none" /><path d="M207.86,123.18l16.78-21a99.14,99.14,0,0,0-10.07-24.29l-26.7-3a81,81,0,0,0-6.81-6.81l-3-26.71a99.43,99.43,0,0,0-24.3-10l-21,16.77a81.59,81.59,0,0,0-9.64,0l-21-16.78A99.14,99.14,0,0,0,77.91,41.43l-3,26.7a81,81,0,0,0-6.81,6.81l-26.71,3a99.43,99.43,0,0,0-10,24.3l16.77,21a81.59,81.59,0,0,0,0,9.64l-16.78,21a99.14,99.14,0,0,0,10.07,24.29l26.7,3a81,81,0,0,0,6.81,6.81l3,26.71a99.43,99.43,0,0,0,24.3,10l21-16.77a81.59,81.59,0,0,0,9.64,0l21,16.78a99.14,99.14,0,0,0,24.29-10.07l3-26.7a81,81,0,0,0,6.81-6.81l26.71-3a99.43,99.43,0,0,0,10-24.3l-16.77-21A81.59,81.59,0,0,0,207.86,123.18ZM128,168a40,40,0,1,1,40-40A40,40,0,0,1,128,168Z" opacity="0.2" /><circle cx="128" cy="128" r="40" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /><path d="M41.43,178.09A99.14,99.14,0,0,1,31.36,153.8l16.78-21a81.59,81.59,0,0,1,0-9.64l-16.77-21a99.43,99.43,0,0,1,10.05-24.3l26.71-3a81,81,0,0,1,6.81-6.81l3-26.7A99.14,99.14,0,0,1,102.2,31.36l21,16.78a81.59,81.59,0,0,1,9.64,0l21-16.77a99.43,99.43,0,0,1,24.3,10.05l3,26.71a81,81,0,0,1,6.81,6.81l26.7,3a99.14,99.14,0,0,1,10.07,24.29l-16.78,21a81.59,81.59,0,0,1,0,9.64l16.77,21a99.43,99.43,0,0,1-10,24.3l-26.71,3a81,81,0,0,1-6.81,6.81l-3,26.7a99.14,99.14,0,0,1-24.29,10.07l-21-16.78a81.59,81.59,0,0,1-9.64,0l-21,16.77a99.43,99.43,0,0,1-24.3-10l-3-26.71a81,81,0,0,1-6.81-6.81Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16" /></svg>
-                            </Link>
+                            </Link> */}
                             <Switcher show={show} handleClose={handleClose} />
 
                             {/* <!-- End::header-link|switcher-icon --> */}
