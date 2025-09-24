@@ -13,10 +13,10 @@ const badgeSuccess = <SpkBadge variant="" Customclass="bg-success-transparent ms
 export const MENUITEMS: any = [
 
   {
-    menutitle: 'MAIN'
+    menutitle: 'MVP'
   },
   {
-    title: "MVP", icon: Svgicons.Dashboardicon, type: "sub", active: false, dirchange: false, children: [
+    title: "Inicio", icon: Svgicons.Dashboardicon, type: "sub", active: false, dirchange: false, children: [
 
       { path: "/dashboards/school", type: "link", icon: Svgicons.Schoolicon, active: false, selected: false, dirchange: false, title: "Dashboard" },
       {
@@ -26,6 +26,7 @@ export const MENUITEMS: any = [
           { path: "/projects/cursos", type: "link", active: false, selected: false, dirchange: false, title: "Cursos" },
         ]
       },
+      { path: "/core/carga-masiva", type: "link", icon: Svgicons.Crmicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
       // { path: "/dashboards/analytics", icon: Svgicons.Analyticsicon, type: "link", active: false, selected: false, dirchange: false, title: "Analytics" },
 
       // {
@@ -112,39 +113,32 @@ export const MENUITEMS: any = [
     ]
   },
 
-  // {
-  //   menutitle: 'Gestión Académica'
-  // },
-
-
-  // {
-  //   title: "Gestión Académica", icon: Svgicons.Applicationicon, type: "sub", active: false, selected: false, dirchange: false, children: [
-
-  //     { path: "/gestion/carreras/", icon: Svgicons.Nested1icon, type: "link", active: false, selected: false, dirchange: false, title: "Carreras" },
-  //     { path: "/applications/chat", icon: Svgicons.Chaticon, type: "link", active: false, selected: false, dirchange: false, title: "Chat" },
-  //     {
-  //       title: "Email", type: "sub", icon: Svgicons.Emailicon, active: false, children: [
-
-  //         { path: "/applications/email/mail-app", type: "link", active: false, selected: false, dirchange: false, title: "Mail-App" },
-  //         { path: "/applications/email/mail-settings", type: "link", active: false, selected: false, dirchange: false, title: "Mail-Settings" },
-
-  //       ]
-  //     },
-  //     { path: "/applications/file-manager", icon: Svgicons.Fileicon, type: "link", active: false, selected: false, dirchange: false, title: "File Manager" },
-  //     { path: "/applications/full-calendar", icon: Svgicons.Fullicon, type: "link", active: false, selected: false, dirchange: false, title: "Full Calendar" },
-  //     { path: "/applications/gallery", type: "link", icon: Svgicons.Galleryicon, active: false, selected: false, dirchange: false, title: "Gallery" },
-  //     { path: "/applications/sweet-alerts", type: "link", icon: Svgicons.Sweeticon, active: false, selected: false, dirchange: false, title: "Sweet Alerts" },
-  //     {
-  //       title: "Task", type: "sub", icon: Svgicons.Taskicon, active: false, selected: false, dirchange: false, doublToggle: false, children: [
-
-  //         { path: "/applications/task/kanban-board", type: "link", active: false, selected: false, dirchange: false, title: "Kanban Board" },
-  //         { path: "/applications/task/list-view", type: "link", active: false, selected: false, dirchange: false, title: "List View" },
-
-  //       ]
-  //     },
-  //     { path: "/applications/to-do-list", icon: Svgicons.Todoicon, type: "link", active: false, selected: false, dirchange: false, title: "To Do List" },
-  //   ],
-  // },
+  {
+    menutitle: 'Gestión Académica'
+  },
+{
+    title: "Gestión Académica", icon: Svgicons.Applicationicon, type: "sub", active: false, selected: false, dirchange: false, children: [
+    { path: "/gestion/carreras/", icon: Svgicons.Nested1icon, type: "link", active: false, selected: false, dirchange: false, title: "Carreras" },
+      { path: "/applications/chat", icon: Svgicons.Chaticon, type: "link", active: false, selected: false, dirchange: false, title: "Chat" },
+      {
+        title: "Email", type: "sub", icon: Svgicons.Emailicon, active: false, children: [
+        { path: "/applications/email/mail-app", type: "link", active: false, selected: false, dirchange: false, title: "Mail-App" },
+          { path: "/applications/email/mail-settings", type: "link", active: false, selected: false, dirchange: false, title: "Mail-Settings" },
+      ]
+      },
+      { path: "/applications/file-manager", icon: Svgicons.Fileicon, type: "link", active: false, selected: false, dirchange: false, title: "File Manager" },
+      { path: "/applications/full-calendar", icon: Svgicons.Fullicon, type: "link", active: false, selected: false, dirchange: false, title: "Full Calendar" },
+      { path: "/applications/gallery", type: "link", icon: Svgicons.Galleryicon, active: false, selected: false, dirchange: false, title: "Gallery" },
+      { path: "/applications/sweet-alerts", type: "link", icon: Svgicons.Sweeticon, active: false, selected: false, dirchange: false, title: "Sweet Alerts" },
+      {
+        title: "Task", type: "sub", icon: Svgicons.Taskicon, active: false, selected: false, dirchange: false, doublToggle: false, children: [
+        { path: "/applications/task/kanban-board", type: "link", active: false, selected: false, dirchange: false, title: "Kanban Board" },
+          { path: "/applications/task/list-view", type: "link", active: false, selected: false, dirchange: false, title: "List View" },
+      ]
+      },
+      { path: "/applications/to-do-list", icon: Svgicons.Todoicon, type: "link", active: false, selected: false, dirchange: false, title: "To Do List" },
+    ],
+  },
 
   // {
   //   title: "Nested Menu", icon: Svgicons.Nestedmenuicon, selected: false, active: false, dirchange: false, type: "sub", children: [

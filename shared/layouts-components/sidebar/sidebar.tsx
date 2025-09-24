@@ -769,7 +769,7 @@ const Sidebar = () => {
 
 								</Fragment>
 							))}
-							{/* <li>
+							<li>
 								<ul className="slide-menu child1 doublemenu_slide-menu">
 									<li className="text-center p-3 text-fixed-white">
 										<div className="doublemenu_slide-menu-background">
@@ -777,7 +777,7 @@ const Sidebar = () => {
 
 										</div>
 										<div className="d-flex flex-column align-items-center justify-content-between h-100">
-											<div className="fs-15 fw-medium">Dashboard AI Helper</div>
+											<div className="fs-15 fw-medium">Verificador de Sílabos en Blockchain</div>
 											<div>
 												<span className="avatar avatar-lg p-1">
 													<Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/media/media-80.png`} alt="" className="" />
@@ -787,12 +787,12 @@ const Sidebar = () => {
 												</span>
 											</div>
 											<div className="d-grid w-100">
-												<button className="btn btn-white border-0">Try Now</button>
+												<button className="btn btn-white border-0">Probar</button>
 											</div>
 										</div>
 									</li>
 								</ul>
-							</li> */}
+							</li>
 
 							{/* <!-- End::slide --> */}
 

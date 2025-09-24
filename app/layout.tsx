@@ -10,7 +10,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <html lang="es">
-      <body>
+      <body className="app sidebar-mini ltr light-mode" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
         <Provider store={store}>
           <Initialload.Provider value={{ pageloading, setpageloading }}>
             {children}
