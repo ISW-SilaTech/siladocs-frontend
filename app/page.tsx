@@ -1,5 +1,6 @@
 // app/page.tsx
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -7,7 +8,8 @@ export default function HomeRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/landing"); // Redirige a /landing
+    router.replace("/landing");
   }, [router]);
 
+  return null; // Evita que quede la pantalla en blanco sin contenido
 }
