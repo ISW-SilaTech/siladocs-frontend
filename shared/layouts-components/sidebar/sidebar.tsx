@@ -483,6 +483,11 @@ const Sidebar = () => {
 		const theme = getState();
 		let element = event.target;
 
+		// Si el targetObject es un link directo (no tiene hijos), no hacer toggle
+		if (targetObject?.type === 'link' && (!targetObject?.children || targetObject.children.length === 0)) {
+			return;
+		}
+
 		if (
 			(theme.dataNavStyle !== "icon-hover" && theme.dataNavStyle !== "menu-hover") ||
 			(window.innerWidth < 992) ||
@@ -519,7 +524,7 @@ const Sidebar = () => {
 
 			if (targetObject?.children && targetObject.active) {
 				if (theme.dataVerticalStyle === 'doublemenu' && theme.toggled !== 'double-menu-open') {
-					setState({ ...theme, toggled: "open" });
+					setState({ ...theme, toggled: "double-menu-open" });
 				}
 			}
 
@@ -567,13 +572,12 @@ const Sidebar = () => {
 		const parent = findParent(MenuItems, targetObject);
 		if (parent) {
 			parent.active = true;
-			if (parent.active) {
+			if (parent.active && theme.dataVerticalStyle === 'doublemenu' && theme.toggled !== "double-menu-open") {
 				const newState = {
 					...theme,
 					toggled: "double-menu-open"
 				}
 				setState(newState)
-				// setState({ ...theme, toggled: "double-menu-open" });
 			}
 
 			setAncestorsActive(MenuItems, parent);

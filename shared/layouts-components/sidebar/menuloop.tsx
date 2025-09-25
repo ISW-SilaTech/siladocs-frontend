@@ -24,7 +24,13 @@ const Menuloop = ({ MenuItems, level, handleToMenu, HoverToggleInnerMenuFn }: an
   return (
     <Fragment>
       <Link href="#!" scroll={false} className={`side-menu__item ${MenuItems?.selected ? "active" : ""}`}
-        onClick={(event) => { event.preventDefault(); handleToMenu(event, MenuItems, undefined, level > 1); }} onMouseEnter={(event) => HoverToggleInnerMenuFn(event, MenuItems)} >
+        onClick={(event) => { 
+          event.preventDefault(); 
+          // Solo hacer toggle si el elemento tiene hijos (submenús)
+          if (MenuItems?.children && MenuItems.children.length > 0) {
+            handleToMenu(event, MenuItems, undefined, level > 1);
+          }
+        }} onMouseEnter={(event) => HoverToggleInnerMenuFn(event, MenuItems)} >
         <i className="ri-arrow-right-s-line side-menu__angle"></i>
         <span className={`${local_varaiable?.dataVerticalStyle == 'doublemenu' ? '' : 'd-none'}`}>
           <SpkTooltips placement="auto" title={MenuItems.title}>

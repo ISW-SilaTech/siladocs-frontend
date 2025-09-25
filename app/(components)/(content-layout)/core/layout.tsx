@@ -45,7 +45,7 @@ const layout = ({ children }: any) => {
         <Header />
         <Sidebar />
         <div className='main-content app-content'>
-        <div className={`container-fluid page-container ${containerclass}`}>
+        <div className={`w-100 page-container ${containerclass}`}>
             {children}
           </div>
         </div>
