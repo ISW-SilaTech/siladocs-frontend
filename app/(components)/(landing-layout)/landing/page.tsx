@@ -12,6 +12,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Card, Col, Form, Nav, Row, Tab } from 'react-bootstrap'
+import axios from 'axios'
+
 
 //Efectos
 import { motion } from "framer-motion";
@@ -296,6 +298,50 @@ const Landing = () => {
         };
     }, []);
 
+    // 🔹 NUEVO: Estados y funciones para el formulario de contacto
+    const [contactFormData, setContactFormData] = useState({
+        institutionName: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        message: ''
+    });
+    const [contactStatus, setContactStatus] = useState(''); // Mensaje para el usuario
+    const [isContactLoading, setIsContactLoading] = useState(false);
+
+    const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        // Usa el atributo 'name' en lugar de 'id' para más flexibilidad
+        const { name, value } = e.target;
+        setContactFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsContactLoading(true);
+        setContactStatus('');
+
+        try {
+            // Llama al endpoint /api/contact
+            const response = await axios.post('http://localhost:8080/api/contact', contactFormData);
+
+            if (response.status === 201) { // 201 Created es lo que devuelve el backend
+                setContactStatus('¡Gracias! Tu solicitud ha sido enviada.');
+                setContactFormData({ // Limpia el formulario
+                    institutionName: '', firstName: '', lastName: '',
+                    email: '', phone: '', message: ''
+                });
+            } else {
+                setContactStatus('Ocurrió un error inesperado al enviar.');
+            }
+        } catch (error) {
+            console.error("Error sending contact form:", error); // Loguea el error real
+            setContactStatus('Error al enviar. Por favor, verifica los datos o intenta más tarde.');
+        } finally {
+            setIsContactLoading(false);
+        }
+    };
+
     return (
         <Fragment>
             <motion.div
@@ -515,7 +561,7 @@ const Landing = () => {
                                 <div className="d-lg-flex d-none align-items-center">
                                     <div className="btn-list d-xl-flex d-none">
                                         <Link scroll={false} href="/authentication/sign-up/cover" className="btn btn-wave btn-primary border">
-                                            Ingresar / Regístrate
+                                            Ingresar
                                         </Link>
                                     </div>
 
@@ -886,109 +932,174 @@ const Landing = () => {
                         <div className="container">
                             <div className="heading-section">
                                 <div className="heading-subtitle">Contáctanos</div>
-                                <div className="heading-title">Estamos aquí para ayudarte</div>
+                                <div className="heading-title">Comienza con Siladocs</div>
                                 <div className="heading-description">
-                                    ¿Tienes preguntas sobre la gestión académica con blockchain? <br /> Nuestro equipo está listo para asesorarte y brindarte la mejor solución para tu institución.
+                                    ¿Listo para garantizar la integridad y trazabilidad de tus sílabos? <br /> Nuestro equipo está listo para asesorarte y brindarte la mejor solución para tu institución.
                                 </div>
                             </div>
-                            <Row className="gy-4 justify-content-between">
-                                <Col xl={6}>
-                                    <h6 className="fw-semibold mb-4">¡Póngase en contacto con nosotros!</h6>
-                                    <Row className="gy-3">
-                                        <Col xl={6}>
-                                            <label htmlFor="contact-address-firstname" className="form-label">Nombre</label>
-                                            <Form.Control type="text" className="" id="contact-address-firstname" placeholder="Ingresa tu nombre" />
-                                        </Col>
-                                        <Col xl={6}>
-                                            <label htmlFor="contact-address-lastname" className="form-label">Apellidos</label>
-                                            <Form.Control type="text" className="" id="contact-address-lastname" placeholder="Ingresa tus apellidos" />
-                                        </Col>
-                                        <Col xl={12}>
-                                            <label htmlFor="contact-address-email" className="form-label">Email</label>
-                                            <Form.Control type="email" className="" id="contact-address-email" placeholder="Ingresa tu correo institucional" />
-                                        </Col>
-                                        <Col xl={12}>
-                                            <label htmlFor="contact-address-phone" className="form-label">Teléfono</label>
-                                            <Form.Control type="text" className="" id="contact-address-phone" placeholder="Ingresa tu número de contacto" />
-                                        </Col>
-                                        <Col xl={12}>
-                                            <label htmlFor="contact-mail-message" className="form-label">Mensaje</label>
-                                            <Form.Control as="textarea" className="form-control" id="contact-mail-message" rows={4} placeholder="Cuéntanos tu consulta" />
-                                        </Col>
-                                    </Row>
-                                    <div className="d-grid mt-3">
-                                        <SpkButton Buttonvariant='primary' Customclass="btn">Enviar<i className="ti ti-arrow-narrow-right ms-1 align-middle"></i></SpkButton>
-                                    </div>
-                                </Col>
-                                <Col xl={5}>
-                                    <div className="row gy-5">
-                                        <Col xl={12}>
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div>
-                                                    <span className="avatar avatar-lg bg-primary-transparent svg-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <h5 className="fs-13 text-muted text-uppercase">Dirección :</h5>
-                                                    <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
-                                                    <div className="fw-semibold">UPC San Miguel</div>
-                                                </div>
-                                            </div>
-                                        </Col>
-                                        <Col xl={12}>
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div>
-                                                    <span className="avatar avatar-lg bg-primary-transparent svg-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"></path></svg>
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <h5 className="fs-13 text-muted text-uppercase">Teléfono :</h5>
-                                                    <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
-                                                    <div className="fw-semibold">+51 902 352 015</div>
-                                                </div>
-                                            </div>
-                                        </Col>
-                                        <Col xl={12}>
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div>
-                                                    <span className="avatar avatar-lg bg-primary-transparent svg-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"></path></svg>
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <h5 className="fs-13 text-muted text-uppercase">Email :</h5>
-                                                    <div className="fw-semibold lh-1">contact@silatech.com</div>
-                                                </div>
-                                            </div>
-                                        </Col>
-                                        <Col xl={12}>
-                                            <div className="d-flex align-items-start gap-3">
-                                                <div>
-                                                    <span className="avatar avatar-lg bg-primary-transparent svg-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 5.589 2 10c0 2.908 1.897 5.516 5 6.934V22l5.34-4.004C17.697 17.852 22 14.32 22 10c0-4.411-4.486-8-10-8zm-2.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"></path></svg>
-                                                    </span>
-                                                </div>
-                                                <div>
-                                                    <h5 className="fs-13 text-muted text-uppercase">Habla con nosotros :</h5>
-                                                    <div className="fw-semibold lh-1 chat-platforms">
-                                                        <a href="https://www.facebook.com" target="_blank" className="d-block">
-                                                            Facebook
-                                                        </a>
-                                                        <a href="https://www.twitter.com" target="_blank" className="d-block">
-                                                            Twitter
-                                                        </a>
-                                                        <a href="javascript:void(0);" target="_blank">
-                                                            Agenda una reunión
-                                                        </a>
+                            <form onSubmit={handleContactSubmit}>
+                                <Row className="gy-4 justify-content-between">
+                                    <Col xl={6}>
+                                        <h6 className="fw-semibold mb-4">¡Póngase en contacto con nosotros!</h6>
+                                        <Row className="gy-3">
+                                            <Col xl={12}>
+                                                <label htmlFor="contact-institution-name" className="form-label">Institución</label>
+                                                <Form.Control
+                                                    type="text"
+                                                    id="contact-institution-name" // ID único para el label
+                                                    name="institutionName"      // ⬅️ name coincide con el estado
+                                                    placeholder="Ingresa el nombre de la institución"
+                                                    value={contactFormData.institutionName} // ⬅️ Conecta el valor
+                                                    onChange={handleContactChange}          // ⬅️ Conecta el cambio
+                                                    required
+                                                />
+                                            </Col>
+                                            <Col xl={6}>
+                                                <label htmlFor="contact-first-name" className="form-label">Nombre</label>
+                                                <Form.Control
+                                                    type="text"
+                                                    id="contact-first-name"
+                                                    name="firstName" // ⬅️ name coincide con el estado
+                                                    placeholder="Ingresa tu nombre"
+                                                    value={contactFormData.firstName}
+                                                    onChange={handleContactChange}
+                                                    required
+                                                />
+                                            </Col>
+                                            <Col xl={6}>
+                                                <label htmlFor="contact-last-name" className="form-label">Apellidos</label>
+                                                <Form.Control
+                                                    type="text"
+                                                    id="contact-last-name"
+                                                    name="lastName" // ⬅️ name coincide con el estado
+                                                    placeholder="Ingresa tus apellidos"
+                                                    value={contactFormData.lastName}
+                                                    onChange={handleContactChange}
+                                                    required
+                                                />
+                                            </Col>
+                                            <Col xl={12}>
+                                                <label htmlFor="contact-email" className="form-label">Email de Contacto</label>
+                                                <Form.Control
+                                                    type="email"
+                                                    id="contact-email"
+                                                    name="email" // ⬅️ name coincide con el estado
+                                                    placeholder="Ingresa tu correo institucional"
+                                                    value={contactFormData.email}
+                                                    onChange={handleContactChange}
+                                                    required
+                                                />
+                                            </Col>
+                                            <Col xl={12}>
+                                                <label htmlFor="contact-phone" className="form-label">Teléfono (Opcional)</label>
+                                                <Form.Control
+                                                    type="text"
+                                                    id="contact-phone"
+                                                    name="phone" // ⬅️ name coincide con el estado
+                                                    placeholder="Ingresa tu número de contacto"
+                                                    value={contactFormData.phone}
+                                                    onChange={handleContactChange}
+                                                />
+                                            </Col>
+                                            <Col xl={12}>
+                                                <label htmlFor="contact-message" className="form-label">Mensaje (Opcional)</label>
+                                                <Form.Control
+                                                    as="textarea"
+                                                    id="contact-message"
+                                                    name="message" // ⬅️ name coincide con el estado
+                                                    rows={4}
+                                                    placeholder="Cuéntanos tu consulta"
+                                                    value={contactFormData.message}
+                                                    onChange={handleContactChange}
+                                                />
+                                            </Col>
+                                        </Row>
+                                        <div className="d-grid mt-3">
+                                            <SpkButton
+                                                Buttontype="submit" // ⬅️ Cambia a Buttontype si es tu prop, o usa type="submit"
+                                                Buttonvariant='primary'
+                                                Customclass="btn"
+                                                Disabled={isContactLoading} // ⬅️ Deshabilita mientras carga (prop name matches component typings)
+                                            >
+                                                {isContactLoading ? 'Enviando...' : 'Solicitar Información'}
+                                                <i className="ti ti-arrow-narrow-right ms-1 align-middle"></i>
+                                            </SpkButton>
+
+                                            {/* 🔹 7. Muestra el mensaje de estado */}
+                                            {contactStatus && <p className="mt-3 text-center">{contactStatus}</p>}
+
+                                        </div>
+                                    </Col>
+                                    <Col xl={4}>
+                                        <div className="row gy-5">
+                                            <Col xl={12}>
+                                                <div className="d-flex align-items-start gap-3">
+                                                    <div>
+                                                        <span className="avatar avatar-lg bg-primary-transparent svg-primary">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="fs-13 text-muted text-uppercase">Dirección :</h5>
+                                                        <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
+                                                        <div className="fw-semibold">UPC San Miguel</div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </Col>
-                                    </div>
-                                </Col>
-                            </Row>
+                                            </Col>
+                                            <Col xl={12}>
+                                                <div className="d-flex align-items-start gap-3">
+                                                    <div>
+                                                        <span className="avatar avatar-lg bg-primary-transparent svg-primary">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"></path></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="fs-13 text-muted text-uppercase">Teléfono :</h5>
+                                                        <span className="d-block fs-12 text-muted mb-2">Lunes a Viernes de 09:00 am - 18:00 pm</span>
+                                                        <div className="fw-semibold">+51 902 352 015</div>
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                            <Col xl={12}>
+                                                <div className="d-flex align-items-start gap-3">
+                                                    <div>
+                                                        <span className="avatar avatar-lg bg-primary-transparent svg-primary">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368"><path d="M0 0h24v24H0z" fill="none"></path><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"></path></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="fs-13 text-muted text-uppercase">Email :</h5>
+                                                        <div className="fw-semibold lh-1">contact@silatech.com</div>
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                            <Col xl={12}>
+                                                <div className="d-flex align-items-start gap-3">
+                                                    <div>
+                                                        <span className="avatar avatar-lg bg-primary-transparent svg-primary">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2C6.486 2 2 5.589 2 10c0 2.908 1.897 5.516 5 6.934V22l5.34-4.004C17.697 17.852 22 14.32 22 10c0-4.411-4.486-8-10-8zm-2.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"></path></svg>
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="fs-13 text-muted text-uppercase">Habla con nosotros :</h5>
+                                                        <div className="fw-semibold lh-1 chat-platforms">
+                                                            <a href="https://www.facebook.com" target="_blank" className="d-block">
+                                                                Facebook
+                                                            </a>
+                                                            <a href="https://www.twitter.com" target="_blank" className="d-block">
+                                                                Twitter
+                                                            </a>
+                                                            <a href="javascript:void(0);" target="_blank">
+                                                                Agenda una reunión
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </Col>
+                                        </div>
+                                    </Col>
+                                </Row>
+                            </form>
                         </div>
                     </section>
 
