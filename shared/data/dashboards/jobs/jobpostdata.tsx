@@ -45,9 +45,9 @@ export const Vacancieselect:SelectType[] = [
     {value:'40', label:'40'},
 ]
 export const Salaryselect:SelectType[] = [
-    {value:'0 - $1,00,000 / Year', label:'0 - $1,00,000 / Year'},
-    {value:'$1,00,000 - $3,00,000 / Year', label:'$1,00,000 - $3,00,000 / Year'},
-    {value:'$3,00,000 - $5,00,000 / Year', label:'$3,00,000 - $5,00,000 / Year'},
+    {value:'0 - $1,00,000 / Anual', label:'0 - $1,00,000 / Anual'},
+    {value:'$1,00,000 - $3,00,000 / Anual', label:'$1,00,000 - $3,00,000 / Anual'},
+    {value:'$3,00,000 - $5,00,000 / Anual', label:'$3,00,000 - $5,00,000 / Anual'},
 ]
 export const Skillselect:SelectType[] = [
     {value:'HTML', label:'HTML'},

@@ -147,9 +147,9 @@ const Projects: React.FC<ProjectsProps> = () => {
                                 Urgent Tasks
                             </div>
                             <SpkDropdown toggleas="a" Togglevariant="" Customtoggleclass="fs-12 text-muted no-caret" Arrowicon={true} Toggletext="Today">
-                                <Dropdown.Item><Link scroll={false} className="" href="#!">Week</Link></Dropdown.Item>
-                                <Dropdown.Item><Link scroll={false} className="" href="#!">Month</Link></Dropdown.Item>
-                                <Dropdown.Item><Link scroll={false} className="" href="#!">Year</Link></Dropdown.Item>
+                                <Dropdown.Item><Link scroll={false} className="" href="#!">Semana</Link></Dropdown.Item>
+                                <Dropdown.Item><Link scroll={false} className="" href="#!">Mes</Link></Dropdown.Item>
+                                <Dropdown.Item><Link scroll={false} className="" href="#!">Año</Link></Dropdown.Item>
                             </SpkDropdown>
                         </Card.Header>
                         <Card.Body className="p-0">

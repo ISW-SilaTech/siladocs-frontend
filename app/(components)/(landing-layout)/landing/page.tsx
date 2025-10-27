@@ -11,7 +11,7 @@ import { data$, getState, setState } from '@/shared/layouts-components/services/
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
-import { Card, Col, Form, Nav, Row, Tab } from 'react-bootstrap'
+import { Card, Col, Form, Nav, Row, Tab, Modal } from 'react-bootstrap'
 import axios from 'axios'
 
 
@@ -316,6 +316,14 @@ const Landing = () => {
         setContactFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    // Dentro de tu componente Landing
+    const [showDemoModal, setShowDemoModal] = useState(false);
+    const handleCloseDemoModal = () => setShowDemoModal(false);
+    const handleShowDemoModal = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        setShowDemoModal(true);
+    };
+
     const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsContactLoading(true);
@@ -578,6 +586,49 @@ const Landing = () => {
 
                 </aside>
 
+                {/* Coloca este Modal en cualquier lugar dentro del return de tu componente Landing */}
+                <Modal
+                    show={showDemoModal}
+                    onHide={handleCloseDemoModal}
+                    size="xl" // Tamaño grande para el video
+                    centered // Centra verticalmente
+                    backdrop="static" // Mantiene el modal abierto si se hace clic fuera, útil para videos
+                    keyboard={false} // Evita que se cierre con la tecla Esc
+                    dialogClassName="modal-blur-backdrop" // Clase CSS personalizada para el blur
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Demostración Siladocs</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {/* Contenedor responsivo para el video */}
+                        <div className="ratio ratio-16x9">
+                            <iframe
+                                src="https://upcedupe-my.sharepoint.com/personal/u20181h198_upc_edu_pe/_layouts/15/embed.aspx?UniqueId=623b52ff-6f6a-43fd-ad67-e01f3eb2a8c6&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create"
+                                width="640" // Estos anchos/altos son ignorados por ratio-16x9 pero buenos como fallback
+                                height="360"
+                                frameBorder="0" // Cambiado a frameBorder (camelCase en React)
+                                scrolling="no"
+                                allowFullScreen
+                                title="1.50 minutos.mp4">
+                            </iframe>
+                        </div>
+                    </Modal.Body>
+                    {/* Puedes añadir un footer si quieres */}
+                    {/* <Modal.Footer>
+         <button className="btn btn-secondary" onClick={handleCloseDemoModal}>
+             Cerrar
+         </button>
+    </Modal.Footer> */}
+                </Modal>
+
+                {/* Agrega este estilo CSS a tu archivo CSS global o específico del componente */}
+                <style jsx global>{`
+    .modal-blur-backdrop .modal-backdrop {
+        backdrop-filter: blur(5px); /* Ajusta el valor del blur como necesites */
+        background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente opcional */
+    }
+`}</style>
+
                 <div className="main-content landing-main px-0" onClick={handleClick1}>
 
                     {/* <!-- Start:: Landing Banner --> */}
@@ -593,8 +644,18 @@ const Landing = () => {
                                     <h1 className="fw-semibold mt-3 landing-banner-heading">Gestiona tus sílabos <br /> con <span className="text-primary">trazabilidad</span> y <span className="text-primary">seguridad</span> garantizada</h1>
                                     <span className="d-block fs-18">Plataforma con tecnología blockchain que asegura la integridad, autenticidad y disponibilidad de tus documentos académicos, optimizando la gestión en tu institución.</span>
                                     <div className="btn-list banner-buttons">
-                                        <Link scroll={false} href="/landing" className="btn btn-primary btn-lg rounded-pill btn-w-lg">Probar gratis</Link>
-                                        <Link scroll={false} className="btn btn-lg btn-light border rounded-pill btn-w-lg" href="#!">Ver Demo</Link>
+                                        <div className="btn-list banner-buttons">
+                                            <Link scroll={false} href="#feature" className="side-menu__item btn btn-primary btn-lg rounded-pill btn-w-lg">Comenzar</Link>
+                                            {/* 🔹 Updated Link for "Ver Demo" */}
+                                            <Link
+                                                scroll={false}
+                                                href="#!"
+                                                className="btn btn-lg btn-light border rounded-pill btn-w-lg"
+                                                onClick={handleShowDemoModal} // Correcto
+                                            >
+                                                Ver Demo
+                                            </Link>
+                                        </div>
                                     </div>
                                 </Col>
                                 <Col xl={6}>
@@ -734,8 +795,12 @@ const Landing = () => {
                                     <span className="d-block fs-16 op-8">Desbloquea todo el potencial de nuestra plataforma con blockchain  <br /> y lleva la trazabilidad de tus sílabos al siguiente nivel.</span>
                                 </div>
                                 <div className="btn-list">
-                                    <Link scroll={false} href="/dashboards/sales/" className="btn btn-danger btn-lg btn-w-md d-inline-flex align-items-center">Ver Demo<i className="ti ti-arrow-narrow-right ms-2"></i></Link>
-                                    <button className="btn btn-success btn-lg btn-w-md d-inline-flex align-items-center">Suscríbete ahora<i className="ti ti-user-plus ms-2"></i></button>
+                                    <Link href="/dashboards/sales/" className="btn btn-danger btn-lg btn-w-md d-inline-flex align-items-center">Ver Demo<i className="ti ti-arrow-narrow-right ms-2"></i></Link>
+                                    <Link
+                                        scroll={false} href="#contactus" className="side-menu__item btn btn-success btn-lg btn-w-md d-inline-flex align-items-center">
+                                        <span className="side-menu__label">Contáctanos</span>
+                                        <i className="ti ti-user-plus ms-2"></i>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -749,7 +814,7 @@ const Landing = () => {
                         <div className="container">
                             <Tab.Container defaultActiveKey={"monthly"}>
                                 <div className="heading-section">
-                                    <div className="heading-subtitle">Nuestro Planes</div>
+                                    <div className="heading-subtitle">Nuestros Planes</div>
                                     <div className="heading-title">Elige el plan que se ajuste a tus necesidades</div>
                                     <div className="heading-description mb-3">
                                         Selecciona la plan que mejor se adapte a tu institución y accede a todas las funciones de gestión académica con blockchain.
@@ -1118,7 +1183,7 @@ const Landing = () => {
                                     <span className="d-block fs-16 op-8">Cree, administre y optimice sílabos digitales sin esfuerzo con nuestra plataforma académica basada en blockchain.</span>
                                 </div>
                                 <SpkButton Buttonvariant='secondary' Customclass="btn btn-lg btn-w-md d-inline-flex align-items-center">
-                                    Agendemos <i className="ti ti-calendar ms-2"></i>
+                                    Agendemos una sesión <i className="ti ti-calendar ms-2"></i>
                                 </SpkButton>
                             </div>
                         </div>

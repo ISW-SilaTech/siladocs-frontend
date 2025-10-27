@@ -207,9 +207,9 @@ export const BasicPricingdata: PricingCardProps[] = [
 
 export const BasicPricing1data: PricingCardProps[] = [
   {
-    title: "Basic",
+    title: "Básico",
     price: "$150",
-    year: "Year",
+    year: "Anual",
     percent: "25%",
     features: [
       "Acceso a funciones principales",
@@ -225,7 +225,7 @@ export const BasicPricing1data: PricingCardProps[] = [
   {
     title: "Pro",
     price: "$450",
-    year: "Year",
+    year: "Anual",
     titleColor:"text-fixed-white",
     percent: "40%",
     features: [
@@ -241,9 +241,9 @@ export const BasicPricing1data: PricingCardProps[] = [
     badgeColor: "white",
 },
   {
-    title: "Enterprise",
+    title: "Empresa",
     price: "$990",
-    year: "Year",
+    year: "Anual",
     percent: "50%",
     features: [
       "Todas las funciones del plan Pro",
