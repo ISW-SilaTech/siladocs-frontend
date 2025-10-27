@@ -233,7 +233,7 @@ const Cover: React.FC<CoverProps> = () => {
                 <Col xxl={3} xl={3} lg={12} className="d-xl-block d-none px-0">
                     <div className="authentication-cover overflow-hidden">
                         <div className="authentication-cover-logo">
-                            <Link scroll={false} href="/dashboards/sales">
+                            <Link scroll={false} href="/landing">
                                 <Image
                                     fill
                                     src="../../../assets/images/brand-logos/toggle-logo.png"

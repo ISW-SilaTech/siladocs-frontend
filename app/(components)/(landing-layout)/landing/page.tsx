@@ -513,31 +513,6 @@ const Landing = () => {
                                             <li className="slide">
                                                 <Link scroll={false} href="#!" className="side-menu__item">Políticas de Privacidad</Link>
                                             </li>
-                                            <li className={`slide has-sub ${expande1 ? 'open' : ''}`}>
-                                                <Link scroll={false} href="#!" className="side-menu__item" onClick={handleSubMenuToggle1} >Nivel 2
-                                                    <i className="fe fe-chevron-right side-menu__angle"></i></Link>
-                                                <ul className={`slide-menu child2 ${expande1 ? 'active' : ''}`}
-                                                    style={{ display: expande1 ? 'block' : 'none' }}>
-                                                    <li className="slide">
-                                                        <Link scroll={false} href="#!" className="side-menu__item">Nivel 2-1</Link>
-                                                    </li>
-                                                    <li className={`slide has-sub ${expande2 ? 'open' : ''}`}>
-                                                        <Link scroll={false} href="#!" className="side-menu__item" onClick={handleSubMenuToggle2} >Nivel 2-2
-                                                            <i className="fe fe-chevron-right side-menu__angle"></i></Link>
-                                                        <ul className={`slide-menu child3 ${expande2 ? 'active' : ''}`}
-                                                            style={{ display: expande2 ? 'block' : 'none' }}>
-                                                            <li className="slide">
-                                                                <Link scroll={false} href="#!"
-                                                                    className="side-menu__item">Nivel 2-2-1</Link>
-                                                            </li>
-                                                            <li className="slide has-sub">
-                                                                <Link scroll={false} href="#"
-                                                                    className="side-menu__item">Nivel 2-2-2</Link>
-                                                            </li>
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
                                         </ul>
                                     </li>
 
@@ -568,7 +543,7 @@ const Landing = () => {
                                 </svg></div>
                                 <div className="d-lg-flex d-none align-items-center">
                                     <div className="btn-list d-xl-flex d-none">
-                                        <Link scroll={false} href="/authentication/sign-up/cover" className="btn btn-wave btn-primary border">
+                                        <Link scroll={false} href="/authentication/sign-in/cover/" className="btn btn-wave btn-primary border">
                                             Ingresar
                                         </Link>
                                     </div>
@@ -645,7 +620,7 @@ const Landing = () => {
                                     <span className="d-block fs-18">Plataforma con tecnología blockchain que asegura la integridad, autenticidad y disponibilidad de tus documentos académicos, optimizando la gestión en tu institución.</span>
                                     <div className="btn-list banner-buttons">
                                         <div className="btn-list banner-buttons">
-                                            <Link scroll={false} href="#feature" className="side-menu__item btn btn-primary btn-lg rounded-pill btn-w-lg">Comenzar</Link>
+                                            <Link scroll={false} href="#feature" className="side-menu__item btn btn-primary btn-lg rounded-pill btn-w-lg">Funcionalidades</Link>
                                             {/* 🔹 Updated Link for "Ver Demo" */}
                                             <Link
                                                 scroll={false}

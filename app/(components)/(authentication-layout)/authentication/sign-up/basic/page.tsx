@@ -26,16 +26,16 @@ const Basic: React.FC<BasicProps> = () => {
 
         // Email validation
         if (!values.email) {
-            newErrors.email = "Email is required.";
+            newErrors.email = "Se requiere correo electrónico.";
         } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-            newErrors.email = "Invalid email format.";
+            newErrors.email = "Formato de correo electrónico no válido.";
         }
 
         // Password validation
         if (!values.password) {
-            newErrors.password = "Password is required.";
+            newErrors.password = "Se requiere contraseña.";
         } else if (values.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters.";
+            newErrors.password = "La contraseña debe tener al menos 6 caracteres.";
         }
 
         setErrors(newErrors);
@@ -46,7 +46,7 @@ const Basic: React.FC<BasicProps> = () => {
         e.preventDefault();
         if (validate()) {
             router.push('/dashboards/sales/');
-            toast.success('Save Password successful', {
+            toast.success('Guardar contraseña exitosamente', {
                 position: 'top-right',
                 autoClose: 1500,
                 hideProgressBar: false,

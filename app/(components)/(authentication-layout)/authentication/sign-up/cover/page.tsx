@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { Fragment, useState } from "react";
-import { Card, Col, Form, Row } from "react-bootstrap";
+import { Card, Col, Form, Row, Button, InputGroup } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 
 //Efectos
@@ -17,12 +17,18 @@ interface CoverProps { }
 const Cover: React.FC<CoverProps> = () => {
 
     const [values, setValues] = useState<any>({
+        // token is separate from the administrator name
+        token: '',
         name: '',
         email: '',
         password: '',
         institutionId: '',
         showPassword: false
     });
+
+    // Token validation states
+    const [tokenValidated, setTokenValidated] = useState<boolean>(false);
+    const [isValidating, setIsValidating] = useState<boolean>(false);
 
     const [errors, setErrors] = useState<any>({});
 
@@ -104,7 +110,20 @@ const Cover: React.FC<CoverProps> = () => {
                     text-decoration: underline;
                     color: #4767ed;
                 }
-            `}</style>
+                /* Disabled controls visual treatment */
+                .form-control:disabled,
+                .form-select:disabled {
+                    background-color: #e9ecef !important;
+                    color: #6c757d !important;
+                    opacity: 1 !important;
+                }
+                /* Make SpkButton look disabled when Disabled prop is true by adding opacity */
+                .btn.opacity-50 {
+                    opacity: 0.5 !important;
+                    pointer-events: none;
+                    filter: grayscale(30%);
+                }
+                `}</style>
                 <Seo title="Signup-Cover" />
                 <Row className="authentication authentication-cover-main mx-0">
                     <Col xxl={9} xl={9}>
@@ -124,6 +143,42 @@ const Cover: React.FC<CoverProps> = () => {
                                         <Form onSubmit={handleSubmit}>
                                             <Row className="gy-3">
                                                 <Col xl={12}>
+                                                    <Form.Label htmlFor="user-token" className="text-default">Código de acceso</Form.Label>
+                                                    <InputGroup>
+                                                        <Form.Control
+                                                            type="text"
+                                                            id="user-token"
+                                                            placeholder="Ingresa el código de acceso"
+                                                            value={values.token}
+                                                            onChange={(e) => setValues({ ...values, token: e.target.value })}
+                                                            disabled={tokenValidated}
+                                                        />
+                                                        <Button
+                                                            variant={tokenValidated ? 'success' : 'primary'}
+                                                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                                                e.preventDefault();
+                                                                // If already validated, do nothing
+                                                                if (tokenValidated) return;
+                                                                // don't validate empty token
+                                                                if (!values.token) {
+                                                                    toast.warn('Ingresa un token antes de validar');
+                                                                    return;
+                                                                }
+                                                                setIsValidating(true);
+                                                                // simulate a 3 second async validation
+                                                                setTimeout(() => {
+                                                                    setIsValidating(false);
+                                                                    setTokenValidated(true);
+                                                                    toast.success('Token válido');
+                                                                }, 3000);
+                                                            }}
+                                                            disabled={isValidating || tokenValidated}
+                                                        >
+                                                            {isValidating ? 'Validando...' : tokenValidated ? 'Válido' : 'Valida'}
+                                                        </Button>
+                                                    </InputGroup>
+                                                </Col>
+                                                <Col xl={12}>
                                                     <Form.Label htmlFor="signup-institution" className="text-default">
                                                         Selecciona tu institución
                                                     </Form.Label>
@@ -132,12 +187,14 @@ const Cover: React.FC<CoverProps> = () => {
                                                         value={values.institutionId}
                                                         onChange={(e) => setValues({ ...values, institutionId: e.target.value })}
                                                         isInvalid={!!errors.institutionId}
+                                                        disabled={!tokenValidated}
                                                     >
                                                         <option value="">-- Selecciona una institución --</option>
                                                         <option value="1">Universidad Peruana de Ciencias Aplicadas</option>
-                                                        <option value="2">Pontifica Universidad Católica</option>
-                                                        <option value="3">Universidad Continental</option>
-                                                        <option value="4">Universidad de Lima</option>
+                                                        <option value="2">Universidad de Lima</option>
+                                                        <option value="3">Universidad Científica del Sur</option>
+                                                        <option value="4">Universidad del Pacífico</option>
+                                                        <option value="5">Universidad San Ignacio de Loyola</option>
                                                     </Form.Select>
                                                     <Form.Control.Feedback type="invalid">
                                                         {errors.institutionId}
@@ -153,6 +210,7 @@ const Cover: React.FC<CoverProps> = () => {
                                                         value={values.email}
                                                         onChange={(e) => setValues({ ...values, email: e.target.value })}
                                                         isInvalid={!!errors.email}
+                                                        disabled={!tokenValidated}
                                                     />
                                                     <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
                                                 </Col>
@@ -165,20 +223,22 @@ const Cover: React.FC<CoverProps> = () => {
                                                         placeholder="Ingresa el nombre completo"
                                                         value={values.name}
                                                         onChange={(e) => setValues({ ...values, name: e.target.value })}
+                                                        disabled={!tokenValidated}
                                                     />
                                                 </Col>
                                                 <Col xl={12} className="mb-2">
                                                     <Form.Label htmlFor="signin-password" className="text-default d-block">Contraseña</Form.Label>
                                                     <div className="position-relative">
-                                                        <Form.Control
-                                                            type={values.showPassword ? "text" : "password"}
-                                                            className="form-control "
-                                                            id="signup-password"
-                                                            placeholder="Password"
-                                                            value={values.password}
-                                                            onChange={(e) => setValues({ ...values, password: e.target.value })}
-                                                            isInvalid={!!errors.password}
-                                                        />
+                                                            <Form.Control
+                                                                type={values.showPassword ? "text" : "password"}
+                                                                className="form-control "
+                                                                id="signup-password"
+                                                                placeholder="Password"
+                                                                value={values.password}
+                                                                onChange={(e) => setValues({ ...values, password: e.target.value })}
+                                                                isInvalid={!!errors.password}
+                                                                disabled={!tokenValidated}
+                                                            />
                                                         <Link scroll={false} href="#!" className="show-password-button text-muted"
                                                             onClick={() => setValues((prev: any) => ({ ...prev, showPassword: !prev.showPassword }))}>
                                                             {values.showPassword ? (
@@ -209,20 +269,26 @@ const Cover: React.FC<CoverProps> = () => {
                                                 </div>
                                             </Row>
                                             <div className="d-grid mt-3">
-                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary">Crear cuenta</SpkButton>
+                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={!tokenValidated}>Crear cuenta</SpkButton>
                                             </div>
                                         </Form>
                                         <div className="text-center my-3 authentication-barrier">
                                             <span className="op-4 fs-13">O</span>
                                         </div>
-                                        <div className="d-grid mb-3">
-                                            <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3">
+                                            <div className="d-grid mb-3">
+                                            <SpkButton
+                                                Customclass={`btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3 ${!tokenValidated ? 'opacity-50' : ''}`}
+                                                Disabled={!tokenValidated}
+                                            >
                                                 <span className="avatar avatar-xs">
                                                     <Image fill src="../../../assets/images/media/apps/google.png" alt="" />
                                                 </span>
                                                 <span className="lh-1 ms-2 fs-13 text-default fw-medium">Regístrate con Google</span>
                                             </SpkButton>
-                                            <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill">
+                                            <SpkButton
+                                                Customclass={`btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill ${!tokenValidated ? 'opacity-50' : ''}`}
+                                                Disabled={!tokenValidated}
+                                            >
                                                 <span className="avatar avatar-xs">
                                                     <Image fill src="../../../assets/images/media/apps/outlook.png" alt="" />
                                                 </span>
@@ -240,7 +306,7 @@ const Cover: React.FC<CoverProps> = () => {
                     <Col xxl={3} xl={3} lg={12} className="d-xl-block d-none px-0">
                         <div className="authentication-cover overflow-hidden">
                             <div className="authentication-cover-logo">
-                                <Link scroll={false} href="/dashboards/sales">
+                                <Link scroll={false} href="/landing">
                                     <Image fill src="../../../assets/images/brand-logos/toggle-logo.png" alt="logo" className="desktop-dark" />
                                 </Link>
                             </div>
