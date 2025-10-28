@@ -50,7 +50,7 @@ const cursosList: React.FC<cursosListProps> = () => {
     return (
         <Fragment>
             {/* <!-- Page Header --> */}
-            <Seo title="cursos-curso List" />
+            <Seo title="Cursos" />
             <Pageheader title="Dashboards" subtitle="Cursos" currentpage="Lista de Cursos" activepage="Gestión de Cursos" />
             {/* <!-- Page Header Close --> */}
 

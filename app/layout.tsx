@@ -1,24 +1,27 @@
-"use client"; // mantenemos el layout como cliente
-import React, { useState } from "react";
 import "./globals.scss";
-import { Provider } from "react-redux";
-import { store } from "@/shared/redux/store";
-import { Initialload } from "@/shared/contextapi";
+import { Space_Grotesk } from "next/font/google";
+import Providers from "./providers";
 
-const RootLayout = ({ children }: { children: React.ReactNode }) => {
-  const [pageloading, setpageloading] = useState(false);
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
 
+export const metadata = {
+  title: "Tu App",
+  description: "Descripción breve",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es">
-      <body className="app sidebar-mini ltr light-mode" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-        <Provider store={store}>
-          <Initialload.Provider value={{ pageloading, setpageloading }}>
-            {children}
-          </Initialload.Provider>
-        </Provider>
+      <body className={`app sidebar-mini ltr light-mode ${spaceGrotesk.className}`}>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
-};
-
-export default RootLayout;
+}

@@ -67,7 +67,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
 
                 {/* <!-- Page Header --> */}
 
-                <Seo title="Projects-Projects List" />
+                <Seo title="Carreras" />
 
                 <Pageheader title="Gestión Académica" subtitle="Carreras" currentpage="Lista de Carreras" activepage="Gestión de Carreras" />
 
@@ -85,16 +85,6 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
                                             <i className="ri-add-line me-1 fw-medium align-middle"></i>Nueva Carrera
                                         </button>
                                         <SpkSelect name="colors" option={Projectselectdata} mainClass="projects-sort basic-multi-select" menuplacement='auto' classNameprefix="Select2" placeholder="Ordenar por" />
-                                    </div>
-                                    <div className="avatar-list-stacked">
-                                        {AvatarImages.map((src, index) => (
-                                            <span className="avatar avatar-sm avatar-rounded" key={index}>
-                                                <Image width={28} height={28} src={src} alt={`avatar-${index + 1}`} />
-                                            </span>
-                                        ))}
-                                        <Link scroll={false} className="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="#!">
-                                            +8
-                                        </Link>
                                     </div>
                                     <div className="d-flex" role="search">
                                         <Form.Control className="me-2" type="search" placeholder="Buscar Carrera" aria-label="Search" />
@@ -115,7 +105,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
                         <Card className="custom-card overflow-hidden">
                             <Card.Body className="p-0">
                                 <div className="table-responsive w-100">
-                                    <SpkTables tableClass="text-nowrap" header={[{ title: 'Carrera' }, { title: "Facultad" }, { title: 'Ciclos' }, { title: 'Actualización' }, { title: 'Estado' }, { title: 'Directivos' }, { title: 'Acciones' }]} >
+                                    <SpkTables tableClass="text-nowrap" header={[{ title: 'Carrera' }, { title: "Facultad" }, { title: 'Ciclos' }, { title: 'Actualización' }, { title: 'Estado' }, { title: 'Acciones' }]} >
                                         {projectData.map((project, index) => (
                                             <tr key={index}>
                                                 <td>{project.carrera}</td>
@@ -130,20 +120,6 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
                                                     <SpkBadge variant="" Customclass={`${statusBadgeClass[project.estado]}`}>
                                                         {project.estado}
                                                     </SpkBadge>
-                                                </td>
-                                                <td>
-                                                    <div className="avatar-list-stacked">
-                                                        {project.team.map((avatar, idx) => (
-                                                            <span key={idx} className="avatar avatar-sm avatar-rounded">
-                                                                <Image width={28} height={28} src={avatar} alt="img" />
-                                                            </span>
-                                                        ))}
-                                                        {project.extraTeam > 0 && (
-                                                            <Link className="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="#!">
-                                                                +{project.extraTeam}
-                                                            </Link>
-                                                        )}
-                                                    </div>
                                                 </td>
                                                 <td>
                                                     <SpkDropdown toggleas="a" Icon={true} Navigate="#!" Customtoggleclass="btn btn-icon btn-sm btn-light no-caret" IconClass="fe fe-more-vertical">

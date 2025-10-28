@@ -131,7 +131,7 @@ const Cover: React.FC<CoverProps> = () => {
                             <Col xxl={4} xl={5} lg={6} md={6} sm={8} className="col-12">
                                 <Card className="custom-card border-0  shadow-none my-4">
                                     {/* Link simple a /dashboard/school */}
-                                    <Link href="/dashboards/school" className="btn btn-primary">
+                                    <Link href="/dashboards/general" className="btn btn-primary">
                                         Ir al sistema
                                     </Link>
                                     <Card.Body className="p-5">

@@ -24,13 +24,13 @@ export const MENUITEMS: any = [
   {
     title: "Gestión Académica", icon: Svgicons.Schoolicon, type: "sub", active: false, dirchange: false, children: [
       {
-        title: "Gestión", type: "sub", badgetxt: badgePrimary, icon: Svgicons.Projectsicon, active: false, dirchange: false, children: [
+        title: "Gestión", type: "sub", badgetxt: badgePrimary, icon: Svgicons.Elementsicon, active: false, dirchange: false, children: [
           { path: "/gestion/carreras", type: "link", active: false, selected: false, dirchange: false, title: "Carreras" },
           { path: "/gestion/mallas", type: "link", active: false, selected: false, dirchange: false, title: "Mallas" },
           { path: "/gestion/cursos", type: "link", active: false, selected: false, dirchange: false, title: "Cursos" },
         ]
       },
-            { path: "/core/carga-masiva", type: "link", icon: Svgicons.Cryptoicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
+            { path: "/core/carga-masiva", type: "link", icon: Svgicons.Formsicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
 
     ],
   },

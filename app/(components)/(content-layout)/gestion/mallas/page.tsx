@@ -69,7 +69,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
 
                 {/* <!-- Page Header --> */}
 
-                <Seo title="Projects-Projects List" />
+                <Seo title="Mallas" />
 
                 <Pageheader title="Gestión Académica" subtitle="Mallas" currentpage="Lista de Mallas" activepage="Gestión de Mallas" />
 
