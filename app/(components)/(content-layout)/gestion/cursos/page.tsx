@@ -81,12 +81,9 @@ const cursosList: React.FC<cursosListProps> = () => {
                         </Card.Header>
                         <Card.Body className="p-0">
                             <div className="table-responsive">
-                                <SpkTables tableClass="table-hover text-nowrap" showCheckbox={true} Customcheckclass="ps-4" header={[{ title: 'Curso' }, { title: 'Carrera' }, { title: 'Facultad' }, { title: 'Nº Sílabos' }, { title: 'Año' }, { title: 'Estado' }, { title: 'Malla' }, { title: 'Publicación' }, { title: 'Acción' }]}>
+                                <SpkTables tableClass="table-hover text-nowrap" Customcheckclass="ps-4" header={[{ title: 'Curso' }, { title: 'Carrera' }, { title: 'Facultad' }, { title: 'Nº Sílabos' }, { title: 'Año' }, { title: 'Estado' }, { title: 'Malla' }, { title: 'Publicación' }, { title: 'Acción' }]}>
                                     {CursosListData.map((curso, index) => (
                                         <tr key={index}>
-                                            <td className="ps-4">
-                                                <input className="form-check-input" type="checkbox" id={`checkboxNoLabel${curso.id}`} defaultChecked={curso.id == 2 || curso.id == 3 || curso.id == 6 || curso.id == 7} />
-                                            </td>
                                             <td>
                                                 <div className="d-flex align-items-center">
                                                     <div className="lh-1">
