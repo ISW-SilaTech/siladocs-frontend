@@ -853,9 +853,7 @@ const Header = () => {
                             <Dropdown.Menu className="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end" aria-labelledby="mainHeaderProfile">
                                 <div className="p-3 bg-primary text-fixed-white">
                                     <div className="d-flex align-items-center justify-content-between">
-                                        <p className="mb-0 fs-16">Perfil</p>
-                                        <Link scroll={false} href="#!" className="text-fixed-white"><i className="ti ti-settings-cog"></i></Link>
-                                    </div>
+                                        <p className="mb-0 fs-16">Perfil</p>                                    </div>
                                 </div>
                                 <div className="dropdown-divider"></div>
                                 <div className="p-3">
@@ -876,7 +874,7 @@ const Header = () => {
                                     <li>
                                         <ul className="list-unstyled mb-0 sub-list">
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile"><i className="ti ti-user-circle me-2 fs-18"></i>Ver Perfil</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings/"><i className="ti ti-user-circle me-2 fs-18"></i>Ver Perfil</Link>
                                             </li>
                                             <li>
                                                 <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings"><i className="ti ti-settings-cog me-2 fs-18"></i>Configuración</Link>
