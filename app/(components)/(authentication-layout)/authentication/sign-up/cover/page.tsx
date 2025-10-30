@@ -98,7 +98,7 @@ const Cover: React.FC<CoverProps> = () => {
             <motion.div
                 initial={{ filter: "blur(5px)", opacity: 0 }}
                 animate={{ filter: "blur(0px)", opacity: 1 }}
-                transition={{ duration: 0.5, ease: "easeIn" }}
+                transition={{ duration: 0.4, ease: "easeIn" }}
             >
                 <style>{`
                 .terms-link {
@@ -174,7 +174,7 @@ const Cover: React.FC<CoverProps> = () => {
                                                             }}
                                                             disabled={isValidating || tokenValidated}
                                                         >
-                                                            {isValidating ? 'Validando...' : tokenValidated ? 'Válido' : 'Valida'}
+                                                            {isValidating ? 'Validando...' : tokenValidated ? 'Válido' : 'Validar'}
                                                         </Button>
                                                     </InputGroup>
                                                 </Col>
@@ -296,7 +296,7 @@ const Cover: React.FC<CoverProps> = () => {
                                             </SpkButton>
                                         </div>
                                         <div className="text-center mt-3 fw-medium">
-                                            Ya tienes una cuenta? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary">Ingresa</Link>
+                                            ¿Ya tienes una cuenta? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary animated-underline">  Ingresar</Link>
                                         </div>
                                     </Card.Body>
                                 </Card>

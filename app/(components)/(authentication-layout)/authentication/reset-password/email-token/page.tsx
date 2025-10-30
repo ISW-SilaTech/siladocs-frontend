@@ -11,6 +11,9 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from "next/navigation";
 import axios from 'axios'; // 🔹 Importa axios
 
+//Efectos
+import { motion } from "framer-motion";
+
 interface CoverProps { }
 
 const Cover: React.FC<CoverProps> = () => {
@@ -57,73 +60,80 @@ const Cover: React.FC<CoverProps> = () => {
 
     return (
         <Fragment>
+            <motion.div
+                initial={{ filter: "blur(5px)", opacity: 0 }}
+                animate={{ filter: "blur(0px)", opacity: 1 }}
+                transition={{ duration: 0.4, ease: "easeIn" }}
+            >
+                <Seo title="Olvidé Contraseña - Cover" /> {/* 🔹 Título actualizado */}
 
-            <Seo title="Olvidé Contraseña - Cover" /> {/* 🔹 Título actualizado */}
-
-            <Row className="authentication authentication-cover-main mx-0 min-vh-100 d-flex align-items-center justify-content-center">
-                <Row className="justify-content-center align-items-center h-100">
-                    <Col xxl={4} xl={5} lg={6} md={6} sm={8} className="col-12">
-                        <Card className="custom-card border-0 shadow-none my-4">
-                            <Card.Body className="p-5">
-                                <div>
-                                    <h4 className="mb-1 fw-semibold">¿Olvidaste tu contraseña?</h4>
-                                    <p className="mb-4 text-muted fw-normal">
-                                        Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
-                                    </p>
-                                </div>
-
-                                {/* 🔹 Alerta para mostrar mensajes de éxito o error */}
-                                {apiMessage && (
-                                    <Alert variant={apiError ? 'danger' : 'success'}>
-                                        {apiMessage}
-                                    </Alert>
-                                )}
-
-                                <Form onSubmit={handleSubmit(onSubmit)}>
-                                    <Row className="row gy-3">
-                                        <Col xl={12}>
-                                            <label htmlFor="forgot-email" className="form-label text-default">Email</label>
-                                            <div className="position-relative">
-                                                <Form.Control
-                                                    type="email"
-                                                    id="forgot-email"
-                                                    placeholder="Ingresa tu email"
-                                                    className="form-control form-control-lg"
-                                                    {...register('email', { // 🔹 Registra 'email'
-                                                        required: 'Se requiere un email',
-                                                        pattern: {
-                                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                            message: "Dirección de email inválida"
-                                                        }
-                                                    })}
-                                                    disabled={isLoading}
-                                                />
-                                            </div>
-                                            {errors.email && <p className="text-danger text-sm">{errors.email.message}</p>}
-                                        </Col>
-                                    </Row>
-                                    <div className="d-grid mt-3">
-                                        <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
-                                            {isLoading ? (
-                                                <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                                            ) : (
-                                                'Enviar enlace'
-                                            )}
-                                        </SpkButton>
+                <Row className="authentication authentication-cover-main mx-0 min-vh-100 d-flex align-items-center justify-content-center">
+                    <Row className="justify-content-center align-items-center h-100">
+                        <Col xxl={4} xl={5} lg={6} md={6} sm={8} className="col-12">
+                            <Card className="custom-card border-0 shadow-none my-4">
+                                <Card.Body className="p-5">
+                                    <div>
+                                        <h4 className="mb-1 fw-semibold">¿Olvidaste tu contraseña?</h4>
+                                        <p className="mb-4 text-muted">
+                                            Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
+                                        </p>
                                     </div>
-                                </Form>
 
-                                {/* ... (Sección "O" eliminada, no aplica aquí) ... */}
+                                    {/* 🔹 Alerta para mostrar mensajes de éxito o error */}
+                                    {apiMessage && (
+                                        <Alert variant={apiError ? 'danger' : 'success'}>
+                                            {apiMessage}
+                                        </Alert>
+                                    )}
 
-                                <div className="text-center mt-3 fw-medium">
-                                    ¿Recordaste tu contraseña? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary">Iniciar Sesión</Link>
-                                </div>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+                                    <Form onSubmit={handleSubmit(onSubmit)}>
+                                        <Row className="row gy-3">
+                                            <Col xl={12}>
+                                                <label htmlFor="forgot-email" className="form-label text-default">Email</label>
+                                                <div className="position-relative">
+                                                    <Form.Control
+                                                        type="email"
+                                                        id="forgot-email"
+                                                        placeholder="Ingresa tu email"
+                                                        className="form-control form-control"
+                                                        {...register('email', { // 🔹 Registra 'email'
+                                                            required: 'Se requiere un email',
+                                                            pattern: {
+                                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                                                message: "Dirección de email inválida"
+                                                            }
+                                                        })}
+                                                        disabled={isLoading}
+                                                    />
+                                                </div>
+                                                {errors.email && <p className="text-danger text-sm">{errors.email.message}</p>}
+                                            </Col>
+                                        </Row>
+                                        <div className="d-grid mt-3">
+                                            <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
+                                                {isLoading ? (
+                                                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
+                                                ) : (
+                                                    'Enviar enlace'
+                                                )}
+                                            </SpkButton>
+                                        </div>
+                                    </Form>
+
+                                    {/* ... (Sección "O" eliminada, no aplica aquí) ... */}
+
+                                    <div className="text-center mt-3 fw-medium">
+                                        ¿Recordaste tu contraseña? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary animated-underline">Iniciar Sesión</Link>
+                                    </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
                 </Row>
-            </Row>
-            <ToastContainer />
+                <ToastContainer />
+            </motion.div>
+
+
         </Fragment>
     )
 };
