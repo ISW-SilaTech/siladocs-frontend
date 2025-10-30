@@ -60,7 +60,7 @@ const Cover: React.FC<CoverProps> = () => {
                         autoClose: 1500,
                     });
                     localStorage.setItem("token", data.token); // 🔑 Guardar JWT
-                    router.push("/dashboards/school/");
+                    router.push("/dashboards/general/");
                 } else {
                     toast.error("Credenciales inválidas");
                 }
@@ -73,31 +73,6 @@ const Cover: React.FC<CoverProps> = () => {
     return (
         <Fragment>
             <Seo title="Signin-Cover" />
-            <style>{`
-                /* Animated underline from right to left */
-                .animated-underline {
-                    position: relative;
-                    display: inline-block;
-                    cursor: pointer;
-                    -webkit-tap-highlight-color: transparent;
-                }
-                .animated-underline::after {
-                    content: '';
-                    position: absolute;
-                    height: 2px;
-                    background: currentColor;
-                    right: 0;
-                    left: 0;
-                    bottom: -2px;
-                    transform-origin: right center;
-                    transform: scaleX(0);
-                    transition: transform 0.32s cubic-bezier(.2,.8,.2,1);
-                }
-                .animated-underline:hover::after,
-                .animated-underline:focus::after {
-                    transform: scaleX(1);
-                }
-            `}</style>
 
             <Row className="authentication authentication-cover-main mx-0">
                 <Col xxl={9} xl={9}>
@@ -190,7 +165,7 @@ const Cover: React.FC<CoverProps> = () => {
                                                         </label>
                                                         <Link
                                                             scroll={false}
-                                                            href="/authentication/reset-password/basic"
+                                                            href="/authentication/reset-password/email-token"
                                                             className="float-end text-primary fw-medium fs-12 animated-underline"
                                                         >
                                                             ¿Olvidaste tu contraseña?
