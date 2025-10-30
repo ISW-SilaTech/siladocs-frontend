@@ -8,8 +8,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata = {
-  title: "Tu App",
-  description: "Descripción breve",
+  title: "Siladocs",
+  description: "Saas - Blockchain",
 };
 
 export default function RootLayout({

@@ -2,6 +2,30 @@
 @forward '../public/assets/css/icons.css';
 @forward '../node_modules/sweetalert2/src/sweetalert2.scss';
 
+/* Animated underline helper (global) */
+.animated-underline {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  height: 2px;
+  background: currentColor;
+  right: 0;
+  left: 0;
+  bottom: -2px;
+  transform-origin: right center;
+  transform: scaleX(0);
+  transition: transform 0.32s cubic-bezier(.2,.8,.2,1);
+}
+.animated-underline:hover::after,
+.animated-underline:focus::after {
+  transform: scaleX(1);
+}
+
 @import 'react-datepicker/dist/react-datepicker.css';
 @import 'simplebar-react/dist/simplebar.min.css';
 @import "gridjs/dist/theme/mermaid.css";

@@ -73,6 +73,31 @@ const Cover: React.FC<CoverProps> = () => {
     return (
         <Fragment>
             <Seo title="Signin-Cover" />
+            <style>{`
+                /* Animated underline from right to left */
+                .animated-underline {
+                    position: relative;
+                    display: inline-block;
+                    cursor: pointer;
+                    -webkit-tap-highlight-color: transparent;
+                }
+                .animated-underline::after {
+                    content: '';
+                    position: absolute;
+                    height: 2px;
+                    background: currentColor;
+                    right: 0;
+                    left: 0;
+                    bottom: -2px;
+                    transform-origin: right center;
+                    transform: scaleX(0);
+                    transition: transform 0.32s cubic-bezier(.2,.8,.2,1);
+                }
+                .animated-underline:hover::after,
+                .animated-underline:focus::after {
+                    transform: scaleX(1);
+                }
+            `}</style>
 
             <Row className="authentication authentication-cover-main mx-0">
                 <Col xxl={9} xl={9}>
@@ -81,7 +106,7 @@ const Cover: React.FC<CoverProps> = () => {
                             <Card className="custom-card border-0 shadow-none my-4">
                                 <Card.Body className="p-5">
                                     <div>
-                                        <h4 className="mb-1 fw-semibold">¡Hola, bienvenido de nuevo!</h4>
+                                        <h4 className="mb-1 fw-semibold">¡Hola, bienvenido a siladocs!</h4>
                                         <p className="mb-4 text-muted fw-normal">
                                             Por favor, ingresa tus credenciales
                                         </p>
@@ -156,7 +181,6 @@ const Cover: React.FC<CoverProps> = () => {
                                                             className="form-check-input"
                                                             type="checkbox"
                                                             id="rememberMe"
-                                                            defaultChecked
                                                         />
                                                         <label
                                                             className="form-check-label"
@@ -167,7 +191,7 @@ const Cover: React.FC<CoverProps> = () => {
                                                         <Link
                                                             scroll={false}
                                                             href="/authentication/reset-password/basic"
-                                                            className="float-end link-danger fw-medium fs-12"
+                                                            className="float-end text-primary fw-medium fs-12 animated-underline"
                                                         >
                                                             ¿Olvidaste tu contraseña?
                                                         </Link>
@@ -218,7 +242,7 @@ const Cover: React.FC<CoverProps> = () => {
                                         <Link
                                             scroll={false}
                                             href="/authentication/sign-up/cover/"
-                                            className="text-primary"
+                                            className="text-primary animated-underline"
                                         >
                                             Regístrate
                                         </Link>

@@ -35,7 +35,7 @@ const Basic: React.FC<BasicProps> = () => {
     const router = useRouter();
     const onSubmit = (data: any) => {
         router.push('/dashboards/sales');
-        toast.success('Created Password successful', {
+        toast.success('Contraseña creada exitosamente', {
             position: 'top-right',
             autoClose: 1500,
             hideProgressBar: false,
@@ -51,7 +51,7 @@ const Basic: React.FC<BasicProps> = () => {
 
         <Fragment>
 
-            <Seo title="Resetpassword-Basic" />
+            <Seo title="Restablecer contraseña - Básico" />
 
             <div className="authentication-basic-background">
                 <Image fill src="../../../assets/images/media/backgrounds/9.png" alt="" />
@@ -68,38 +68,38 @@ const Basic: React.FC<BasicProps> = () => {
                                     </Link>
                                 </div>
                                 <div>
-                                    <h4 className="mb-1 fw-semibold">Reset Password</h4>
-                                    <p className="mb-4 text-muted fw-normal">Set your new password here.</p>
+                                    <h4 className="mb-1 fw-semibold">Restablecer contraseña</h4>
+                                    <p className="mb-4 text-muted fw-normal">Establece aquí tu nueva contraseña.</p>
                                 </div>
                                 <Form onSubmit={handleSubmit(onSubmit)}>
                                     <Row className="row gy-3">
                                         <Col xl={12}>
-                                            <label htmlFor="reset-password" className="form-label text-default">Current Password</label>
+                                            <label htmlFor="reset-password" className="form-label text-default">Contraseña actual</label>
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type={passwordVisibility.current ? 'text' : 'password'}
                                                     id="currentPassword"
-                                                    placeholder="Current password"
+                                                    placeholder="Contraseña actual"
                                                     className="form-control form-control-lg"
-                                                    {...register('currentPassword', { required: 'Current password is required' })}
+                                                    {...register('currentPassword', { required: 'Se requiere contraseña actual' })}
                                                 />
                                                 <Link scroll={false} href="#!" onClick={() => togglePasswordVisibility('current')} className="show-password-button text-muted" id="button-addon2"><i className={`${passwordVisibility.current ? 'ri-eye-line' : 'ri-eye-off-line'} align-middle`} /></Link>
                                             </div>
                                             {errors.currentPassword && <p className="text-danger text-sm">{errors.currentPassword.message}</p>}
                                         </Col>
                                         <Col xl={12}>
-                                            <label htmlFor="reset-newpassword" className="form-label text-default">New Password</label>
+                                            <label htmlFor="reset-newpassword" className="form-label text-default">Nueva contraseña</label>
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type={passwordVisibility.new ? 'text' : 'password'}
                                                     id="newPassword"
-                                                    placeholder="New password"
+                                                    placeholder="Nueva contraseña"
                                                     className="form-control form-control-lg"
                                                     {...register('newPassword', {
-                                                        required: 'New password is required',
+                                                        required: 'Se requiere nueva contraseña',
                                                         minLength: {
                                                             value: 6,
-                                                            message: 'Password must be at least 6 characters',
+                                                            message: 'La contraseña debe tener al menos 6 caracteres',
                                                         },
                                                     })}
                                                 />
@@ -108,17 +108,17 @@ const Basic: React.FC<BasicProps> = () => {
                                             {errors.newPassword && <p className="text-danger text-sm">{errors.newPassword.message}</p>}
                                         </Col>
                                         <Col xl={12}>
-                                            <label htmlFor="reset-confirmpassword" className="form-label text-default">Confirm Password</label>
+                                            <label htmlFor="reset-confirmpassword" className="form-label text-default">Confirmar Contraseña</label>
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type={passwordVisibility.confirm ? 'text' : 'password'}
                                                     id="confirmPassword"
-                                                    placeholder="Confirm password"
+                                                    placeholder="Confirmar Contraseña"
                                                     className="form-control form-control-lg"
                                                     {...register('confirmPassword', {
-                                                        required: 'Please confirm your password',
+                                                        required: 'Por favor confirma tu contraseña',
                                                         validate: (value: any) =>
-                                                            value === newPassword || 'Passwords do not match',
+                                                            value === newPassword || 'Las contraseñas no coinciden',
                                                     })}
                                                 />
                                                 <Link scroll={false} href="#!" onClick={() => togglePasswordVisibility('confirm')} className="show-password-button text-muted" id="button-addon22"><i className={`${passwordVisibility.confirm ? 'ri-eye-line' : 'ri-eye-off-line'} align-middle`} /></Link>
@@ -127,28 +127,28 @@ const Basic: React.FC<BasicProps> = () => {
                                         </Col>
                                     </Row>
                                     <div className="d-grid mt-3">
-                                        <SpkButton Buttontype="submit" Customclass="btn btn-primary">Reset Password</SpkButton>
+                                        <SpkButton Buttontype="submit" Customclass="btn btn-primary">Restablecer contraseña</SpkButton>
                                     </div>
                                 </Form>
                                 <div className="text-center my-3 authentication-barrier">
-                                    <span className="op-4 fs-13">OR</span>
+                                    <span className="op-4 fs-13">O</span>
                                 </div>
                                 <div className="d-grid mb-3">
                                     <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3">
                                         <span className="avatar avatar-xs">
                                             <Image fill src="../../../assets/images/media/apps/google.png" alt="" />
                                         </span>
-                                        <span className="lh-1 ms-2 fs-13 text-default fw-medium">Signup with Google</span>
+                                        <span className="lh-1 ms-2 fs-13 text-default fw-medium">Regístrate con Google</span>
                                     </SpkButton>
                                     <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill">
                                         <span className="avatar avatar-xs">
-                                            <Image fill src="../../../assets/images/media/apps/facebook.png" alt="" />
+                                            <Image fill src="../../../assets/images/media/apps/outlook.png" alt="" />
                                         </span>
-                                        <span className="lh-1 ms-2 fs-13 text-default fw-medium">Signup with Facebook</span>
+                                        <span className="lh-1 ms-2 fs-13 text-default fw-medium">Regístrate con Outlook</span>
                                     </SpkButton>
                                 </div>
                                 <div className="text-center mt-3 fw-medium">
-                                    Dont want to reset? <Link scroll={false} href="/authentication/sign-in/basic" className="text-primary">Sign In</Link>
+                                    ¿No quieres reiniciar? <Link scroll={false} href="/authentication/sign-in/basic" className="text-primary">Iniciar sesión</Link>
                                 </div>
                             </Card.Body>
                         </Card>
