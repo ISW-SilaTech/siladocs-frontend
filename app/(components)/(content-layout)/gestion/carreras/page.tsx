@@ -16,6 +16,10 @@ import React, { Fragment, useState, useEffect } from "react"; // 🔹 Import use
 import { Modal } from "react-bootstrap";
 import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap"; // 🔹 Import Spinner, Alert
 import axios from 'axios'; // 🔹 Import axios
+// 🔹 Importaciones añadidas
+import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // 🔹 Importa el CSS de toastify
 
 // 🔹 Define an interface for the Career data structure (matches CareerResponse DTO)
 interface Career {
