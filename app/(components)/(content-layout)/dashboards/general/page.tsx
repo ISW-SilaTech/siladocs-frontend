@@ -10,12 +10,55 @@ import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { Card, Col, Dropdown, Form, ListGroup, Pagination, Row } from "react-bootstrap";
 
 interface SchoolProps { }
 
 const School: React.FC<SchoolProps> = () => {
+
+    // 1. Estado para almacenar los datos del usuario logueado
+    const [userData, setUserData] = useState({
+        fullName: 'Cargando...',
+        institutionName: 'Cargando datos...',
+    });
+
+    // 2. Efecto para obtener la data desde Spring Boot al cargar la página
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                // Recuperamos el token que guardamos en localStorage al hacer el login/registro
+                const token = localStorage.getItem('siladocs_token');
+                
+                if (!token) {
+                    console.warn("No hay token de sesión. El usuario debería ser redirigido al login.");
+                    return;
+                }
+
+                const response = await fetch("http://localhost:8080/auth/me", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` // ⬅️ Pasaporte de seguridad
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserData({
+                        fullName: data.fullName,
+                        institutionName: data.institutionName
+                    });
+                } else {
+                    console.error("El token expiró o es inválido");
+                }
+            } catch (error) {
+                console.error("Error de red al obtener datos del usuario", error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     return (
         <Fragment>
@@ -23,7 +66,6 @@ const School: React.FC<SchoolProps> = () => {
             {/* <!-- Page Header --> */}
 
             <Seo title="Dashboards-School" />
-
             <Pageheader title="Dashboard" currentpage="Dashboard" activepage="Dashboard" />
 
             {/* Header de institución y accesos rápidos */}
@@ -31,16 +73,17 @@ const School: React.FC<SchoolProps> = () => {
                 <Card.Body className="d-flex flex-wrap align-items-center justify-content-between gap-3">
                     {/* Información de la institución */}
                     <div className="d-flex align-items-center gap-4">
-                        <Image
+                        {/* <Image
                             src="/assets/images/brand-logos/universities/upc-logo.png" // coloca aquí el logo real
                             alt="Logo Institución"
                             width={45}
                             height={45}
                             className="rounded"
-                        />
+                        /> */}
                         <div>
-                            <h5 className="mb-1 fw-semibold">Universidad Peruana de Ciencias Aplicadas</h5>
-                            <span className="text-muted">Bienvenido, Juan Pérez</span>
+                            {/* ⬇️ DATOS DINÁMICOS AQUÍ ⬇️ */}
+                            <h5 className="mb-1 fw-semibold">{userData.institutionName}</h5>
+                            <span className="text-muted">Bienvenido, {userData.fullName}</span>
                         </div>
                     </div>
 

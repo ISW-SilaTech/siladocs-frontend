@@ -33,6 +33,16 @@ interface Career {
 
 const ProjectsList: React.FC = () => { // Removed unused interface prop
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('siladocs_token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+    };
+
     // 🔹 State for careers data, loading, and errors
     const [careers, setCareers] = useState<Career[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -56,7 +66,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.get<Career[]>('http://localhost:8080/api/careers');
+            // ⬇️ 2. AGREGAMOS LOS HEADERS AL GET
+            const response = await axios.get<Career[]>('http://localhost:8080/api/careers', getAuthHeaders());
             setCareers(response.data);
         } catch (err) {
             console.error("Error fetching careers:", err);
@@ -116,10 +127,9 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
     // 🔹 Handle saving (Create or Update)
     const handleSave = async () => {
-        setFormError(null); // Clear previous errors
+        setFormError(null); 
         setIsSaving(true);
 
-        // Basic Validation
         if (!careerData.name || !careerData.faculty || !careerData.cycles) {
              setFormError("Nombre, Facultad y Ciclos son obligatorios.");
              setIsSaving(false);
@@ -135,26 +145,25 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         const payload = {
             name: careerData.name,
             faculty: careerData.faculty,
-            cycles: cyclesNum, // Send as number
+            cycles: cyclesNum, 
             status: careerData.status,
         };
 
         try {
             if (isEditMode && currentCareerId) {
-                // --- UPDATE ---
-                await axios.put(`http://localhost:8080/api/careers/${currentCareerId}`, payload);
+                // --- UPDATE --- (⬇️ 3. AGREGAMOS LOS HEADERS AL PUT)
+                await axios.put(`http://localhost:8080/api/careers/${currentCareerId}`, payload, getAuthHeaders());
             } else {
-                // --- CREATE ---
-                await axios.post('http://localhost:8080/api/careers', payload);
+                // --- CREATE --- (⬇️ 4. AGREGAMOS LOS HEADERS AL POST)
+                await axios.post('http://localhost:8080/api/careers', payload, getAuthHeaders());
             }
-            await fetchCareers(); // Refresh the list after saving
-            handleCloseModal(); // Close modal on success
+            await fetchCareers(); 
+            handleCloseModal(); 
 
-        } catch (err: any) { // Type assertion for error
+        } catch (err: any) { 
             console.error("Error saving career:", err);
-             // More specific error handling based on response
              if (axios.isAxiosError(err) && err.response) {
-                 if (err.response.status === 409 || err.response.status === 400) { // Conflict (duplicate name) or Bad Request
+                 if (err.response.status === 409 || err.response.status === 400) { 
                      setFormError(err.response.data || "Error de validación al guardar.");
                  } else {
                      setFormError("Ocurrió un error en el servidor.");
@@ -168,18 +177,18 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     };
 
     // --- Delete Handling ---
-     const handleDelete = async (id: number) => {
+    const handleDelete = async (id: number) => {
          if (window.confirm("¿Está seguro de que desea eliminar esta carrera?")) {
              try {
-                 await axios.delete(`http://localhost:8080/api/careers/${id}`);
-                 await fetchCareers(); // Refresh list
+                 // ⬇️ 5. AGREGAMOS LOS HEADERS AL DELETE
+                 await axios.delete(`http://localhost:8080/api/careers/${id}`, getAuthHeaders());
+                 await fetchCareers(); 
              } catch (err) {
                  console.error("Error deleting career:", err);
-                 // You might want to show an error message to the user here
                   setError("Error al eliminar la carrera.");
              }
          }
-     };
+    };
 
     // --- Badge Mapping ---
     const statusBadgeClass: { [key: string]: string } = { // More type-safe
