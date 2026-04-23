@@ -1,3 +1,4 @@
+import 'swiper/swiper-bundle.css';
 import "./globals.scss";
 import { Space_Grotesk } from "next/font/google";
 import Providers from "./providers";

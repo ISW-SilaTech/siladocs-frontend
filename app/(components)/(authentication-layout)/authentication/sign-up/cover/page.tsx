@@ -23,67 +23,122 @@ const Cover: React.FC<CoverProps> = () => {
         email: '',
         password: '',
         institutionId: '',
+        institutionName: '',
         showPassword: false
     });
 
     // Token validation states
     const [tokenValidated, setTokenValidated] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(false);
-
     const [errors, setErrors] = useState<any>({});
+    const router = useRouter();
 
+    // Función de validación del formulario final
     const validate = () => {
         const newErrors: any = {};
 
-        // Email validation
         if (!values.email) {
             newErrors.email = "Correo requerido.";
         } else if (!/\S+@\S+\.\S+/.test(values.email)) {
             newErrors.email = "Formato inválido.";
         }
 
-        // Password validation
         if (!values.password) {
             newErrors.password = "Contraseña requerida.";
         } else if (values.password.length < 6) {
             newErrors.password = "Debe incluir al menos 6 caracteres.";
         }
 
-        // Institution validation
-        if (!values.institutionId) {
-            newErrors.institutionId = "Debes seleccionar una institución.";
+        if (!values.name) {
+            newErrors.name = "El nombre es requerido.";
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
-    const router = useRouter()
+
+    // Función REAL para validar el código en el Backend
+    const handleValidateToken = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (tokenValidated) return;
+
+        if (!values.token) {
+            toast.warn('Ingresa un código antes de validar');
+            return;
+        }
+
+        setIsValidating(true);
+
+        try {
+            // Hacemos la llamada real a tu Spring Boot
+            const response = await fetch(`http://localhost:8080/auth/validate-code?code=${values.token}`);
+
+            if (response.ok) {
+                const data = await response.json(); // ⬅️ Extraemos la data del backend
+                setIsValidating(false);
+                setTokenValidated(true);
+
+                // ⬅️ Actualizamos el estado con el nombre de la institución
+                setValues((prev: any) => ({ ...prev, institutionName: data.institutionName }));
+
+                toast.success('¡Código válido!');
+            } else {
+                // Si el backend responde 400 o error (no existe, expiró, o ya se usó)
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || errorData.message || "Código inválido, expirado o ya utilizado.");
+            }
+
+        } catch (err: any) {
+            setIsValidating(false);
+            setTokenValidated(false); // Bloqueamos el formulario
+            toast.error(err.message);
+        }
+    };
+
+    // Envío final de los datos a Spring Boot
     const handleSubmit = async (e: any) => {
         e.preventDefault();
         if (validate()) {
             try {
+                // Mapeamos los datos de React a los que espera el Backend (DTO)
+                const payload = {
+                    accessCode: values.token,  // En tu backend se llama accessCode
+                    fullName: values.name,     // En tu backend se llama fullName
+                    email: values.email,
+                    password: values.password
+                    // Ya NO enviamos institutionId, el backend lo deduce del accessCode
+                };
+
                 const response = await fetch("http://localhost:8080/auth/register", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Accept": "application/hal+json"
                     },
-                    body: JSON.stringify({
-                        name: values.name,
-                        email: values.email,
-                        password: values.password,
-                        institutionId: Number(values.institutionId) || 1, // default 1
-                    }),
+                    body: JSON.stringify(payload),
                 });
 
-                if (response.ok) {
+                if (response.ok || response.status === 201) {
+                    const data = await response.json();
+
+                    // ¡Éxito! Guardamos el token JWT en el LocalStorage
+                    localStorage.setItem('siladocs_token', data.token);
+
                     toast.success("Cuenta creada correctamente", {
                         position: "top-right",
                         autoClose: 1500,
                     });
-                    router.push("/authentication/sign-in/cover/"); // redirige al login
+
+                    // Puedes redirigir a dashboard o login según tu flujo
+                    setTimeout(() => {
+                        router.push("/dashboards/general");
+                    }, 1500);
+
                 } else {
-                    const errorData = await response.text();
-                    toast.error("Error: " + errorData);
+                    // Manejo de errores que vienen de Spring Boot (Ej: código ya usado)
+                    const errorData = await response.json();
+                    toast.error(errorData.error || errorData.message || "Error en el registro");
+                    setTokenValidated(false); // Reseteamos la validación si falló
                 }
             } catch (err) {
                 toast.error("Error de conexión con el servidor");
@@ -155,23 +210,7 @@ const Cover: React.FC<CoverProps> = () => {
                                                         />
                                                         <Button
                                                             variant={tokenValidated ? 'success' : 'primary'}
-                                                            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                                                e.preventDefault();
-                                                                // If already validated, do nothing
-                                                                if (tokenValidated) return;
-                                                                // don't validate empty token
-                                                                if (!values.token) {
-                                                                    toast.warn('Ingresa un token antes de validar');
-                                                                    return;
-                                                                }
-                                                                setIsValidating(true);
-                                                                // simulate a 3 second async validation
-                                                                setTimeout(() => {
-                                                                    setIsValidating(false);
-                                                                    setTokenValidated(true);
-                                                                    toast.success('Token válido');
-                                                                }, 3000);
-                                                            }}
+                                                            onClick={handleValidateToken}
                                                             disabled={isValidating || tokenValidated}
                                                         >
                                                             {isValidating ? 'Validando...' : tokenValidated ? 'Válido' : 'Validar'}
@@ -180,25 +219,16 @@ const Cover: React.FC<CoverProps> = () => {
                                                 </Col>
                                                 <Col xl={12}>
                                                     <Form.Label htmlFor="signup-institution" className="text-default">
-                                                        Selecciona tu institución
+                                                        Institución asignada
                                                     </Form.Label>
-                                                    <Form.Select
+                                                    <Form.Control
+                                                        type="text"
                                                         id="signup-institution"
-                                                        value={values.institutionId}
-                                                        onChange={(e) => setValues({ ...values, institutionId: e.target.value })}
-                                                        isInvalid={!!errors.institutionId}
-                                                        disabled={!tokenValidated}
-                                                    >
-                                                        <option value="">-- Selecciona una institución --</option>
-                                                        <option value="1">Universidad Peruana de Ciencias Aplicadas</option>
-                                                        <option value="2">Universidad de Lima</option>
-                                                        <option value="3">Universidad Científica del Sur</option>
-                                                        <option value="4">Universidad del Pacífico</option>
-                                                        <option value="5">Universidad San Ignacio de Loyola</option>
-                                                    </Form.Select>
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.institutionId}
-                                                    </Form.Control.Feedback>
+                                                        placeholder={tokenValidated ? "Cargando..." : "Se asignará al validar el código"}
+                                                        value={values.institutionName} // ⬅️ Muestra el nombre automático
+                                                        disabled={true} // ⬅️ Siempre bloqueado para que no lo editen
+                                                        className="bg-light" // Un fondito gris para que se note que es de solo lectura
+                                                    />
                                                 </Col>
                                                 <Col xl={12}>
                                                     <Form.Label htmlFor="signin-email" className="text-default">Correo del Administrador</Form.Label>
@@ -229,16 +259,16 @@ const Cover: React.FC<CoverProps> = () => {
                                                 <Col xl={12} className="mb-2">
                                                     <Form.Label htmlFor="signin-password" className="text-default d-block">Contraseña</Form.Label>
                                                     <div className="position-relative">
-                                                            <Form.Control
-                                                                type={values.showPassword ? "text" : "password"}
-                                                                className="form-control "
-                                                                id="signup-password"
-                                                                placeholder="Password"
-                                                                value={values.password}
-                                                                onChange={(e) => setValues({ ...values, password: e.target.value })}
-                                                                isInvalid={!!errors.password}
-                                                                disabled={!tokenValidated}
-                                                            />
+                                                        <Form.Control
+                                                            type={values.showPassword ? "text" : "password"}
+                                                            className="form-control "
+                                                            id="signup-password"
+                                                            placeholder="Password"
+                                                            value={values.password}
+                                                            onChange={(e) => setValues({ ...values, password: e.target.value })}
+                                                            isInvalid={!!errors.password}
+                                                            disabled={!tokenValidated}
+                                                        />
                                                         <Link scroll={false} href="#!" className="show-password-button text-muted"
                                                             onClick={() => setValues((prev: any) => ({ ...prev, showPassword: !prev.showPassword }))}>
                                                             {values.showPassword ? (
@@ -275,7 +305,7 @@ const Cover: React.FC<CoverProps> = () => {
                                         <div className="text-center my-3 authentication-barrier">
                                             <span className="op-4 fs-13">O</span>
                                         </div>
-                                            <div className="d-grid mb-3">
+                                        <div className="d-grid mb-3">
                                             <SpkButton
                                                 Customclass={`btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3 ${!tokenValidated ? 'opacity-50' : ''}`}
                                                 Disabled={!tokenValidated}
