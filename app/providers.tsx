@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Provider } from "react-redux";
 import { store } from "@/shared/redux/store";
-import { Initialload } from "@/shared/contextapi";
+import { Initialload, AuthProvider } from "@/shared/contextapi";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [pageloading, setpageloading] = useState(false);
@@ -11,7 +11,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <Initialload.Provider value={{ pageloading, setpageloading }}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </Initialload.Provider>
     </Provider>
   );
