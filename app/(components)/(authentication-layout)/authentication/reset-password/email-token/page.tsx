@@ -39,8 +39,9 @@ const Cover: React.FC<CoverProps> = () => {
 
         try {
             // 🔹 Llama al endpoint de "olvidé contraseña"
-            const response = await axios.post('http://localhost:8080/auth/forgot-password', {
-                email: data.email // 'email' viene de react-hook-form
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const response = await axios.post(`${apiUrl}/auth/forgot-password`, {
+                email: data.email
             });
 
             // Éxito: Muestra el mensaje del backend (siempre es exitoso por seguridad)

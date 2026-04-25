@@ -81,9 +81,8 @@ const BulkUploadPage: React.FC = () => {
     const [steps, setSteps] = useState<Step[]>(initialSteps);
     const [progress, setProgress] = useState(0)
 
-    // ⬇️ FUNCIÓN PARA EL TOKEN
     const getAuthHeaders = () => {
-        const token = localStorage.getItem('siladocs_token');
+        const token = localStorage.getItem('accessToken');
         return {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -360,7 +359,8 @@ const BulkUploadPage: React.FC = () => {
         setBackendResult(null);
         try {
             // El pasaporte de seguridad se mantiene 🛡️
-            const response = await axios.post<BulkUploadResult>('http://localhost:8080/api/bulk-upload/courses', payload, getAuthHeaders());
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const response = await axios.post<BulkUploadResult>(`${apiUrl}/bulk-upload/courses`, payload, getAuthHeaders());
             
             setBackendResult(response.data);
             

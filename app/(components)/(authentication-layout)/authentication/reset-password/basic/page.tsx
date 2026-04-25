@@ -70,9 +70,10 @@ const Basic: React.FC<BasicProps> = () => {
 
         try {
             // 🔹 Llama al endpoint del backend
-            const response = await axios.post('http://localhost:8080/auth/reset-password', {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const response = await axios.post(`${apiUrl}/auth/reset-password`, {
                 token: token,
-                newPassword: data.newPassword // 'newPassword' viene de react-hook-form
+                newPassword: data.newPassword
             });
 
             // Éxito
