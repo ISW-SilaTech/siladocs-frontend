@@ -164,7 +164,12 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                 await CurriculumsService.create(payload as CurriculumRequest);
             }
             await fetchCurriculums();
-            handleCloseModal();
+            // Close directly — handleCloseModal checks isSaving which is still true here
+            setShowModal(false);
+            setCurriculumData({ careerId: "", name: "", year: "", courseCount: "", totalCredits: "", status: "Activo", description: "" });
+            setIsEditMode(false);
+            setCurrentCurriculumId(null);
+            setFormError(null);
         } catch (err: any) {
             console.error("Error saving curriculum:", err);
             if (err.response?.status === 409 || err.response?.status === 400) {
