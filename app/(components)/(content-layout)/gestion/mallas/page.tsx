@@ -7,30 +7,18 @@ import SpkSelect from "@/shared/@spk-reusable-components/reusable-plugins/spk-re
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 // Remove mallaData if fetching from API
 // import { mallaData, Projectselectdata, AvatarImages } from "@/shared/data/dashboards/projects/mallalistdata";
-import { Projectselectdata } from "@/shared/data/dashboards/projects/mallalistdata"; // Keep if needed
+import { Projectselectdata } from "@/shared/data/dashboards/projects/mallalistdata";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment, useState, useEffect } from "react"; // 🔹 Import useEffect
+import React, { Fragment, useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
-import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap"; // 🔹 Import Spinner, Alert
-import axios from 'axios'; // 🔹 Import axios
+import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap";
+import { CurriculumsService, Curriculum, CurriculumRequest } from "@/shared/services/curriculums.service";
+import { CareersService } from "@/shared/services/careers.service";
 
-// 🔹 Define interfaces for Curriculum and Career data
-interface Curriculum {
-    id: number;
-    careerId: number;
-    careerName?: string; // Optional career name from backend response
-    name: string;
-    year: number;
-    courseCount: number;
-    totalCredits: number;
-    status: string;
-    description?: string; // Make optional if sometimes null
-}
-
-interface CareerOption { // Simplified Career for dropdown
+interface CareerOption {
     id: number;
     name: string;
 }
@@ -59,23 +47,11 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
-    // ⬇️ 1. NUEVA FUNCIÓN: Obtiene el token del navegador
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('siladocs_token');
-        return {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        };
-    };
-
     // --- Fetching Data ---
     const fetchCareers = async () => {
         try {
-            // ⬇️ 2. AGREGAMOS LOS HEADERS AL GET
-            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers', getAuthHeaders());
-            setCareers(response.data.map(c => ({ id: c.id, name: c.name })));
+            const data = await CareersService.getAll();
+            setCareers(data.map(c => ({ id: c.id, name: c.name })));
         } catch (err) {
             console.error("Error fetching careers for dropdown:", err);
             setError("Error al cargar las carreras disponibles.");
@@ -86,9 +62,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setIsLoading(true);
         setError(null);
         try {
-            // ⬇️ 3. AGREGAMOS LOS HEADERS AL GET
-            const response = await axios.get<Curriculum[]>('http://localhost:8080/api/curriculums', getAuthHeaders());
-            setCurriculums(response.data);
+            const data = await CurriculumsService.getAll();
+            setCurriculums(data);
         } catch (err) {
             console.error("Error fetching curriculums:", err);
             setError("Error al cargar las mallas. Intente de nuevo más tarde.");
@@ -184,44 +159,36 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
         try {
             if (isEditMode && currentCurriculumId) {
-                // --- UPDATE --- (⬇️ 4. AGREGAMOS HEADERS AL PUT)
-                await axios.put(`http://localhost:8080/api/curriculums/${currentCurriculumId}`, payload, getAuthHeaders());
+                await CurriculumsService.update(currentCurriculumId, payload as CurriculumRequest);
             } else {
-                // --- CREATE --- (⬇️ 5. AGREGAMOS HEADERS AL POST)
-                await axios.post('http://localhost:8080/api/curriculums', payload, getAuthHeaders());
+                await CurriculumsService.create(payload as CurriculumRequest);
             }
-            await fetchCurriculums(); // Refresh the list
+            await fetchCurriculums();
             handleCloseModal();
-
         } catch (err: any) {
             console.error("Error saving curriculum:", err);
-             if (axios.isAxiosError(err) && err.response) {
-                 if (err.response.status === 409 || err.response.status === 400) {
-                     setFormError(err.response.data || "Error de validación al guardar.");
-                 } else {
-                     setFormError("Ocurrió un error en el servidor.");
-                 }
-             } else {
-                 setFormError("Ocurrió un error al guardar. Intente de nuevo.");
-             }
+            if (err.response?.status === 409 || err.response?.status === 400) {
+                setFormError(err.response.data?.message || "Error de validación al guardar.");
+            } else {
+                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+            }
         } finally {
             setIsSaving(false);
         }
     };
 
     // --- Delete Handling ---
-     const handleDelete = async (id: number) => {
-         if (window.confirm("¿Está seguro de que desea eliminar esta malla? (Esto podría afectar cursos asociados)")) {
-             try {
-                 // ⬇️ 6. AGREGAMOS HEADERS AL DELETE
-                 await axios.delete(`http://localhost:8080/api/curriculums/${id}`, getAuthHeaders());
-                 await fetchCurriculums(); // Refresh list
-             } catch (err) {
-                 console.error("Error deleting curriculum:", err);
-                 setError("Error al eliminar la malla.");
-             }
-         }
-     };
+    const handleDelete = async (id: number) => {
+        if (window.confirm("¿Está seguro de que desea eliminar esta malla? (Esto podría afectar cursos asociados)")) {
+            try {
+                await CurriculumsService.delete(id);
+                await fetchCurriculums();
+            } catch (err) {
+                console.error("Error deleting curriculum:", err);
+                setError("Error al eliminar la malla.");
+            }
+        }
+    };
 
     // --- Badge Mapping ---
     const statusBadgeClass: { [key: string]: string } = { // More type-safe

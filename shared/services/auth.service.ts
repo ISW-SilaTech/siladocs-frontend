@@ -1,34 +1,13 @@
-import axios from "axios";
+import api from '@/shared/config/axios';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// 🔐 Interceptor para agregar JWT automáticamente
-api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
-export interface ValidateCodeRequest {
-  code: string;
+export interface ValidateCodeResponse {
+  institutionName: string;
 }
 
 export interface RegisterRequest {
-  code: string;
-  adminEmail: string;
-  adminName: string;
+  accessCode: string;
+  fullName: string;
+  email: string;
   password: string;
 }
 
@@ -37,31 +16,48 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthInstitution {
+  id: string;
+  name: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: AuthUser;
+  institution: AuthInstitution;
+}
+
 export const AuthService = {
-  validateCode: async (data: ValidateCodeRequest) => {
-    const response = await api.post("/auth/validate-code", data);
+  validateCode: async (code: string): Promise<ValidateCodeResponse> => {
+    const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${code}`);
     return response.data;
   },
 
-  register: async (data: RegisterRequest) => {
-    const response = await api.post("/auth/register", data);
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/register', data);
     return response.data;
   },
 
-  login: async (data: LoginRequest) => {
-    const response = await api.post("/auth/login", data);
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await api.post<AuthResponse>('/auth/login', data);
     return response.data;
   },
 
-  getCurrentUser: async () => {
-    const response = await api.get("/auth/me");
+  getCurrentUser: async (): Promise<{ user: AuthUser; institution: AuthInstitution }> => {
+    const response = await api.get('/auth/me');
     return response.data;
   },
 
   logout: () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
     }
   },
 };

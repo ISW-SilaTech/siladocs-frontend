@@ -331,7 +331,8 @@ const Landing = () => {
 
         try {
             // Llama al endpoint /api/contact
-            const response = await axios.post('http://localhost:8080/api/contact', contactFormData);
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const response = await axios.post(`${apiUrl}/contact`, contactFormData);
 
             if (response.status === 201) { // 201 Created es lo que devuelve el backend
                 setContactStatus('¡Gracias! Tu solicitud ha sido enviada.');

@@ -7,47 +7,21 @@ import SpkSelect from "@/shared/@spk-reusable-components/reusable-plugins/spk-re
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 // Remove projectData import if not needed elsewhere
 // import { AvatarImages, projectData, Projectselectdata } from "@/shared/data/dashboards/projects/projectlistdata";
-import { Projectselectdata } from "@/shared/data/dashboards/projects/projectlistdata"; // Keep if needed for sorting dropdown
+import { Projectselectdata } from "@/shared/data/dashboards/projects/projectlistdata";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment, useState, useEffect } from "react"; // 🔹 Import useEffect
+import React, { Fragment, useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
-import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap"; // 🔹 Import Spinner, Alert
-import axios from 'axios'; // 🔹 Import axios
-// 🔹 Importaciones añadidas
-import { useRouter } from "next/navigation";
+import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // 🔹 Importa el CSS de toastify
+import "react-toastify/dist/ReactToastify.css";
+import { CareersService, Career, CareerRequest } from "@/shared/services/careers.service";
 
-// 🔹 Define an interface for the Career data structure (matches CareerResponse DTO)
-interface Career {
-    id: number;
-    name: string;
-    faculty: string;
-    cycles: number;
-    lastUpdated: string; // Keep as string for display, or use Date
-    status: string;
-}
+const ProjectsList: React.FC = () => {
 
-const ProjectsList: React.FC = () => { // Removed unused interface prop
-
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('siladocs_token');
-        
-        // ⬇️ 🔹 AGREGA ESTA LÍNEA PARA DEPURAR 🔹 ⬇️
-        console.log("Token enviado a Spring Boot:", token); 
-        
-        return {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        };
-    };
-
-    // 🔹 State for careers data, loading, and errors
+    // State for careers data, loading, and errors
     const [careers, setCareers] = useState<Career[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -70,9 +44,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setIsLoading(true);
         setError(null);
         try {
-            // 👇 REVISA QUE getAuthHeaders() ESTÉ AQUÍ
-            const response = await axios.get<Career[]>('http://localhost:8080/api/careers', getAuthHeaders());
-            setCareers(response.data);
+            const data = await CareersService.getAll();
+            setCareers(data);
         } catch (err) {
             console.error("Error fetching careers:", err);
             setError("Error al cargar las carreras. Intente de nuevo más tarde.");
@@ -155,26 +128,19 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
         try {
             if (isEditMode && currentCareerId) {
-                // --- UPDATE --- (⬇️ 3. AGREGAMOS LOS HEADERS AL PUT)
-                await axios.put(`http://localhost:8080/api/careers/${currentCareerId}`, payload, getAuthHeaders());
+                await CareersService.update(currentCareerId, payload as CareerRequest);
             } else {
-                // --- CREATE --- (⬇️ 4. AGREGAMOS LOS HEADERS AL POST)
-                await axios.post('http://localhost:8080/api/careers', payload, getAuthHeaders());
+                await CareersService.create(payload as CareerRequest);
             }
-            await fetchCareers(); 
-            handleCloseModal(); 
-
-        } catch (err: any) { 
+            await fetchCareers();
+            handleCloseModal();
+        } catch (err: any) {
             console.error("Error saving career:", err);
-             if (axios.isAxiosError(err) && err.response) {
-                 if (err.response.status === 409 || err.response.status === 400) { 
-                     setFormError(err.response.data || "Error de validación al guardar.");
-                 } else {
-                     setFormError("Ocurrió un error en el servidor.");
-                 }
-             } else {
-                 setFormError("Ocurrió un error al guardar. Intente de nuevo.");
-             }
+            if (err.response?.status === 409 || err.response?.status === 400) {
+                setFormError(err.response.data?.message || "Error de validación al guardar.");
+            } else {
+                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+            }
         } finally {
             setIsSaving(false);
         }
@@ -182,16 +148,15 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
     // --- Delete Handling ---
     const handleDelete = async (id: number) => {
-         if (window.confirm("¿Está seguro de que desea eliminar esta carrera?")) {
-             try {
-                 // ⬇️ 5. AGREGAMOS LOS HEADERS AL DELETE
-                 await axios.delete(`http://localhost:8080/api/careers/${id}`, getAuthHeaders());
-                 await fetchCareers(); 
-             } catch (err) {
-                 console.error("Error deleting career:", err);
-                  setError("Error al eliminar la carrera.");
-             }
-         }
+        if (window.confirm("¿Está seguro de que desea eliminar esta carrera?")) {
+            try {
+                await CareersService.delete(id);
+                await fetchCareers();
+            } catch (err) {
+                console.error("Error deleting career:", err);
+                setError("Error al eliminar la carrera.");
+            }
+        }
     };
 
     // --- Badge Mapping ---

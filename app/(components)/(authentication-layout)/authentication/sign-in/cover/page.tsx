@@ -4,72 +4,51 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Fragment, useState } from "react";
 import { Card, Col, Form, Row } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
-
-//Efectos
 import { motion } from "framer-motion";
+import { useAuth } from "@/shared/contextapi";
 
-interface CoverProps { }
-
-const Cover: React.FC<CoverProps> = () => {
-    const [values, setValues] = useState<any>({
+const Cover: React.FC = () => {
+    const { login } = useAuth();
+    const [values, setValues] = useState({
         email: "",
         password: "",
         showPassword: false,
     });
-
-    const [errors, setErrors] = useState<any>({});
-    const router = useRouter();
+    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validate = () => {
-        const newErrors: any = {};
-
+        const newErrors: { email?: string; password?: string } = {};
         if (!values.email) {
             newErrors.email = "Correo requerido.";
         } else if (!/\S+@\S+\.\S+/.test(values.email)) {
             newErrors.email = "Formato inválido.";
         }
-
         if (!values.password) {
             newErrors.password = "Contraseña requerida.";
         } else if (values.password.length < 6) {
             newErrors.password = "Debe incluir al menos 6 caracteres.";
         }
-
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e: any) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (validate()) {
-            try {
-                const response = await fetch("http://localhost:8080/auth/login", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: values.email,
-                        password: values.password,
-                    }),
-                });
+        if (!validate()) return;
 
-                if (response.ok) {
-                    const data = await response.json();
-                    toast.success("Inicio de sesión exitoso", {
-                        position: "top-right",
-                        autoClose: 1500,
-                    });
-                    localStorage.setItem("token", data.token); // 🔑 Guardar JWT
-                    router.push("/dashboards/general/");
-                } else {
-                    toast.error("Credenciales inválidas");
-                }
-            } catch (err) {
-                toast.error("Error de conexión con el servidor");
-            }
+        setIsSubmitting(true);
+        try {
+            await login(values.email, values.password);
+            toast.success("Inicio de sesión exitoso", { position: "top-right", autoClose: 1500 });
+        } catch (err: any) {
+            const msg = err?.response?.data?.message || err?.message || "Credenciales inválidas";
+            toast.error(msg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -97,80 +76,50 @@ const Cover: React.FC<CoverProps> = () => {
                                         <Form onSubmit={handleSubmit}>
                                             <Row className="gy-3">
                                                 <Col xl={12}>
-                                                    <Form.Label
-                                                        htmlFor="signin-email"
-                                                        className="text-default"
-                                                    >
+                                                    <Form.Label htmlFor="signin-email" className="text-default">
                                                         Correo del administrador
                                                     </Form.Label>
                                                     <Form.Control
                                                         type="email"
-                                                        className="form-control"
                                                         id="signin-email"
                                                         placeholder="Ingresa tu correo electrónico"
                                                         value={values.email}
-                                                        onChange={(e) =>
-                                                            setValues({ ...values, email: e.target.value })
-                                                        }
+                                                        onChange={(e) => setValues({ ...values, email: e.target.value })}
                                                         isInvalid={!!errors.email}
+                                                        disabled={isSubmitting}
                                                     />
-                                                    <Form.Control.Feedback type="invalid">
-                                                        {errors.email}
-                                                    </Form.Control.Feedback>
+                                                    <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
                                                 </Col>
                                                 <Col xl={12} className="mb-2">
-                                                    <Form.Label
-                                                        htmlFor="signin-password"
-                                                        className="text-default d-block"
-                                                    >
+                                                    <Form.Label htmlFor="signin-password" className="text-default d-block">
                                                         Contraseña
                                                     </Form.Label>
                                                     <div className="position-relative">
                                                         <Form.Control
                                                             type={values.showPassword ? "text" : "password"}
-                                                            className="form-control"
                                                             id="signin-password"
                                                             placeholder="Ingresa tu contraseña"
                                                             value={values.password}
-                                                            onChange={(e) =>
-                                                                setValues({ ...values, password: e.target.value })
-                                                            }
+                                                            onChange={(e) => setValues({ ...values, password: e.target.value })}
                                                             isInvalid={!!errors.password}
+                                                            disabled={isSubmitting}
                                                         />
                                                         <Link
                                                             scroll={false}
                                                             href="#!"
                                                             className="show-password-button text-muted"
-                                                            onClick={() =>
-                                                                setValues((prev: any) => ({
-                                                                    ...prev,
-                                                                    showPassword: !prev.showPassword,
-                                                                }))
-                                                            }
+                                                            onClick={() => setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }))}
                                                         >
-                                                            {values.showPassword ? (
-                                                                <i className="ri-eye-line align-middle"></i>
-                                                            ) : (
-                                                                <i className="ri-eye-off-line align-middle"></i>
-                                                            )}
+                                                            {values.showPassword
+                                                                ? <i className="ri-eye-line align-middle"></i>
+                                                                : <i className="ri-eye-off-line align-middle"></i>}
                                                         </Link>
-                                                        <Form.Control.Feedback type="invalid">
-                                                            {errors.password}
-                                                        </Form.Control.Feedback>
+                                                        <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
                                                     </div>
                                                     <div className="mt-2">
                                                         <div className="form-check">
-                                                            <input
-                                                                className="form-check-input"
-                                                                type="checkbox"
-                                                                id="rememberMe"
-                                                            />
-                                                            <label
-                                                                className="form-check-label"
-                                                                htmlFor="rememberMe"
-                                                            >
-                                                                Recuérdame
-                                                            </label>
+                                                            <input className="form-check-input" type="checkbox" id="rememberMe" />
+                                                            <label className="form-check-label" htmlFor="rememberMe">Recuérdame</label>
                                                             <Link
                                                                 scroll={false}
                                                                 href="/authentication/reset-password/email-token"
@@ -183,11 +132,8 @@ const Cover: React.FC<CoverProps> = () => {
                                                 </Col>
                                             </Row>
                                             <div className="d-grid mt-3">
-                                                <SpkButton
-                                                    Buttontype="submit"
-                                                    Customclass="btn btn-primary"
-                                                >
-                                                    Ingresar
+                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isSubmitting}>
+                                                    {isSubmitting ? "Ingresando..." : "Ingresar"}
                                                 </SpkButton>
                                             </div>
                                         </Form>
@@ -197,36 +143,20 @@ const Cover: React.FC<CoverProps> = () => {
                                         <div className="d-grid mb-3">
                                             <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3">
                                                 <span className="avatar avatar-xs">
-                                                    <Image
-                                                        fill
-                                                        src="../../../assets/images/media/apps/google.png"
-                                                        alt=""
-                                                    />
+                                                    <Image fill src="../../../assets/images/media/apps/google.png" alt="" />
                                                 </span>
-                                                <span className="lh-1 ms-2 fs-13 text-default fw-medium">
-                                                    Ingresa con Google
-                                                </span>
+                                                <span className="lh-1 ms-2 fs-13 text-default fw-medium">Ingresa con Google</span>
                                             </SpkButton>
                                             <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill">
                                                 <span className="avatar avatar-xs">
-                                                    <Image
-                                                        fill
-                                                        src="../../../assets/images/media/apps/outlook.png"
-                                                        alt=""
-                                                    />
+                                                    <Image fill src="../../../assets/images/media/apps/outlook.png" alt="" />
                                                 </span>
-                                                <span className="lh-1 ms-2 fs-13 text-default fw-medium">
-                                                    Ingresa con Outlook
-                                                </span>
+                                                <span className="lh-1 ms-2 fs-13 text-default fw-medium">Ingresa con Outlook</span>
                                             </SpkButton>
                                         </div>
                                         <div className="text-center mt-3 fw-medium">
                                             ¿No tienes una cuenta?{" "}
-                                            <Link
-                                                scroll={false}
-                                                href="/authentication/sign-up/cover/"
-                                                className="text-primary animated-underline"
-                                            >
+                                            <Link scroll={false} href="/authentication/sign-up/cover/" className="text-primary animated-underline">
                                                 Regístrate
                                             </Link>
                                         </div>
@@ -236,25 +166,15 @@ const Cover: React.FC<CoverProps> = () => {
                         </Row>
                     </Col>
 
-                    {/* Lado derecho */}
                     <Col xxl={3} xl={3} lg={12} className="d-xl-block d-none px-0">
                         <div className="authentication-cover overflow-hidden">
                             <div className="authentication-cover-logo">
                                 <Link scroll={false} href="/landing">
-                                    <Image
-                                        fill
-                                        src="../../../assets/images/brand-logos/toggle-logo.png"
-                                        alt="logo"
-                                        className="desktop-dark"
-                                    />
+                                    <Image fill src="../../../assets/images/brand-logos/toggle-logo.png" alt="logo" className="desktop-dark" />
                                 </Link>
                             </div>
                             <div className="authentication-cover-background">
-                                <Image
-                                    fill
-                                    src="../../../assets/images/media/backgrounds/9.png"
-                                    alt=""
-                                />
+                                <Image fill src="../../../assets/images/media/backgrounds/9.png" alt="" />
                             </div>
                             <div className="authentication-cover-content">
                                 <div className="p-5">
@@ -262,17 +182,11 @@ const Cover: React.FC<CoverProps> = () => {
                                         Bienvenido a <span style={{ color: "#5976ef" }}>Siladocs</span>
                                     </h3>
                                     <p className="mb-0 text-muted fw-medium">
-                                        Administra los sílabos de tu institución de forma segura y
-                                        trazable con tecnología blockchain.
+                                        Administra los sílabos de tu institución de forma segura y trazable con tecnología blockchain.
                                     </p>
                                 </div>
                                 <div>
-                                    <Image
-                                        fill
-                                        src="../../../assets/images/media/media-72.png"
-                                        alt=""
-                                        className="img-fluid"
-                                    />
+                                    <Image fill src="../../../assets/images/media/media-72.png" alt="" className="img-fluid" />
                                 </div>
                             </div>
                         </div>

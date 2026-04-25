@@ -4,31 +4,14 @@ import SpkBadge from "@/shared/@spk-reusable-components/general-reusable/reusabl
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons";
 import SpkDropdown from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-dropdown";
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
-// Remove CursosListData if fetching from API
-// import { CursosListData } from "@/shared/data/dashboards/jobs/joblistdata";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Link from "next/link";
-import React, { Fragment, useState, useEffect } from "react"; // 🔹 Import useEffect
-import { Card, Col, Dropdown, Form, Modal, Pagination, Row, Spinner, Alert } from "react-bootstrap"; // 🔹 Import Spinner, Alert
-import axios from 'axios'; // 🔹 Import axios
-
-// 🔹 Define Interfaces
-interface Course {
-    id: number;
-    curriculumId: number;
-    curriculumName?: string;
-    careerId: number;
-    careerName?: string;
-    code: string;
-    name: string;
-    faculty: string;
-    syllabusCount: number;
-    year: number;
-    status: string;
-    mallaStatus?: string; // Status of the Malla
-    publicationDate?: string; // Keep as string or Date
-}
+import React, { Fragment, useState, useEffect } from "react";
+import { Card, Col, Dropdown, Form, Modal, Pagination, Row, Spinner, Alert } from "react-bootstrap";
+import { CoursesService, Course, CourseRequest } from "@/shared/services/courses.service";
+import { CareersService } from "@/shared/services/careers.service";
+import { CurriculumsService } from "@/shared/services/curriculums.service";
 
 interface CareerOption {
     id: number;
@@ -38,7 +21,7 @@ interface CareerOption {
 interface CurriculumOption {
     id: number;
     name: string;
-    careerId: number; // Important for filtering
+    careerId: number;
 }
 
 
@@ -70,23 +53,11 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
-    // ⬇️ 1. LA FUNCIÓN MÁGICA: Agrega el pasaporte a las peticiones
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('siladocs_token');
-        return {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        };
-    };
-
     // --- Data Fetching ---
     const fetchCareers = async () => {
         try {
-            // ⬇️ 2. HEADERS AL GET DE CARRERAS
-            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers', getAuthHeaders());
-            setCareers(response.data.map(c => ({ id: c.id, name: c.name })));
+            const data = await CareersService.getAll();
+            setCareers(data.map(c => ({ id: c.id, name: c.name })));
         } catch (err) {
             console.error("Error fetching careers:", err);
             setError("Error al cargar carreras.");
@@ -95,9 +66,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
     const fetchCurriculums = async () => {
         try {
-            // ⬇️ 3. HEADERS AL GET DE MALLAS
-            const response = await axios.get<CurriculumOption[]>('http://localhost:8080/api/curriculums', getAuthHeaders());
-            setAllCurriculums(response.data.map(m => ({ id: m.id, name: m.name, careerId: m.careerId })));
+            const data = await CurriculumsService.getAll();
+            setAllCurriculums(data.map(m => ({ id: m.id, name: m.name, careerId: m.careerId })));
         } catch (err) {
             console.error("Error fetching curriculums:", err);
             setError("Error al cargar mallas.");
@@ -108,9 +78,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         setIsLoading(true);
         setError(null);
         try {
-            // ⬇️ 4. HEADERS AL GET DE CURSOS
-            const response = await axios.get<Course[]>('http://localhost:8080/api/courses', getAuthHeaders());
-            setCourses(response.data);
+            const data = await CoursesService.getAll();
+            setCourses(data);
         } catch (err) {
             console.error("Error fetching courses:", err);
             setError("Error al cargar los cursos. Intente de nuevo más tarde.");
@@ -239,26 +208,19 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
         try {
             if (isEditMode && currentCourseId) {
-                // --- UPDATE --- (⬇️ 5. HEADERS AL PUT)
-                await axios.put(`http://localhost:8080/api/courses/${currentCourseId}`, payload, getAuthHeaders());
+                await CoursesService.update(currentCourseId, payload as CourseRequest);
             } else {
-                // --- CREATE --- (⬇️ 6. HEADERS AL POST)
-                await axios.post('http://localhost:8080/api/courses', payload, getAuthHeaders());
+                await CoursesService.create(payload as CourseRequest);
             }
-            await fetchCourses(); 
+            await fetchCourses();
             handleCloseModal();
-
         } catch (err: any) {
-             console.error("Error saving course:", err);
-             if (axios.isAxiosError(err) && err.response) {
-                 if (err.response.status === 400 || err.response.status === 409) {
-                     setFormError(err.response.data || "Error de validación (verifique relaciones o código duplicado).");
-                 } else {
-                     setFormError("Ocurrió un error en el servidor.");
-                 }
-             } else {
-                 setFormError("Ocurrió un error al guardar. Intente de nuevo.");
-             }
+            console.error("Error saving course:", err);
+            if (err.response?.status === 400 || err.response?.status === 409) {
+                setFormError(err.response.data?.message || "Error de validación (verifique relaciones o código duplicado).");
+            } else {
+                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+            }
         } finally {
             setIsSaving(false);
         }
@@ -268,9 +230,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const handleDelete = async (id: number) => {
         if (window.confirm("¿Está seguro de que desea eliminar este curso?")) {
             try {
-                // ⬇️ 7. HEADERS AL DELETE
-                await axios.delete(`http://localhost:8080/api/courses/${id}`, getAuthHeaders());
-                await fetchCourses(); 
+                await CoursesService.delete(id);
+                await fetchCourses();
             } catch (err) {
                 console.error("Error deleting course:", err);
                 setError("Error al eliminar el curso.");

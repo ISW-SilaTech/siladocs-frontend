@@ -27,19 +27,19 @@ const School: React.FC<SchoolProps> = () => {
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                // Recuperamos el token que guardamos en localStorage al hacer el login/registro
-                const token = localStorage.getItem('siladocs_token');
-                
+                const token = localStorage.getItem('accessToken');
+
                 if (!token) {
-                    console.warn("No hay token de sesión. El usuario debería ser redirigido al login.");
+                    console.warn("No hay token de sesión.");
                     return;
                 }
 
-                const response = await fetch("http://localhost:8080/auth/me", {
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+                const response = await fetch(`${apiUrl}/auth/me`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}` // ⬅️ Pasaporte de seguridad
+                        "Authorization": `Bearer ${token}`,
                     }
                 });
 

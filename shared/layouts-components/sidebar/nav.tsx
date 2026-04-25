@@ -28,6 +28,7 @@ export const MENUITEMS: any = [
           { path: "/gestion/carreras", type: "link", active: false, selected: false, dirchange: false, title: "Carreras" },
           { path: "/gestion/mallas", type: "link", active: false, selected: false, dirchange: false, title: "Mallas" },
           { path: "/gestion/cursos", type: "link", active: false, selected: false, dirchange: false, title: "Cursos" },
+          { path: "/gestion/silabos", type: "link", active: false, selected: false, dirchange: false, title: "Sílabos" },
         ]
       },
             { path: "/core/carga-masiva", type: "link", icon: Svgicons.Formsicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
