@@ -4,15 +4,15 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { Fragment, useState } from "react";
 import { Card, Col, Form, Row, Button, InputGroup } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
 import { AuthService } from "@/shared/services/auth.service";
+import { useAuth } from "@/shared/contextapi";
 
 const Cover: React.FC = () => {
-    const router = useRouter();
+    const { register } = useAuth();
 
     const [values, setValues] = useState({
         token: '',
@@ -73,17 +73,14 @@ const Cover: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            const response = await AuthService.register({
+            await register({
                 accessCode: values.token,
                 fullName: values.name,
                 email: values.email,
                 password: values.password,
             });
 
-            localStorage.setItem('accessToken', response.accessToken);
-
             toast.success("Cuenta creada correctamente", { position: "top-right", autoClose: 1500 });
-            setTimeout(() => router.push("/dashboards/general"), 1500);
         } catch (err: any) {
             const msg = err?.response?.data?.message || err?.message || 'Error en el registro';
             toast.error(msg);
