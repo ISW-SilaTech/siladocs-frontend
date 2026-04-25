@@ -35,6 +35,10 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
     const getAuthHeaders = () => {
         const token = localStorage.getItem('siladocs_token');
+        
+        // ⬇️ 🔹 AGREGA ESTA LÍNEA PARA DEPURAR 🔹 ⬇️
+        console.log("Token enviado a Spring Boot:", token); 
+        
         return {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -66,7 +70,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setIsLoading(true);
         setError(null);
         try {
-            // ⬇️ 2. AGREGAMOS LOS HEADERS AL GET
+            // 👇 REVISA QUE getAuthHeaders() ESTÉ AQUÍ
             const response = await axios.get<Career[]>('http://localhost:8080/api/careers', getAuthHeaders());
             setCareers(response.data);
         } catch (err) {

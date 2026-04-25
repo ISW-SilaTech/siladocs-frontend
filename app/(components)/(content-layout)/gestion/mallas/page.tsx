@@ -59,15 +59,25 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
+    // ⬇️ 1. NUEVA FUNCIÓN: Obtiene el token del navegador
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('siladocs_token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+    };
+
     // --- Fetching Data ---
     const fetchCareers = async () => {
-        // Fetch only ID and Name for the dropdown
         try {
-            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers'); // Assuming backend returns simplified list or adjust endpoint/mapping
-            setCareers(response.data.map(c => ({ id: c.id, name: c.name }))); // Ensure only id and name are stored
+            // ⬇️ 2. AGREGAMOS LOS HEADERS AL GET
+            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers', getAuthHeaders());
+            setCareers(response.data.map(c => ({ id: c.id, name: c.name })));
         } catch (err) {
             console.error("Error fetching careers for dropdown:", err);
-            // Handle error (maybe show a message)
             setError("Error al cargar las carreras disponibles.");
         }
     };
@@ -76,8 +86,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setIsLoading(true);
         setError(null);
         try {
-            // Fetch curriculums (backend might already include careerName)
-            const response = await axios.get<Curriculum[]>('http://localhost:8080/api/curriculums');
+            // ⬇️ 3. AGREGAMOS LOS HEADERS AL GET
+            const response = await axios.get<Curriculum[]>('http://localhost:8080/api/curriculums', getAuthHeaders());
             setCurriculums(response.data);
         } catch (err) {
             console.error("Error fetching curriculums:", err);
@@ -96,8 +106,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     // --- Modal Handling ---
     const handleOpenCreateModal = () => {
         setIsEditMode(false);
-        setCurriculumData({ // Reset form
-            careerId: careers.length > 0 ? String(careers[0].id) : "", // Default to first career if available
+        setCurriculumData({
+            careerId: careers.length > 0 ? String(careers[0].id) : "",
             name: "", year: "", courseCount: "", totalCredits: "",
             status: "Activo", description: "",
         });
@@ -108,20 +118,19 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
      const handleOpenEditModal = (curriculum: Curriculum) => {
         setIsEditMode(true);
-        setCurriculumData({ // Pre-fill form
-            careerId: String(curriculum.careerId), // Ensure it's a string for select value
+        setCurriculumData({
+            careerId: String(curriculum.careerId),
             name: curriculum.name,
             year: String(curriculum.year),
             courseCount: String(curriculum.courseCount),
             totalCredits: String(curriculum.totalCredits),
             status: curriculum.status,
-            description: curriculum.description ?? "", // Handle potential null
+            description: curriculum.description ?? "",
         });
         setCurrentCurriculumId(curriculum.id);
         setFormError(null);
         setShowModal(true);
     };
-
 
     const handleCloseModal = () => {
         if (isSaving) return;
@@ -136,7 +145,6 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setCurriculumData(prev => ({ ...prev, [name]: value }));
-        // Clear specific errors if needed
         if (name === 'year' || name === 'courseCount' || name === 'totalCredits') {
             setFormError(null);
         }
@@ -164,7 +172,6 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         if (isNaN(totalCreditsNum) || totalCreditsNum <= 0) { setFormError("Créditos debe ser positivo."); setIsSaving(false); return; }
         if (isNaN(careerIdNum)) { setFormError("Seleccione una Carrera válida."); setIsSaving(false); return; }
 
-
         const payload = {
             careerId: careerIdNum,
             name: name,
@@ -177,11 +184,11 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
         try {
             if (isEditMode && currentCurriculumId) {
-                // --- UPDATE ---
-                await axios.put(`http://localhost:8080/api/curriculums/${currentCurriculumId}`, payload);
+                // --- UPDATE --- (⬇️ 4. AGREGAMOS HEADERS AL PUT)
+                await axios.put(`http://localhost:8080/api/curriculums/${currentCurriculumId}`, payload, getAuthHeaders());
             } else {
-                // --- CREATE ---
-                await axios.post('http://localhost:8080/api/curriculums', payload);
+                // --- CREATE --- (⬇️ 5. AGREGAMOS HEADERS AL POST)
+                await axios.post('http://localhost:8080/api/curriculums', payload, getAuthHeaders());
             }
             await fetchCurriculums(); // Refresh the list
             handleCloseModal();
@@ -190,7 +197,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
             console.error("Error saving curriculum:", err);
              if (axios.isAxiosError(err) && err.response) {
                  if (err.response.status === 409 || err.response.status === 400) {
-                     setFormError(err.response.data || "Error de validación al guardar (posible nombre duplicado para la carrera).");
+                     setFormError(err.response.data || "Error de validación al guardar.");
                  } else {
                      setFormError("Ocurrió un error en el servidor.");
                  }
@@ -206,7 +213,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
      const handleDelete = async (id: number) => {
          if (window.confirm("¿Está seguro de que desea eliminar esta malla? (Esto podría afectar cursos asociados)")) {
              try {
-                 await axios.delete(`http://localhost:8080/api/curriculums/${id}`);
+                 // ⬇️ 6. AGREGAMOS HEADERS AL DELETE
+                 await axios.delete(`http://localhost:8080/api/curriculums/${id}`, getAuthHeaders());
                  await fetchCurriculums(); // Refresh list
              } catch (err) {
                  console.error("Error deleting curriculum:", err);

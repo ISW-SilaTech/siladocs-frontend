@@ -70,10 +70,22 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
+    // ⬇️ 1. LA FUNCIÓN MÁGICA: Agrega el pasaporte a las peticiones
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('siladocs_token');
+        return {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        };
+    };
+
     // --- Data Fetching ---
     const fetchCareers = async () => {
         try {
-            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers');
+            // ⬇️ 2. HEADERS AL GET DE CARRERAS
+            const response = await axios.get<CareerOption[]>('http://localhost:8080/api/careers', getAuthHeaders());
             setCareers(response.data.map(c => ({ id: c.id, name: c.name })));
         } catch (err) {
             console.error("Error fetching careers:", err);
@@ -82,10 +94,9 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     };
 
     const fetchCurriculums = async () => {
-         // Fetches ALL curriculums initially to allow filtering later
         try {
-            const response = await axios.get<CurriculumOption[]>('http://localhost:8080/api/curriculums');
-            // Store only necessary fields, including careerId for filtering
+            // ⬇️ 3. HEADERS AL GET DE MALLAS
+            const response = await axios.get<CurriculumOption[]>('http://localhost:8080/api/curriculums', getAuthHeaders());
             setAllCurriculums(response.data.map(m => ({ id: m.id, name: m.name, careerId: m.careerId })));
         } catch (err) {
             console.error("Error fetching curriculums:", err);
@@ -97,7 +108,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.get<Course[]>('http://localhost:8080/api/courses');
+            // ⬇️ 4. HEADERS AL GET DE CURSOS
+            const response = await axios.get<Course[]>('http://localhost:8080/api/courses', getAuthHeaders());
             setCourses(response.data);
         } catch (err) {
             console.error("Error fetching courses:", err);
@@ -122,30 +134,27 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         if (courseData.careerId) {
             const selectedCareerIdNum = Number(courseData.careerId);
             setFilteredCurriculums(allCurriculums.filter(m => m.careerId === selectedCareerIdNum));
-            // Reset curriculum selection if the current one doesn't belong to the new career
              const currentCurriculumIsValid = allCurriculums.some(m => m.id === Number(courseData.curriculumId) && m.careerId === selectedCareerIdNum);
              if (!currentCurriculumIsValid) {
-                 setCourseData(prev => ({ ...prev, curriculumId: "" })); // Reset if invalid
+                 setCourseData(prev => ({ ...prev, curriculumId: "" })); 
              }
-
         } else {
-            setFilteredCurriculums([]); // No career selected, no curriculums to show
-            setCourseData(prev => ({ ...prev, curriculumId: "" })); // Reset curriculum ID
+            setFilteredCurriculums([]); 
+            setCourseData(prev => ({ ...prev, curriculumId: "" })); 
         }
-    }, [courseData.careerId, allCurriculums]); // Re-run when careerId or allCurriculums changes
+    }, [courseData.careerId, allCurriculums]); 
 
     // --- Modal Handling ---
     const handleOpenCreateModal = () => {
         setIsEditMode(false);
         const defaultCareerId = careers.length > 0 ? String(careers[0].id) : "";
-        setCourseData({ // Reset form
+        setCourseData({ 
             careerId: defaultCareerId,
-            curriculumId: "", // Will be filtered by useEffect
-            code: "", name: "", faculty: "", // Reset faculty too
-            year: String(new Date().getFullYear()), // Default year
+            curriculumId: "", 
+            code: "", name: "", faculty: "", 
+            year: String(new Date().getFullYear()), 
             status: "Active", publicationDate: ""
         });
-         // Trigger initial filter for default career
          if (defaultCareerId) {
             setFilteredCurriculums(allCurriculums.filter(m => m.careerId === Number(defaultCareerId)));
          } else {
@@ -160,7 +169,7 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const handleOpenEditModal = (course: Course) => {
         setIsEditMode(true);
         const careerIdStr = String(course.careerId);
-        setCourseData({ // Pre-fill form
+        setCourseData({ 
             careerId: careerIdStr,
             curriculumId: String(course.curriculumId),
             code: course.code,
@@ -168,9 +177,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             faculty: course.faculty,
             year: String(course.year),
             status: course.status,
-            publicationDate: course.publicationDate ? new Date(course.publicationDate).toISOString().split('T')[0] : "", // Format date for input type="date"
+            publicationDate: course.publicationDate ? new Date(course.publicationDate).toISOString().split('T')[0] : "", 
         });
-         // Trigger filter for the existing career
          setFilteredCurriculums(allCurriculums.filter(m => m.careerId === course.careerId));
         setCurrentCourseId(course.id);
         setFormError(null);
@@ -180,7 +188,6 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const handleCloseModal = () => {
         if (isSaving) return;
         setShowModal(false);
-        // Reset state
         setCourseData({ careerId: "", curriculumId: "", code: "", name: "", faculty: "", year: "", status: "Active", publicationDate: "" });
         setIsEditMode(false);
         setCurrentCourseId(null);
@@ -188,24 +195,15 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         setFilteredCurriculums([]);
     };
 
-    // Handle form changes, including career selection to trigger curriculum filter
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-
         setCourseData(prev => {
             const newState = { ...prev, [name]: value };
-             // Auto-fill faculty based on selected career if desired
              if (name === 'careerId' && value) {
-                 const selectedCareer = careers.find(c => c.id === Number(value));
-                 // Find faculty from the full career data if available, otherwise keep existing/clear
-                 // Assuming CareerOption might eventually hold faculty
-                 // newState.faculty = selectedCareer?.faculty || "";
-                 // For now, let user fill it or derive in backend
+                 // Lógica opcional para auto-llenar facultad
              }
              return newState;
         });
-
-        // Clear errors on change
         setFormError(null);
     };
 
@@ -214,7 +212,6 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         setFormError(null);
         setIsSaving(true);
 
-        // Validation
         const { careerId, curriculumId, code, name, faculty, year, status, publicationDate } = courseData;
         if (!careerId || !curriculumId || !code || !name || !faculty || !year) {
             setFormError("Carrera, Malla, Código, Nombre, Facultad y Año son obligatorios.");
@@ -234,29 +231,26 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             curriculumId: curriculumIdNum,
             code: code,
             name: name,
-            faculty: faculty, // Send selected/entered faculty
-            // syllabusCount: 0, // Let backend handle default/calculation
+            faculty: faculty, 
             year: yearNum,
             status: status,
-            // Send date only if not empty, otherwise let backend handle or send null
             publicationDate: publicationDate || null,
         };
 
         try {
             if (isEditMode && currentCourseId) {
-                // --- UPDATE ---
-                await axios.put(`http://localhost:8080/api/courses/${currentCourseId}`, payload);
+                // --- UPDATE --- (⬇️ 5. HEADERS AL PUT)
+                await axios.put(`http://localhost:8080/api/courses/${currentCourseId}`, payload, getAuthHeaders());
             } else {
-                // --- CREATE ---
-                await axios.post('http://localhost:8080/api/courses', payload);
+                // --- CREATE --- (⬇️ 6. HEADERS AL POST)
+                await axios.post('http://localhost:8080/api/courses', payload, getAuthHeaders());
             }
-            await fetchCourses(); // Refresh list
+            await fetchCourses(); 
             handleCloseModal();
 
         } catch (err: any) {
              console.error("Error saving course:", err);
              if (axios.isAxiosError(err) && err.response) {
-                 // Handle 400 (Bad Request - validation, missing refs) and 409 (Conflict - duplicate code)
                  if (err.response.status === 400 || err.response.status === 409) {
                      setFormError(err.response.data || "Error de validación (verifique relaciones o código duplicado).");
                  } else {
@@ -274,8 +268,9 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const handleDelete = async (id: number) => {
         if (window.confirm("¿Está seguro de que desea eliminar este curso?")) {
             try {
-                await axios.delete(`http://localhost:8080/api/courses/${id}`);
-                await fetchCourses(); // Refresh list
+                // ⬇️ 7. HEADERS AL DELETE
+                await axios.delete(`http://localhost:8080/api/courses/${id}`, getAuthHeaders());
+                await fetchCourses(); 
             } catch (err) {
                 console.error("Error deleting course:", err);
                 setError("Error al eliminar el curso.");
