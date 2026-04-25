@@ -213,7 +213,13 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                 await CoursesService.create(payload as CourseRequest);
             }
             await fetchCourses();
-            handleCloseModal();
+            // Close directly — handleCloseModal checks isSaving which is still true here
+            setShowModal(false);
+            setCourseData({ careerId: "", curriculumId: "", code: "", name: "", faculty: "", year: "", status: "Active", publicationDate: "" });
+            setIsEditMode(false);
+            setCurrentCourseId(null);
+            setFormError(null);
+            setFilteredCurriculums([]);
         } catch (err: any) {
             console.error("Error saving course:", err);
             if (err.response?.status === 400 || err.response?.status === 409) {

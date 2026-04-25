@@ -133,7 +133,12 @@ const ProjectsList: React.FC = () => {
                 await CareersService.create(payload as CareerRequest);
             }
             await fetchCareers();
-            handleCloseModal();
+            // Close directly — handleCloseModal checks isSaving which is still true here
+            setShowModal(false);
+            setCareerData({ name: "", faculty: "", cycles: "", status: "Activo" });
+            setIsEditMode(false);
+            setCurrentCareerId(null);
+            setFormError(null);
         } catch (err: any) {
             console.error("Error saving career:", err);
             if (err.response?.status === 409 || err.response?.status === 400) {
