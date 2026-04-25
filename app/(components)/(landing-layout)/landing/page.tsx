@@ -331,7 +331,7 @@ const Landing = () => {
 
         try {
             // Llama al endpoint /api/contact
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
             const response = await axios.post(`${apiUrl}/contact`, contactFormData);
 
             if (response.status === 201) { // 201 Created es lo que devuelve el backend

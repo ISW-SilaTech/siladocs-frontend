@@ -39,7 +39,7 @@ const Cover: React.FC<CoverProps> = () => {
 
         try {
             // 🔹 Llama al endpoint de "olvidé contraseña"
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
             const response = await axios.post(`${apiUrl}/auth/forgot-password`, {
                 email: data.email
             });

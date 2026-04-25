@@ -359,7 +359,7 @@ const BulkUploadPage: React.FC = () => {
         setBackendResult(null);
         try {
             // El pasaporte de seguridad se mantiene 🛡️
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
             const response = await axios.post<BulkUploadResult>(`${apiUrl}/bulk-upload/courses`, payload, getAuthHeaders());
             
             setBackendResult(response.data);

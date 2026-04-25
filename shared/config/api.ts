@@ -3,7 +3,7 @@
  */
 
 // URL base del backend
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api"
 
 // Endpoints específicos
 export const API_ENDPOINTS = {

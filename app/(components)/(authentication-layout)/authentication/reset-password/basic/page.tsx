@@ -70,7 +70,7 @@ const Basic: React.FC<BasicProps> = () => {
 
         try {
             // 🔹 Llama al endpoint del backend
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
             const response = await axios.post(`${apiUrl}/auth/reset-password`, {
                 token: token,
                 newPassword: data.newPassword
