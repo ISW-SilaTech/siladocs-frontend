@@ -292,12 +292,12 @@ const SilabosPage: React.FC = () => {
                             <p className="text-muted mb-3">El sílabo fue registrado exitosamente en Hyperledger Fabric.</p>
                             <div className="text-start border rounded p-3 bg-light">
                                 <div className="mb-2">
-                                    <span className="text-muted fs-12 fw-bold">Archivo:</span>
-                                    <div className="fw-medium">{uploadResult.fileName}</div>
+                                    <span className="text-muted fs-12 fw-bold">Curso:</span>
+                                    <div className="fw-medium">{uploadResult.courseName}</div>
                                 </div>
                                 <div className="mb-2">
                                     <span className="text-muted fs-12 fw-bold">Hash SHA-256:</span>
-                                    <code className="d-block fs-11 text-break">{uploadResult.hash}</code>
+                                    <code className="d-block fs-11 text-break">{uploadResult.currentHash}</code>
                                 </div>
                                 <div>
                                     <span className="text-muted fs-12 fw-bold">Transaction ID (Fabric):</span>
