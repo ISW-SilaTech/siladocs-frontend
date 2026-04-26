@@ -13,6 +13,7 @@ import Link from 'next/link'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Card, Col, Form, Nav, Row, Tab, Modal } from 'react-bootstrap'
 import axios from 'axios'
+import RegisterModal from '@/shared/layouts-components/register-modal/register-modal'
 
 
 //Efectos
@@ -324,6 +325,14 @@ const Landing = () => {
         setShowDemoModal(true);
     };
 
+    // Modal de registro de administrador
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const handleCloseRegisterModal = () => setShowRegisterModal(false);
+    const handleShowRegisterModal = (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        setShowRegisterModal(true);
+    };
+
     const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsContactLoading(true);
@@ -417,9 +426,13 @@ const Landing = () => {
                                 {/* <!-- Start::header-link|switcher-icon --> */}
 
                                 <div className="btn-list d-lg-none d-flex">
-                                    <Link scroll={false} href="/authentication/sign-up/basic" className="btn btn-primary-light">
+                                    <button
+                                        type="button"
+                                        onClick={handleShowRegisterModal}
+                                        className="btn btn-primary-light"
+                                    >
                                         Regístrate
-                                    </Link>
+                                    </button>
                                 </div>
 
                                 {/* <!-- End::header-link|switcher-icon --> */}
@@ -543,7 +556,14 @@ const Landing = () => {
                                     </path>
                                 </svg></div>
                                 <div className="d-lg-flex d-none align-items-center">
-                                    <div className="btn-list d-xl-flex d-none">
+                                    <div className="btn-list d-xl-flex d-none gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleShowRegisterModal}
+                                            className="btn btn-wave btn-primary-light border"
+                                        >
+                                            Regístrate
+                                        </button>
                                         <Link scroll={false} href="/authentication/sign-in/cover/" className="btn btn-wave btn-primary border">
                                             Ingresar
                                         </Link>
@@ -596,6 +616,12 @@ const Landing = () => {
          </button>
     </Modal.Footer> */}
                 </Modal>
+
+                {/* Modal de registro de administrador */}
+                <RegisterModal
+                    show={showRegisterModal}
+                    onHide={handleCloseRegisterModal}
+                />
 
                 {/* Agrega este estilo CSS a tu archivo CSS global o específico del componente */}
                 <style jsx global>{`
