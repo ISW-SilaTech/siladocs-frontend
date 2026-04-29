@@ -7,6 +7,7 @@ export interface ContactRequest {
   message: string;
   phone?: string;
   company?: string;
+  recaptchaToken?: string;
 }
 
 export interface ContactResponse {

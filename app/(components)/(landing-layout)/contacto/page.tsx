@@ -7,9 +7,11 @@ import { toast } from "react-toastify";
 import Seo from "@/shared/layouts-components/seo/seo";
 import { ContactService, type ContactRequest } from "@/shared/services/contact.service";
 import { extractErrorMessage } from "@/shared/utils/errors";
+import { useRecaptcha } from "@/shared/hooks/useRecaptcha";
 import Link from "next/link";
 
 const ContactPage = () => {
+  const { getToken } = useRecaptcha();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -70,7 +72,18 @@ const ContactPage = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await ContactService.sendMessage(formData as ContactRequest);
+      const recaptchaToken = await getToken('contact_form');
+      if (!recaptchaToken) {
+        toast.error("Error de verificación de seguridad. Por favor, intenta de nuevo.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const response = await ContactService.sendMessage({
+        ...formData,
+        recaptchaToken,
+      } as ContactRequest & { recaptchaToken: string });
+
       toast.success("¡Mensaje enviado exitosamente! Nos pondremos en contacto pronto.", {
         position: "top-right",
         autoClose: 2000,
