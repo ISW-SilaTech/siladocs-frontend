@@ -8,6 +8,7 @@ import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tab
 import { Analyticspayments, SchoolAttendanceOptions, SchoolAttendanceSeries, SchoolCards, SchoolEvents, SchoolOptions, SchoolOverviewOptions, SchoolOverviewSeries, SchoolSeries, StudentActivities, StudentPayments, TopStudents } from "@/shared/data/dashboards/schooldata";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
+import Image from "next/image";
 import Link from "next/link";
 import React, { Fragment } from "react";
 import { Card, Col, Dropdown, Form, ListGroup, Pagination, Row } from "react-bootstrap";
