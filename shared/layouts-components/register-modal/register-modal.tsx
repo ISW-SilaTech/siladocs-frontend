@@ -7,39 +7,35 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { AuthService } from "@/shared/services/auth.service";
 import { useAuth } from "@/shared/contextapi";
+import { extractErrorMessage } from "@/shared/utils/errors";
 
 interface RegisterModalProps {
     show: boolean;
     onHide: () => void;
 }
 
+const MOTION_INITIAL = { opacity: 0, y: 8 };
+const MOTION_ANIMATE = { opacity: 1, y: 0 };
+const MOTION_TRANSITION = { duration: 0.25, ease: "easeOut" };
+const EMPTY_FORM = { token: "", name: "", email: "", password: "", institutionName: "" };
+
 const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
     const { register } = useAuth();
 
-    const [values, setValues] = useState({
-        token: "",
-        name: "",
-        email: "",
-        password: "",
-        institutionName: "",
-        showPassword: false,
-        acceptTerms: true,
-    });
+    const [values, setValues] = useState(EMPTY_FORM);
+    const [showPassword, setShowPassword] = useState(false);
+    const [acceptTerms, setAcceptTerms] = useState(true);
     const [tokenValidated, setTokenValidated] = useState(false);
     const [isValidating, setIsValidating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
 
+    const busy = isSubmitting || isValidating;
+
     const resetState = () => {
-        setValues({
-            token: "",
-            name: "",
-            email: "",
-            password: "",
-            institutionName: "",
-            showPassword: false,
-            acceptTerms: true,
-        });
+        setValues(EMPTY_FORM);
+        setShowPassword(false);
+        setAcceptTerms(true);
         setTokenValidated(false);
         setIsValidating(false);
         setIsSubmitting(false);
@@ -47,7 +43,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
     };
 
     const handleClose = () => {
-        if (isSubmitting || isValidating) return;
+        if (busy) return;
         resetState();
         onHide();
     };
@@ -83,10 +79,9 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
             setValues((prev) => ({ ...prev, institutionName: data.institutionName }));
             setTokenValidated(true);
             toast.success("¡Código válido!");
-        } catch (err: any) {
+        } catch (err) {
             setTokenValidated(false);
-            const msg = err?.response?.data?.message || err?.message || "Código inválido, expirado o ya utilizado.";
-            toast.error(msg);
+            toast.error(extractErrorMessage(err, "Código inválido, expirado o ya utilizado."));
         } finally {
             setIsValidating(false);
         }
@@ -95,7 +90,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        if (!values.acceptTerms) {
+        if (!acceptTerms) {
             toast.warn("Debes aceptar los términos y condiciones");
             return;
         }
@@ -112,9 +107,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
             toast.success("Cuenta creada correctamente", { position: "top-right", autoClose: 1500 });
             resetState();
             onHide();
-        } catch (err: any) {
-            const msg = err?.response?.data?.message || err?.message || "Error en el registro";
-            toast.error(msg);
+        } catch (err) {
+            toast.error(extractErrorMessage(err, "Error en el registro"));
             setTokenValidated(false);
         } finally {
             setIsSubmitting(false);
@@ -127,28 +121,20 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
             onHide={handleClose}
             size="lg"
             centered
-            backdrop={isSubmitting || isValidating ? "static" : true}
-            keyboard={!isSubmitting && !isValidating}
+            backdrop={busy ? "static" : true}
+            keyboard={!busy}
         >
-            <Modal.Header closeButton={!isSubmitting && !isValidating}>
+            <Modal.Header closeButton={!busy}>
                 <Modal.Title>
                     <span className="fw-semibold">Crea tu cuenta de administrador</span>
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    initial={MOTION_INITIAL}
+                    animate={MOTION_ANIMATE}
+                    transition={MOTION_TRANSITION}
                 >
-                    <style>{`
-                        .form-control:disabled, .form-select:disabled {
-                            background-color: #e9ecef !important;
-                            color: #6c757d !important;
-                            opacity: 1 !important;
-                        }
-                        .btn.opacity-50 { opacity: 0.5 !important; pointer-events: none; }
-                    `}</style>
                     <p className="text-muted mb-4">
                         Ingresa tu código de acceso institucional para registrarte de forma segura.
                     </p>
@@ -162,7 +148,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                         id="modal-user-token"
                                         placeholder="Ingresa el código de acceso"
                                         value={values.token}
-                                        onChange={(e) => setValues({ ...values, token: e.target.value })}
+                                        onChange={(e) => setValues((prev) => ({ ...prev, token: e.target.value }))}
                                         disabled={tokenValidated || isValidating}
                                     />
                                     <Button
@@ -192,7 +178,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                     id="modal-signup-email"
                                     placeholder="correo@institucion.edu"
                                     value={values.email}
-                                    onChange={(e) => setValues({ ...values, email: e.target.value })}
+                                    onChange={(e) => setValues((prev) => ({ ...prev, email: e.target.value }))}
                                     isInvalid={!!errors.email}
                                     disabled={!tokenValidated}
                                 />
@@ -205,7 +191,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                     id="modal-signup-name"
                                     placeholder="Nombre completo"
                                     value={values.name}
-                                    onChange={(e) => setValues({ ...values, name: e.target.value })}
+                                    onChange={(e) => setValues((prev) => ({ ...prev, name: e.target.value }))}
                                     isInvalid={!!errors.name}
                                     disabled={!tokenValidated}
                                 />
@@ -215,11 +201,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                 <Form.Label htmlFor="modal-signup-password" className="text-default d-block">Contraseña</Form.Label>
                                 <div className="position-relative">
                                     <Form.Control
-                                        type={values.showPassword ? "text" : "password"}
+                                        type={showPassword ? "text" : "password"}
                                         id="modal-signup-password"
                                         placeholder="Mínimo 6 caracteres"
                                         value={values.password}
-                                        onChange={(e) => setValues({ ...values, password: e.target.value })}
+                                        onChange={(e) => setValues((prev) => ({ ...prev, password: e.target.value }))}
                                         isInvalid={!!errors.password}
                                         disabled={!tokenValidated}
                                     />
@@ -229,10 +215,10 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                         className="show-password-button text-muted"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }));
+                                            setShowPassword((prev) => !prev);
                                         }}
                                     >
-                                        {values.showPassword
+                                        {showPassword
                                             ? <i className="ri-eye-line align-middle"></i>
                                             : <i className="ri-eye-off-line align-middle"></i>}
                                     </Link>
@@ -245,8 +231,8 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                         className="form-check-input"
                                         type="checkbox"
                                         id="modal-termsCheck"
-                                        checked={values.acceptTerms}
-                                        onChange={(e) => setValues({ ...values, acceptTerms: e.target.checked })}
+                                        checked={acceptTerms}
+                                        onChange={(e) => setAcceptTerms(e.target.checked)}
                                     />
                                     <label className="form-check-label" htmlFor="modal-termsCheck">
                                         Acepto los{" "}
@@ -254,7 +240,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                             href="https://www.ejemplo.com/terminos"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            style={{ color: "#4767ed" }}
+                                            className="text-primary"
                                         >
                                             términos y condiciones
                                         </a>
@@ -266,7 +252,7 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                             <Button
                                 type="submit"
                                 variant="primary"
-                                disabled={!tokenValidated || isSubmitting || !values.acceptTerms}
+                                disabled={!tokenValidated || isSubmitting || !acceptTerms}
                             >
                                 {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
                             </Button>

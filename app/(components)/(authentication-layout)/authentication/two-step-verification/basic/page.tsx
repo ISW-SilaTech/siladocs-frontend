@@ -34,7 +34,7 @@ const Basic: React.FC<BasicProps> = () => {
         next:any,
         value:any
     ) => {
-        if (!/^\d?$/.test(value)) return; // Only allow one digit
+        if (!/^\d?$/.test(value)) return;
 
         const updatedValues:any = { ...inputValues, [current]: value };
         setInputValues(updatedValues);

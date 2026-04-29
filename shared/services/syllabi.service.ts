@@ -6,9 +6,9 @@ export interface Syllabus {
   courseName: string;
   courseCode: string;
   fileUrl: string;
-  fileName: string;  // derived from fileUrl
+  fileName: string;
   fileSize: number;
-  hash: string;      // mapped from currentHash
+  hash: string;
   fabricTxId: string | null;
   uploadedAt: string;
   status: string;

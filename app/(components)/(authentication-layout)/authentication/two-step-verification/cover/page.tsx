@@ -34,7 +34,7 @@ const Cover: React.FC<CoverProps> = () => {
         next: any,
         value: any
     ) => {
-        if (!/^\d?$/.test(value)) return; // Only allow one digit
+        if (!/^\d?$/.test(value)) return;
 
         const updatedValues: any = { ...inputValues, [current]: value };
         setInputValues(updatedValues);
@@ -166,7 +166,7 @@ const Cover: React.FC<CoverProps> = () => {
                 <Col xxl={3} xl={3} lg={12} className="d-xl-block d-none px-0">
                     <div className="authentication-cover overflow-hidden">
                         <div className="authentication-cover-logo">
-                            <Link scroll={false} href="/dashboards/sales">
+                            <Link scroll={false} href="/landing">
                                 <Image fill src="../../../assets/images/brand-logos/toggle-logo.png" alt="logo" className="desktop-dark" />
                             </Link>
                         </div>
@@ -175,7 +175,7 @@ const Cover: React.FC<CoverProps> = () => {
                         </div>
                         <div className="authentication-cover-content">
                             <div className="p-5">
-                                <h3 className="fw-semibold lh-base">Bienvenido a <span style={{ color: "#5976ef" }}>Siladocs</span></h3>
+                                <h3 className="fw-semibold lh-base">Bienvenido a <span className="text-primary">Siladocs</span></h3>
                                 <p className="mb-0 text-muted fw-medium">Gestiona los sílabos de tu institución de forma segura y trazable.</p>
                             </div>
                             <div>
