@@ -38,13 +38,13 @@ interface InitialState {
 //  Initial state with default values
 
 const initialState: InitialState = {
-    lang: "en",                     
+    lang: "en",
     dir: "ltr",
     dataThemeMode: "light",
     dataMenuStyles: "transparent",
     dataNavLayout: "vertical",
     dataHeaderStyles: "transparent",
-    dataVerticalStyle: "doublemenu",
+    dataVerticalStyle: "",
     toggled: "",
     dataNavStyle: "",
     horStyle: "",

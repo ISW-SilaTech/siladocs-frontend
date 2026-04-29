@@ -42,13 +42,10 @@ const Layout = ({ children }: any) => {
     ? "main-body-container"
     : "default-body-container";
 
-  // Debug + disparar resize al cambiar de ruta
+  // Disparar resize al cambiar de ruta para recalcular anchos
   useEffect(() => {
-    console.log("ContainerClass:", containerclass, "Path:", pathname);
-
-    // 👇 forzar a recalcular anchos de tablas o grids
     window.dispatchEvent(new Event("resize"));
-  }, [containerclass, pathname]);
+  }, [pathname]);
 
   return (
     <Fragment>
@@ -58,8 +55,7 @@ const Layout = ({ children }: any) => {
         <Header />
         <Sidebar />
         <div className="main-content app-content">
-          {/* 👇 el key fuerza remount al cambiar de ruta */}
-          <div key={pathname} className={`container-fluid page-container ${containerclass}`}>
+          <div className={`container-fluid page-container ${containerclass}`}>
             {children}
           </div>
         </div>
