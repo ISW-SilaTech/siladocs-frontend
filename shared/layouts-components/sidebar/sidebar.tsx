@@ -96,7 +96,6 @@ const Sidebar = () => {
 				"iconOverlay": "open"
 			}
 			setState(newState)
-			console.log(newState)
 		}
 
 	}

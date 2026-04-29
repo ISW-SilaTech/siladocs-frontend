@@ -10,55 +10,15 @@ import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment } from "react";
 import { Card, Col, Dropdown, Form, ListGroup, Pagination, Row } from "react-bootstrap";
+import { useAuth } from "@/shared/contextapi";
 
 interface SchoolProps { }
 
 const School: React.FC<SchoolProps> = () => {
 
-    // 1. Estado para almacenar los datos del usuario logueado
-    const [userData, setUserData] = useState({
-        fullName: 'Cargando...',
-        institutionName: 'Cargando datos...',
-    });
-
-    // 2. Efecto para obtener la data desde Spring Boot al cargar la página
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const token = localStorage.getItem('accessToken');
-
-                if (!token) {
-                    console.warn("No hay token de sesión.");
-                    return;
-                }
-
-                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
-                const response = await fetch(`${apiUrl}/auth/me`, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserData({
-                        fullName: data.fullName,
-                        institutionName: data.institutionName
-                    });
-                } else {
-                    console.error("El token expiró o es inválido");
-                }
-            } catch (error) {
-                console.error("Error de red al obtener datos del usuario", error);
-            }
-        };
-
-        fetchUserData();
-    }, []);
+    const { user, institution } = useAuth();
 
     return (
         <Fragment>
@@ -81,22 +41,21 @@ const School: React.FC<SchoolProps> = () => {
                             className="rounded"
                         /> */}
                         <div>
-                            {/* ⬇️ DATOS DINÁMICOS AQUÍ ⬇️ */}
-                            <h5 className="mb-1 fw-semibold">{userData.institutionName}</h5>
-                            <span className="text-muted">Bienvenido, {userData.fullName}</span>
+                            <h5 className="mb-1 fw-semibold">{institution?.name ?? '—'}</h5>
+                            <span className="text-muted">Bienvenido, {user?.email ?? '—'}</span>
                         </div>
                     </div>
 
                     {/* Accesos rápidos */}
                     <div className="d-flex gap-2">
-                        <Link href="/gestion-academica" className="btn btn-primary btn-sm">
+                        <Link href="/gestion/carreras" className="btn btn-primary btn-sm">
                             Gestión Académica
                         </Link>
-                        <Link href="/silabos/cargar" className="btn btn-outline-primary btn-sm">
+                        <Link href="/gestion/silabos" className="btn btn-outline-primary btn-sm">
                             Cargar Sílabos
                         </Link>
-                        <Link href="/procesos" className="btn btn-light btn-sm">
-                            Ver Procesos
+                        <Link href="/core/blockchain" className="btn btn-light btn-sm">
+                            Ver Trazabilidad
                         </Link>
                     </div>
                 </Card.Body>

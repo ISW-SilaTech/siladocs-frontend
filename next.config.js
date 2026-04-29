@@ -1,24 +1,15 @@
 
 /**@type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === "production";
 const nextConfig = {
-  output: "export",  // Uncomment the following line only for building purposes. By default, this line should remain commented out.
+  output: "export",
   trailingSlash: true,
-  reactStrictMode: false,
-  // swcMinify: true,
-  basePath: isProd ? "" : undefined,
-  assetPrefix: isProd ? "" : undefined,
+  reactStrictMode: true,
   images: {
-    loader: "imgix",
-    path: "/",
+    unoptimized: true,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  images: {
-    unoptimized: true
-},
-  reactStrictMode: false, // Disable Strict Mode if necessary
 };
 
-module.exports = nextConfig
+module.exports = nextConfig;

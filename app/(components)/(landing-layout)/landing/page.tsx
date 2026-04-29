@@ -157,7 +157,6 @@ const Landing = () => {
                     dataNavLayout: 'horizontal'
                 }
                 setState(newState)
-                console.log(newState, "newState")
             }
         }
 
@@ -352,8 +351,7 @@ const Landing = () => {
             } else {
                 setContactStatus('Ocurrió un error inesperado al enviar.');
             }
-        } catch (error) {
-            console.error("Error sending contact form:", error); // Loguea el error real
+        } catch {
             setContactStatus('Error al enviar. Por favor, verifica los datos o intenta más tarde.');
         } finally {
             setIsContactLoading(false);

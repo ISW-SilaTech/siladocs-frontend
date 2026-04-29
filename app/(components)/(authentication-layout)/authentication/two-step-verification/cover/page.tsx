@@ -67,25 +67,17 @@ const Cover: React.FC<CoverProps> = () => {
         const { one, two, three, four } = inputValues;
 
         if (!one || !two || !three || !four) {
-            setError('All fields are required.');
+            setError('Todos los campos son requeridos.');
             return;
         }
 
-        const fullOTP = `${one}${two}${three}${four}`;
-        router.push('/dashboards/sales');
-        toast.success('Verify Your Account successful', {
+        router.push('/dashboards/general');
+        toast.success('Verificación exitosa', {
             position: 'top-right',
             autoClose: 1500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
         });
-        console.log('Submitted OTP:', fullOTP);
 
         setError('');
-
-        // TODO: Call your backend API with OTP
     };
 
     return (
@@ -98,8 +90,8 @@ const Cover: React.FC<CoverProps> = () => {
                         <Col xxl={4} xl={5} lg={6} md={6} sm={8} className="col-12">
                             <Card className="custom-card border-0 shadow-none my-4">
                                 <Card.Body className="p-5">
-                                    <p className="h4 mb-2 fw-semibold">Verify Your Account</p>
-                                    <p className="mb-4 text-muted fw-normal">Enter the 4 digit code sent to the registered email Id.</p>
+                                    <p className="h4 mb-2 fw-semibold">Verifica tu cuenta</p>
+                                    <p className="mb-4 text-muted fw-normal">Ingresa el código de 4 dígitos enviado a tu correo registrado.</p>
                                     <Form onSubmit={handleSubmit} >
                                     <Row className=" gy-3">
                                         <Col xl={12} className="mb-2">
@@ -146,21 +138,25 @@ const Cover: React.FC<CoverProps> = () => {
                                                     />
                                                 </Col>
                                             </Row>
-                                            <div className="form-check mt-3">
-                                                <input className="form-check-input" type="checkbox" defaultValue="" id="defaultCheck1" />
-                                                <label className="form-check-label" htmlFor="defaultCheck1">
-                                                    Did not recieve a code ?<Link scroll={false} href="/applications/email/mail-app" className="text-primary ms-2 d-inline-block fw-medium">Resend</Link>
-                                                </label>
+                                            <div className="mt-3 text-muted fs-13">
+                                                ¿No recibiste el código?{" "}
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-link p-0 fw-medium text-primary fs-13"
+                                                    onClick={() => toast.info('Código reenviado a tu correo')}
+                                                >
+                                                    Reenviar
+                                                </button>
                                             </div>
                                         </Col>
                                         <Col xl={12} className="d-grid mt-3">
                                             {error && <p className="text-danger text-sm text-center mb-2">{error}</p>}
-                                            <SpkButton Buttontype="submit" Customclass="btn btn-lg btn-primary">Verify</SpkButton>
+                                            <SpkButton Buttontype="submit" Customclass="btn btn-lg btn-primary">Verificar</SpkButton>
                                         </Col>
                                     </Row>
                                     </Form>
                                     <div className="text-center">
-                                        <p className="text-danger mt-3 mb-0 fw-medium"><sup><i className="ri-asterisk"></i></sup>Keep the verification code private!</p>
+                                        <p className="text-danger mt-3 mb-0 fw-medium"><sup><i className="ri-asterisk"></i></sup>¡Mantén el código de verificación en privado!</p>
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -179,8 +175,8 @@ const Cover: React.FC<CoverProps> = () => {
                         </div>
                         <div className="authentication-cover-content">
                             <div className="p-5">
-                                <h3 className="fw-semibold lh-base">Welcome to Dashboard</h3>
-                                <p className="mb-0 text-muted fw-medium">Manage your website and content with ease using our powerful admin tools.</p>
+                                <h3 className="fw-semibold lh-base">Bienvenido a <span style={{ color: "#5976ef" }}>Siladocs</span></h3>
+                                <p className="mb-0 text-muted fw-medium">Gestiona los sílabos de tu institución de forma segura y trazable.</p>
                             </div>
                             <div>
                                 <Image fill src="../../../assets/images/media/media-72.png" alt="" className="img-fluid" />
