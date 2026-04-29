@@ -104,19 +104,11 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
 
         setIsSubmitting(true);
         try {
-            const recaptchaToken = await getToken('registration');
-            if (!recaptchaToken) {
-                toast.error("Error de verificación de seguridad. Por favor, intenta de nuevo.");
-                setIsSubmitting(false);
-                return;
-            }
-
             await register({
                 accessCode: values.token,
                 fullName: values.name,
                 email: values.email,
                 password: values.password,
-                recaptchaToken,
             });
 
             toast.success("Cuenta creada correctamente", { position: "top-right", autoClose: 1500 });
