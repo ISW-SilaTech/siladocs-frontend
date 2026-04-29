@@ -16,7 +16,7 @@ interface RegisterModalProps {
 
 const MOTION_INITIAL = { opacity: 0, y: 8 };
 const MOTION_ANIMATE = { opacity: 1, y: 0 };
-const MOTION_TRANSITION = { duration: 0.25, ease: "easeOut" };
+const MOTION_TRANSITION = { duration: 0.25 };
 const EMPTY_FORM = { token: "", name: "", email: "", password: "", institutionName: "" };
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
