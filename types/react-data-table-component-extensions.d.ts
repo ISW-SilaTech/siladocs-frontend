@@ -1,3 +1,5 @@
 declare module 'react-data-table-component-extensions' {
-  export const default: any;
+  import { ComponentType } from 'react';
+  const DataTableExtensions: ComponentType<any>;
+  export default DataTableExtensions;
 }
