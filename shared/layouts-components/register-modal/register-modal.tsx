@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { AuthService } from "@/shared/services/auth.service";
 import { useAuth } from "@/shared/contextapi";
+import { useRecaptcha } from "@/shared/hooks/useRecaptcha";
 
 interface RegisterModalProps {
     show: boolean;
@@ -15,6 +16,7 @@ interface RegisterModalProps {
 
 const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
     const { register } = useAuth();
+    const { getToken } = useRecaptcha();
 
     const [values, setValues] = useState({
         token: "",
@@ -102,11 +104,19 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
 
         setIsSubmitting(true);
         try {
+            const recaptchaToken = await getToken('registration');
+            if (!recaptchaToken) {
+                toast.error("Error de verificación de seguridad. Por favor, intenta de nuevo.");
+                setIsSubmitting(false);
+                return;
+            }
+
             await register({
                 accessCode: values.token,
                 fullName: values.name,
                 email: values.email,
                 password: values.password,
+                recaptchaToken,
             });
 
             toast.success("Cuenta creada correctamente", { position: "top-right", autoClose: 1500 });
