@@ -338,13 +338,11 @@ const Landing = () => {
         setContactStatus('');
 
         try {
-            // Llama al endpoint /api/contact
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
-            const response = await axios.post(`${apiUrl}/contact`, contactFormData);
+            const response = await axios.post('/api/contact-form', contactFormData);
 
-            if (response.status === 201) { // 201 Created es lo que devuelve el backend
-                setContactStatus('¡Gracias! Tu solicitud ha sido enviada.');
-                setContactFormData({ // Limpia el formulario
+            if (response.status === 201) {
+                setContactStatus('¡Gracias! Tu solicitud ha sido enviada. Te contactaremos pronto.');
+                setContactFormData({
                     institutionName: '', firstName: '', lastName: '',
                     email: '', phone: '', message: ''
                 });
