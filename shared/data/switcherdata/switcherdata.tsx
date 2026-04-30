@@ -601,9 +601,15 @@ export const Reset1 = () => {
 
 
 export const LocalStorageBackup = (setpageloading: any) => {
-    // Restore sidebar toggled state
-    if (localStorage.sidebarToggled) {
-        setState({ toggled: localStorage.sidebarToggled });
+    // Layout migration v2: doublemenu was previously the default style, now it's overlay.
+    // Clear the auto-saved doublemenu so users see the correct default layout.
+    const layoutVersion = localStorage.getItem('siladocsLayoutV');
+    if (!layoutVersion) {
+        if (localStorage.getItem('vyzorverticalstyles') === 'doublemenu') {
+            localStorage.removeItem('vyzorverticalstyles');
+        }
+        localStorage.removeItem('sidebarToggled');
+        localStorage.setItem('siladocsLayoutV', '2');
     }
     // toggling the theme
     (localStorage.vyzordarkTheme) ? updateTheme('dark', true) : '';
@@ -812,6 +818,13 @@ export const LocalStorageBackup = (setpageloading: any) => {
                 break;
         }
 
+    }
+
+    // Restore sidebar open/close state AFTER vertical style is applied
+    // so it doesn't get overwritten by DoubletFn or similar
+    const savedToggled = localStorage.getItem('sidebarToggled');
+    if (savedToggled === 'close' || savedToggled === '') {
+        setState({ toggled: savedToggled });
     }
 
     setpageloading(true)

@@ -55,16 +55,10 @@ const Sidebar = () => {
 
 	useEffect(() => {
 		const mainContent = slidesArrow(".main-content");
-		const savedToggled = localStorage.getItem('sidebarToggled');
 
 		if (window.innerWidth <= 992) {
 			if (mainContent) {
-				if (!savedToggled) {
-					const newState = {
-						toggled: "close"
-					}
-					setState(newState)
-				}
+				setState({ toggled: "close" });
 			} else if (document.documentElement.getAttribute('data-nav-layout') == 'horizontal') {
 				closeMenuFn();
 			}
@@ -143,13 +137,10 @@ const Sidebar = () => {
 		if (WindowPreSize.length > 1) {
 			if ((WindowPreSize[WindowPreSize.length - 1] < 992) && (WindowPreSize[WindowPreSize.length - 2] >= 992)) {
 				// less than 992;
-				const savedToggled = localStorage.getItem('sidebarToggled');
-				if (!savedToggled) {
-					const newState = {
-						toggled: "close"
-					}
-					setState(newState)
+				const newState = {
+					toggled: "close"
 				}
+				setState(newState)
 			}
 
 			if ((WindowPreSize[WindowPreSize.length - 1] >= 992) && (WindowPreSize[WindowPreSize.length - 2] < 992)) {
