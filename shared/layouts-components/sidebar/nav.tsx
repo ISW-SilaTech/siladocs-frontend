@@ -31,8 +31,8 @@ export const MENUITEMS: any = [
           { path: "/gestion/silabos", type: "link", active: false, selected: false, dirchange: false, title: "Sílabos" },
         ]
       },
-            { path: "/core/carga-masiva", type: "link", icon: Svgicons.Formsicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
-
+      { path: "/core/carga-masiva", type: "link", icon: Svgicons.Formsicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
+      { path: "/gestion/solicitudes", type: "link", icon: Svgicons.Profilesettingicon, active: false, selected: false, dirchange: false, title: "Solicitudes de Registro" },
     ],
   },
   {
