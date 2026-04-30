@@ -109,8 +109,12 @@ export const setState: any = (newState: Partial<InitialState>) => {
     stateSubject.next({ ...currentState, ...newState });
     setAttributes()
 
+    // Only persist simple sidebar open/close state, not mode-specific values
     if (newState.toggled !== undefined) {
-        localStorage.setItem('sidebarToggled', newState.toggled);
+        const simpleValues = ["", "close", "open"];
+        if (simpleValues.includes(newState.toggled)) {
+            localStorage.setItem('sidebarToggled', newState.toggled);
+        }
     }
 }
 
