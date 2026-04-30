@@ -601,16 +601,6 @@ export const Reset1 = () => {
 
 
 export const LocalStorageBackup = (setpageloading: any) => {
-    // Layout migration v2: doublemenu was previously the default style, now it's overlay.
-    // Clear the auto-saved doublemenu so users see the correct default layout.
-    const layoutVersion = localStorage.getItem('siladocsLayoutV');
-    if (!layoutVersion) {
-        if (localStorage.getItem('vyzorverticalstyles') === 'doublemenu') {
-            localStorage.removeItem('vyzorverticalstyles');
-        }
-        localStorage.removeItem('sidebarToggled');
-        localStorage.setItem('siladocsLayoutV', '2');
-    }
     // toggling the theme
     (localStorage.vyzordarkTheme) ? updateTheme('dark', true) : '';
     (localStorage.vyzorlightTheme) ? updateTheme('light', true) : '';
@@ -756,7 +746,10 @@ export const LocalStorageBackup = (setpageloading: any) => {
 
     }
 
-    // Sidemenu Layout Styles:
+    // Sidemenu Layout Styles: default to doublemenu if nothing stored
+    if (!localStorage.vyzorverticalstyles) {
+        DoubletFn();
+    }
 
     if (localStorage.vyzorverticalstyles) {
         let verticalstyles = localStorage.getItem('vyzorverticalstyles');

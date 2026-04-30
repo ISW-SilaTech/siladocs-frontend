@@ -8,6 +8,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  basePath: "",
 };
 
 module.exports = nextConfig;
