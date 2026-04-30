@@ -29,6 +29,8 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<void>;
 }
 
+const AUTH_DATA_KEY = "authUserData";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -38,20 +40,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const initAuth = async () => {
+    const initAuth = () => {
       const token =
         typeof window !== "undefined"
           ? localStorage.getItem("accessToken")
           : null;
 
       if (token) {
-        try {
-          const data = await AuthService.getCurrentUser();
-          setUser(data.user);
-          setInstitution(data.institution);
-        } catch {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("user");
+        const savedData = localStorage.getItem(AUTH_DATA_KEY);
+        if (savedData) {
+          try {
+            const parsed = JSON.parse(savedData);
+            setUser(parsed.user);
+            setInstitution(parsed.institution);
+          } catch {
+            localStorage.removeItem(AUTH_DATA_KEY);
+          }
         }
       }
       setLoading(false);
@@ -63,6 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     const data = await AuthService.login({ email, password });
     localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: data.user, institution: data.institution }));
     setUser(data.user);
     setInstitution(data.institution);
     router.push("/dashboards/general");
@@ -71,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = async (data: RegisterRequest) => {
     const response = await AuthService.register(data);
     localStorage.setItem("accessToken", response.accessToken);
+    localStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: response.user, institution: response.institution }));
     setUser(response.user);
     setInstitution(response.institution);
     router.push("/dashboards/general");
@@ -78,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     AuthService.logout();
+    localStorage.removeItem(AUTH_DATA_KEY);
     setUser(null);
     setInstitution(null);
     router.push("/authentication/sign-in/cover");
