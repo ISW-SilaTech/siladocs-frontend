@@ -54,18 +54,11 @@ const Sidebar = () => {
 	const SelectorAll = (selector: any) => document.querySelectorAll(selector);
 
 	useEffect(() => {
-		const resizeEventListeners = [
-			{ event: 'resize', handler: menuResizeFn },
-			{ event: 'resize', handler: checkHoriMenu }
-		];
-		resizeEventListeners.forEach(({ event, handler }) => {
-			window.addEventListener(event, handler);
-		});
 		const mainContent = slidesArrow(".main-content");
+		const savedToggled = localStorage.getItem('sidebarToggled');
 
 		if (window.innerWidth <= 992) {
 			if (mainContent) {
-				const savedToggled = localStorage.getItem('sidebarToggled');
 				if (!savedToggled) {
 					const newState = {
 						toggled: "close"
@@ -76,6 +69,15 @@ const Sidebar = () => {
 				closeMenuFn();
 			}
 		}
+
+		const resizeEventListeners = [
+			{ event: 'resize', handler: menuResizeFn },
+			{ event: 'resize', handler: checkHoriMenu }
+		];
+		resizeEventListeners.forEach(({ event, handler }) => {
+			window.addEventListener(event, handler);
+		});
+
 		if (mainContent) {
 			mainContent.addEventListener('click', menuClose);
 		}
@@ -141,10 +143,13 @@ const Sidebar = () => {
 		if (WindowPreSize.length > 1) {
 			if ((WindowPreSize[WindowPreSize.length - 1] < 992) && (WindowPreSize[WindowPreSize.length - 2] >= 992)) {
 				// less than 992;
-				const newState = {
-					toggled: "close"
+				const savedToggled = localStorage.getItem('sidebarToggled');
+				if (!savedToggled) {
+					const newState = {
+						toggled: "close"
+					}
+					setState(newState)
 				}
-				setState(newState)
 			}
 
 			if ((WindowPreSize[WindowPreSize.length - 1] >= 992) && (WindowPreSize[WindowPreSize.length - 2] < 992)) {
