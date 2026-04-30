@@ -108,6 +108,10 @@ export const setState: any = (newState: Partial<InitialState>) => {
     const currentState = stateSubject.value;
     stateSubject.next({ ...currentState, ...newState });
     setAttributes()
+
+    if (newState.toggled !== undefined) {
+        localStorage.setItem('sidebarToggled', newState.toggled);
+    }
 }
 
 export const getState: any = (): InitialState => stateSubject.value;

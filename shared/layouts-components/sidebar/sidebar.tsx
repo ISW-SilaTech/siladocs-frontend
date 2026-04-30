@@ -62,12 +62,16 @@ const Sidebar = () => {
 			window.addEventListener(event, handler);
 		});
 		const mainContent = slidesArrow(".main-content");
+
 		if (window.innerWidth <= 992) {
 			if (mainContent) {
-				const newState = {
-					toggled: "close"
+				const savedToggled = localStorage.getItem('sidebarToggled');
+				if (!savedToggled) {
+					const newState = {
+						toggled: "close"
+					}
+					setState(newState)
 				}
-				setState(newState)
 			} else if (document.documentElement.getAttribute('data-nav-layout') == 'horizontal') {
 				closeMenuFn();
 			}

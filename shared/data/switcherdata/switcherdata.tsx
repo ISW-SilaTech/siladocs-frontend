@@ -601,10 +601,14 @@ export const Reset1 = () => {
 
 
 export const LocalStorageBackup = (setpageloading: any) => {
-    // toggling the theme 
+    // Restore sidebar toggled state
+    if (localStorage.sidebarToggled) {
+        setState({ toggled: localStorage.sidebarToggled });
+    }
+    // toggling the theme
     (localStorage.vyzordarkTheme) ? updateTheme('dark', true) : '';
     (localStorage.vyzorlightTheme) ? updateTheme('light', true) : '';
-    //  toggling the direction 
+    //  toggling the direction
     (localStorage.vyzorrtl) ? setDirection('rtl') : '';
     // Page Styles:
     (localStorage.vyzorregular) ? setPageStyle('regular') : '';
