@@ -5,13 +5,9 @@ import Header from '@/shared/layouts-components/header/header'
 import { data$, getState } from '@/shared/layouts-components/services/switcherServices'
 import Sidebar from '@/shared/layouts-components/sidebar/sidebar'
 import Switcher from '@/shared/layouts-components/switcher/switcher'
-import React, { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { Fragment, useEffect, useRef, useState } from 'react'
 
 const layout = ({ children }: any) => {
-
-  useLayoutEffect(() => {
-    document.body.classList.remove('bg-white', 'authentication-background', 'authenticationcover-background', 'position-relative', 'coming-soon-main');
-  }, []);
 
   const progressRef = useRef<HTMLDivElement>(null);
 

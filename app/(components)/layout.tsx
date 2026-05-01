@@ -1,12 +1,23 @@
 "use client";
 
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import { LocalStorageBackup } from "@/shared/data/switcherdata/switcherdata";
 import { data$, getState } from "@/shared/layouts-components/services/switcherServices";
 import { Initialload } from "@/shared/contextapi";
+import { usePathname } from "next/navigation";
+
+const AUTH_BODY_CLASSES = ['bg-white', 'authentication-background', 'authenticationcover-background', 'position-relative', 'coming-soon-main'];
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
+    const pathname = usePathname();
     const [localVariable, setLocalVariable] = useState(getState());
+
+    useLayoutEffect(() => {
+        const isAuthPage = pathname.includes('/authentication') || pathname.includes('/coming-soon') || pathname.includes('/under-maintainance');
+        if (!isAuthPage) {
+            document.body.classList.remove(...AUTH_BODY_CLASSES);
+        }
+    }, [pathname]);
 
     const customstyles: React.CSSProperties = {
         ...(localVariable.colorPrimaryRgb && { "--primary-rgb": localVariable.colorPrimaryRgb } as any),
