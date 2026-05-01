@@ -748,7 +748,13 @@ export const LocalStorageBackup = (setpageloading: any) => {
 
     // Sidemenu Layout Styles: default to doublemenu if nothing stored
     if (!localStorage.vyzorverticalstyles) {
-        DoubletFn();
+        setState({
+            dataNavLayout: "vertical",
+            dataVerticalStyle: "doublemenu",
+            toggled: "double-menu-close",
+            dataNavStyle: "",
+        });
+        localStorage.setItem('vyzorverticalstyles', 'doublemenu');
     }
 
     if (localStorage.vyzorverticalstyles) {
@@ -800,7 +806,13 @@ export const LocalStorageBackup = (setpageloading: any) => {
                 if (doubleId) {
                     doubleId.checked = true;
                 };
-                DoubletFn();
+                setState({
+                    dataNavLayout: "vertical",
+                    dataVerticalStyle: "doublemenu",
+                    toggled: "double-menu-close",
+                    dataNavStyle: "",
+                });
+                localStorage.setItem('vyzorverticalstyles', 'doublemenu');
                 break;
 
             default:
