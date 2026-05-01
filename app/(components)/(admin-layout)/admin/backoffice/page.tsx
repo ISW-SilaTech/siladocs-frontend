@@ -79,20 +79,62 @@ export default function AdminBackofficePage() {
 
   const handleCreateInstitution = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validación frontend completa
     if (!form.name.trim()) {
       toast.warn("El nombre de la institución es requerido");
       return;
     }
+    if (!form.domain.trim()) {
+      toast.warn("El dominio es requerido");
+      return;
+    }
+    if (!form.status) {
+      toast.warn("El estado es requerido");
+      return;
+    }
+
     setSaving(true);
     try {
+      // Validar que el estado sea uno de los permitidos
+      if (!['active', 'inactive', 'pending'].includes(form.status)) {
+        throw new Error(`Estado inválido: ${form.status}`);
+      }
+
+      // Log para debugging
+      console.log('Enviando institución:', form);
+
       const res = await adminApi.post<Institution>('/institutions', form);
       const inst = res.data;
       setCreatedInstitution(inst);
       setInstitutions((prev) => [inst, ...prev]);
       setStep("code");
       toast.success(`Institución "${inst.name}" creada`);
-    } catch (err) {
-      toast.error(extractErrorMessage(err, "Error al crear la institución"));
+    } catch (err: any) {
+      console.error('Error al crear institución:', err);
+
+      const statusCode = err?.response?.status;
+      const backendMsg = err?.response?.data?.message;
+      const errorDetail = err?.response?.data?.detail;
+
+      let msg = 'Error al crear la institución';
+
+      if (statusCode === 400) {
+        // Detectar errores comunes
+        if (backendMsg?.includes('already') || backendMsg?.includes('unique') || errorDetail?.includes('already')) {
+          msg = '❌ Esta institución ya existe. Usa un nombre diferente.';
+        } else if (backendMsg?.includes('invalid') || errorDetail?.includes('invalid')) {
+          msg = `❌ Datos inválidos: ${backendMsg || errorDetail || 'Verifica los campos'}`;
+        } else {
+          msg = backendMsg || errorDetail || 'Error de validación. Verifica los datos.';
+        }
+      } else if (statusCode === 409) {
+        msg = '❌ Esta institución ya está registrada en el sistema.';
+      } else {
+        msg = extractErrorMessage(err, msg);
+      }
+
+      toast.error(msg);
     } finally {
       setSaving(false);
     }
