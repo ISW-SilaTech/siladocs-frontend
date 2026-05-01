@@ -100,9 +100,10 @@ const Landing = () => {
     }, []);
 
     const overlayElementRef: any = useRef(null);
+    const [Datawidth, setDatawidth] = useState(0);
 
     function menuClose() {
-        if (window.innerWidth <= 992) {
+        if (typeof window !== 'undefined' && window.innerWidth <= 992) {
             const newState = {
                 toggled: "close"
             }
@@ -113,7 +114,6 @@ const Landing = () => {
         }
     }
 
-    const Datawidth = window.innerWidth
     function toggleNavigation() {
         if (Datawidth <= 992) {
             const currentToggled = variable
@@ -126,11 +126,14 @@ const Landing = () => {
     }
 
     useEffect(() => {
-        window.addEventListener('resize', toggleNavigation);
-        return () => {
-            window.removeEventListener('resize', toggleNavigation);
-        };
-    }, []);
+        if (typeof window !== 'undefined') {
+            setDatawidth(window.innerWidth);
+            window.addEventListener('resize', toggleNavigation);
+            return () => {
+                window.removeEventListener('resize', toggleNavigation);
+            };
+        }
+    }, [Datawidth]);
 
     useEffect(() => {
         const newState = {
@@ -146,14 +149,16 @@ const Landing = () => {
         setState(newState);
 
         return () => {
-            const newState = {
-                dataNavStyle: "",
-                dataVerticalStyle: "doublemenu",
-                dataNavLayout: `${localStorage.vyzorLayout == "horizontal" ? "horizontal" : "vertical"}`,
-                dataMenuStyles: '',
-                toggled: 'double-menu-open'
+            if (typeof localStorage !== 'undefined') {
+                const newState = {
+                    dataNavStyle: "",
+                    dataVerticalStyle: "doublemenu",
+                    dataNavLayout: `${localStorage.vyzorLayout == "horizontal" ? "horizontal" : "vertical"}`,
+                    dataMenuStyles: '',
+                    toggled: 'double-menu-open'
+                }
+                setState(newState)
             }
-            setState(newState)
         }
     }, [])
 
@@ -165,6 +170,8 @@ const Landing = () => {
     }, []);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
         function handleResize() {
             if (window.innerWidth <= 992) {
                 const newState = {
@@ -191,6 +198,8 @@ const Landing = () => {
     }, []);
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
+
         const landingpages = () => {
             if (window.scrollY > 30 && documentSelector(".app-sidebar")) {
                 let Scolls = document?.querySelectorAll(".sticky");
@@ -205,10 +214,9 @@ const Landing = () => {
             }
         };
 
-        if (typeof window !== "undefined") {
-            window.addEventListener("scroll", landingpages);
-        }
-    });
+        window.addEventListener("scroll", landingpages);
+        return () => window.removeEventListener("scroll", landingpages);
+    }, []);
 
     function handleClick1() {
         setExpande(false);
@@ -230,14 +238,14 @@ const Landing = () => {
     const documentSelectors = (selector: string) => document.querySelectorAll<HTMLElement>(selector);
 
     useEffect(() => {
-        if (localStorage.getItem('data-menu-styles') === 'light') {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('data-menu-styles') === 'light') {
             documentSelector('html')?.setAttribute('data-menu-styles', 'light');
         }
     }, []);
 
     const toggleExpand = () => {
         setExpande(!expande);
-        if (localStorage.getItem('data-menu-styles') === 'light') {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('data-menu-styles') === 'light') {
             documentSelector('html')?.setAttribute('data-menu-styles', 'light');
         }
     };
