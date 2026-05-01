@@ -24,10 +24,8 @@ interface CreatedCode {
 
 const EMPTY_FORM: InstitutionRequest = {
   name: "",
-  ruc: "",
-  address: "",
-  phone: "",
-  email: "",
+  domain: "",
+  status: "active",
 };
 
 export default function SolicitudesPage() {
@@ -103,7 +101,7 @@ export default function SolicitudesPage() {
     if (!createdInstitution) return;
     setSaving(true);
     try {
-      const code = await OnboardingService.generateAccessCode({ institutionId: createdInstitution.id });
+      const code = await OnboardingService.generateAccessCode({ institutionName: createdInstitution.name });
       setAccessCodes((prev) => [code, ...prev]);
       setResult({ institution: createdInstitution, accessCode: code });
       setShowModal(false);
@@ -120,7 +118,7 @@ export default function SolicitudesPage() {
     if (!selectedInstitution) return;
     setGeneratingCode(true);
     try {
-      const code = await OnboardingService.generateAccessCode({ institutionId: selectedInstitution.id });
+      const code = await OnboardingService.generateAccessCode({ institutionName: selectedInstitution.name });
       setAccessCodes((prev) => [code, ...prev]);
       setResult({ institution: selectedInstitution, accessCode: code });
       setShowCodeModal(false);
@@ -211,8 +209,8 @@ export default function SolicitudesPage() {
                 <thead className="table-light">
                   <tr>
                     <th>Institución</th>
-                    <th>Email</th>
-                    <th>RUC</th>
+                    <th>Dominio</th>
+                    <th>Estado</th>
                     <th className="text-end">Acciones</th>
                   </tr>
                 </thead>
@@ -220,8 +218,8 @@ export default function SolicitudesPage() {
                   {institutions.map((inst) => (
                     <tr key={inst.id}>
                       <td className="fw-semibold">{inst.name}</td>
-                      <td className="text-muted">{inst.email || "—"}</td>
-                      <td className="text-muted">{inst.ruc || "—"}</td>
+                      <td className="text-muted">{inst.domain || "—"}</td>
+                      <td><span className={`badge bg-${inst.status === 'active' ? 'success' : 'secondary'}-transparent text-${inst.status === 'active' ? 'success' : 'secondary'}`}>{inst.status || "—"}</span></td>
                       <td className="text-end">
                         <Button
                           variant="outline-primary"
@@ -333,22 +331,20 @@ export default function SolicitudesPage() {
                 <Col xs={12}>
                   <Form.Label className="fw-medium">Nombre de la Institución *</Form.Label>
                   <Form.Control name="name" value={form.name} onChange={handleChange} placeholder="Ej. Universidad Nacional de Ingeniería" required />
+                  <Form.Text className="text-muted">El nombre debe ser único en el sistema.</Form.Text>
                 </Col>
-                <Col xs={12} md={6}>
-                  <Form.Label className="fw-medium">Email de contacto</Form.Label>
-                  <Form.Control name="email" type="email" value={form.email} onChange={handleChange} placeholder="contacto@universidad.edu.pe" />
+                <Col xs={12}>
+                  <Form.Label className="fw-medium">Dominio *</Form.Label>
+                  <Form.Control name="domain" value={form.domain} onChange={handleChange} placeholder="universidad.edu.pe" required />
+                  <Form.Text className="text-muted">Dominio web o email corporativo de la institución.</Form.Text>
                 </Col>
-                <Col xs={12} md={6}>
-                  <Form.Label className="fw-medium">RUC</Form.Label>
-                  <Form.Control name="ruc" value={form.ruc} onChange={handleChange} placeholder="20123456789" />
-                </Col>
-                <Col xs={12} md={6}>
-                  <Form.Label className="fw-medium">Teléfono</Form.Label>
-                  <Form.Control name="phone" value={form.phone} onChange={handleChange} placeholder="+51 1 234 5678" />
-                </Col>
-                <Col xs={12} md={6}>
-                  <Form.Label className="fw-medium">Dirección</Form.Label>
-                  <Form.Control name="address" value={form.address} onChange={handleChange} placeholder="Av. Universitaria 1801, Lima" />
+                <Col xs={12}>
+                  <Form.Label className="fw-medium">Estado</Form.Label>
+                  <Form.Select name="status" value={form.status} onChange={handleChange as any}>
+                    <option value="active">Activo</option>
+                    <option value="inactive">Inactivo</option>
+                    <option value="pending">Pendiente</option>
+                  </Form.Select>
                 </Col>
               </Row>
             </Form>

@@ -3,18 +3,14 @@ import api from '@/shared/config/axios';
 export interface Institution {
   id: number;
   name: string;
-  ruc?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
+  domain: string;
+  status: string;
 }
 
 export interface InstitutionRequest {
   name: string;
-  ruc?: string;
-  address?: string;
-  phone?: string;
-  email?: string;
+  domain: string;
+  status: string;
 }
 
 export interface AccessCode {
@@ -28,7 +24,7 @@ export interface AccessCode {
 }
 
 export interface GenerateCodeRequest {
-  institutionId: number;
+  institutionName: string;
 }
 
 export const OnboardingService = {
@@ -52,3 +48,4 @@ export const OnboardingService = {
     return response.data;
   },
 };
+
