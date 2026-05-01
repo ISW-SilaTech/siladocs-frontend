@@ -7,12 +7,12 @@ import {
 } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import {
-  OnboardingService,
   type Institution,
   type AccessCode,
   type InstitutionRequest,
 } from "@/shared/services/onboarding.service";
 import { extractErrorMessage } from "@/shared/utils/errors";
+import adminApi from "@/shared/config/axios-admin";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -59,14 +59,14 @@ export default function AdminBackofficePage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [inst, codes] = await Promise.all([
-        OnboardingService.getInstitutions(),
-        OnboardingService.getAccessCodes(),
+      const [instRes, codesRes] = await Promise.all([
+        adminApi.get<Institution[]>('/institutions'),
+        adminApi.get<AccessCode[]>('/access-codes'),
       ]);
-      setInstitutions(inst);
-      setAccessCodes(codes);
-    } catch {
-      // silently fail – tables will be empty
+      setInstitutions(instRes.data);
+      setAccessCodes(codesRes.data);
+    } catch (err) {
+      toast.error('Error al cargar los datos. Verifica la conexión con el servidor.');
     } finally {
       setLoading(false);
     }
@@ -85,7 +85,8 @@ export default function AdminBackofficePage() {
     }
     setSaving(true);
     try {
-      const inst = await OnboardingService.createInstitution(form);
+      const res = await adminApi.post<Institution>('/institutions', form);
+      const inst = res.data;
       setCreatedInstitution(inst);
       setInstitutions((prev) => [inst, ...prev]);
       setStep("code");
@@ -101,7 +102,8 @@ export default function AdminBackofficePage() {
     if (!createdInstitution) return;
     setSaving(true);
     try {
-      const code = await OnboardingService.generateAccessCode({ institutionName: createdInstitution.name });
+      const res = await adminApi.post<AccessCode>('/access-codes/generate', { institutionName: createdInstitution.name });
+      const code = res.data;
       setAccessCodes((prev) => [code, ...prev]);
       setResult({ institution: createdInstitution, accessCode: code });
       setShowModal(false);
@@ -117,7 +119,8 @@ export default function AdminBackofficePage() {
     if (!selectedInstitution) return;
     setGeneratingCode(true);
     try {
-      const code = await OnboardingService.generateAccessCode({ institutionName: selectedInstitution.name });
+      const res = await adminApi.post<AccessCode>('/access-codes/generate', { institutionName: selectedInstitution.name });
+      const code = res.data;
       setAccessCodes((prev) => [code, ...prev]);
       setResult({ institution: selectedInstitution, accessCode: code });
       setShowCodeModal(false);
