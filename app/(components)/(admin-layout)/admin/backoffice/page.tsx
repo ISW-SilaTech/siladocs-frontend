@@ -111,30 +111,42 @@ export default function AdminBackofficePage() {
       setStep("code");
       toast.success(`Institución "${inst.name}" creada`);
     } catch (err: any) {
-      console.error('Error al crear institución:', err);
-
+      const responseData = err?.response?.data;
       const statusCode = err?.response?.status;
-      const backendMsg = err?.response?.data?.message;
-      const errorDetail = err?.response?.data?.detail;
+
+      // Log completo para ver exactamente qué devuelve el backend
+      console.error('Error completo:', {
+        status: statusCode,
+        responseData,
+        headers: err?.response?.headers,
+      });
+
+      const backendMsg =
+        responseData?.message ||
+        responseData?.error ||
+        responseData?.detail ||
+        (typeof responseData === 'string' ? responseData : null);
 
       let msg = 'Error al crear la institución';
 
       if (statusCode === 400) {
-        // Detectar errores comunes
-        if (backendMsg?.includes('already') || backendMsg?.includes('unique') || errorDetail?.includes('already')) {
+        if (backendMsg?.toLowerCase().includes('already') ||
+            backendMsg?.toLowerCase().includes('unique') ||
+            backendMsg?.toLowerCase().includes('existe') ||
+            backendMsg?.toLowerCase().includes('duplicate')) {
           msg = '❌ Esta institución ya existe. Usa un nombre diferente.';
-        } else if (backendMsg?.includes('invalid') || errorDetail?.includes('invalid')) {
-          msg = `❌ Datos inválidos: ${backendMsg || errorDetail || 'Verifica los campos'}`;
         } else {
-          msg = backendMsg || errorDetail || 'Error de validación. Verifica los datos.';
+          msg = backendMsg
+            ? `❌ ${backendMsg}`
+            : `❌ Error de validación (400). Revisa la pestaña Network para ver el cuerpo de la respuesta.`;
         }
       } else if (statusCode === 409) {
         msg = '❌ Esta institución ya está registrada en el sistema.';
       } else {
-        msg = extractErrorMessage(err, msg);
+        msg = backendMsg || extractErrorMessage(err, msg);
       }
 
-      toast.error(msg);
+      toast.error(msg, { autoClose: 8000 });
     } finally {
       setSaving(false);
     }
