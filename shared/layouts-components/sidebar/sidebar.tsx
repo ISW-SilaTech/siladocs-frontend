@@ -421,10 +421,9 @@ const Sidebar = () => {
 		else if (!hasParent) {
 			if (theme.dataVerticalStyle == "doublemenu") {
 				const newState = {
-					toggled: "double-menu-close"
+					toggled: hasParentLevel > 1 ? "double-menu-open" : "double-menu-close"
 				}
 				setState(newState)
-
 			}
 		}
 	}

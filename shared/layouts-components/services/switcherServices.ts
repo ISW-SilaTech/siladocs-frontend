@@ -45,7 +45,7 @@ const initialState: InitialState = {
     dataNavLayout: "vertical",
     dataHeaderStyles: "transparent",
     dataVerticalStyle: "doublemenu",
-    toggled: "double-menu-close",
+    toggled: "double-menu-open",
     dataNavStyle: "",
     horStyle: "",
     dataPageStyle: "flat",

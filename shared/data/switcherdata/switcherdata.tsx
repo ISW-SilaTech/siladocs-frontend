@@ -751,7 +751,7 @@ export const LocalStorageBackup = (setpageloading: any) => {
         setState({
             dataNavLayout: "vertical",
             dataVerticalStyle: "doublemenu",
-            toggled: "double-menu-close",
+            toggled: "double-menu-open",
             dataNavStyle: "",
         });
         localStorage.setItem('vyzorverticalstyles', 'doublemenu');
@@ -809,7 +809,7 @@ export const LocalStorageBackup = (setpageloading: any) => {
                 setState({
                     dataNavLayout: "vertical",
                     dataVerticalStyle: "doublemenu",
-                    toggled: "double-menu-close",
+                    toggled: "double-menu-open",
                     dataNavStyle: "",
                 });
                 localStorage.setItem('vyzorverticalstyles', 'doublemenu');
