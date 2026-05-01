@@ -60,7 +60,34 @@ const Cover: React.FC = () => {
             toast.success('¡Código válido!');
         } catch (err: any) {
             setTokenValidated(false);
-            const msg = err?.response?.data?.message || err?.message || 'Código inválido, expirado o ya utilizado.';
+            const statusCode = err?.response?.status;
+            const backendMsg = err?.response?.data?.message;
+
+            // Determinar mensaje basado en código HTTP y mensaje del backend
+            let msg = 'Error al validar el código';
+
+            if (statusCode === 400) {
+                // Detectar si el código ya fue utilizado basándose en el mensaje del backend
+                if (backendMsg?.toLowerCase().includes('utilizado') ||
+                    backendMsg?.toLowerCase().includes('used') ||
+                    backendMsg?.toLowerCase().includes('already')) {
+                    msg = '❌ Este código de acceso ya ha sido utilizado. Solicita uno nuevo a tu institución.';
+                } else if (backendMsg?.toLowerCase().includes('expirado') ||
+                           backendMsg?.toLowerCase().includes('expired')) {
+                    msg = '⏰ El código de acceso ha expirado. Por favor, solicita uno nuevo.';
+                } else if (backendMsg?.toLowerCase().includes('inválido') ||
+                           backendMsg?.toLowerCase().includes('invalid') ||
+                           backendMsg?.toLowerCase().includes('not found')) {
+                    msg = '🔍 El código de acceso no es válido. Verifica que esté escrito correctamente.';
+                } else {
+                    msg = backendMsg || '❌ Código inválido, expirado o ya utilizado.';
+                }
+            } else if (statusCode === 404) {
+                msg = '🔍 El código de acceso no existe. Verifica que esté escrito correctamente.';
+            } else {
+                msg = backendMsg || err?.message || 'Error al validar el código. Intenta nuevamente.';
+            }
+
             toast.error(msg);
         } finally {
             setIsValidating(false);

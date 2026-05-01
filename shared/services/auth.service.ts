@@ -35,8 +35,17 @@ export interface AuthResponse {
 
 export const AuthService = {
   validateCode: async (code: string): Promise<ValidateCodeResponse> => {
-    const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${code}`);
-    return response.data;
+    try {
+      const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${code}`);
+      return response.data;
+    } catch (error: any) {
+      // Re-throw with enhanced error context
+      throw {
+        ...error,
+        message: error?.response?.data?.message || error?.message || 'Error validating access code',
+        statusCode: error?.response?.status,
+      };
+    }
   },
 
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
