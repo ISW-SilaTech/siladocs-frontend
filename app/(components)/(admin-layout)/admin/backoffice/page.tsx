@@ -72,7 +72,7 @@ export default function AdminBackofficePage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -403,7 +403,7 @@ export default function AdminBackofficePage() {
                 </Col>
                 <Col xs={12}>
                   <Form.Label className="fw-medium">Estado</Form.Label>
-                  <Form.Select name="status" value={form.status} onChange={handleChange as any}>
+                  <Form.Select name="status" value={form.status} onChange={handleChange}>
                     <option value="active">Activo</option>
                     <option value="inactive">Inactivo</option>
                     <option value="pending">Pendiente</option>
