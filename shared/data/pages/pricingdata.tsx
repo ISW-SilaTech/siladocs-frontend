@@ -149,112 +149,122 @@ export const YearData: PriceCardData[] = [
     priceColor?: string;
     btnColor: string;
     badgeColor: string;
-    titleColor?:string
+    titleColor?:string;
+    planKey?: string;
+    badge?: boolean;
   }
 
 export const BasicPricingdata: PricingCardProps[] = [
   {
-    title: "Básico",
+    title: "Institución Pequeña",
     price: "$15",
     year: "Mes",
     percent: "25%",
+    planKey: "basico",
     features: [
-      "Acceso a funciones principales",
-      "5 GB de almacenamiento",
+      "Hasta 500 certificados/año",
+      "5 GB de almacenamiento IPFS",
       "Atención al cliente básica",
-      "1 acceso de usuario",
-      "Notificaciones por correo electrónico",
+      "2 administradores",
+      "Soporte por correo electrónico",
     ],
     btnColor: "primary",
     badgeColor: "secondary",
-    priceColor:'primary'
+    priceColor: 'primary'
   },
   {
-    title: "Pro",
+    title: "Gran Universidad",
     price: "$45",
     year: "Mes",
-    titleColor:"text-fixed-white",
+    titleColor: "text-fixed-white",
     percent: "40%",
+    planKey: "pro",
+    badge: true,
     features: [
-      "Acceso a funciones principales",
-      "50 GB de almacenamiento",
+      "Hasta 5,000 certificados/año",
+      "50 GB de almacenamiento IPFS",
       "Atención al cliente prioritaria",
-      "5 acceso de usuario",
-      "Análisis avanzado",
+      "10 administradores",
+      "Análisis avanzado y trazabilidad",
     ],
     cardClass: "card-bg-primary",
     priceColor: "fixed-white",
     btnColor: "light",
     badgeColor: "white",
-},
+  },
   {
-    title: "Empresa",
+    title: "Institución Premium",
     price: "$99",
     year: "Mensual",
     percent: "50%",
+    planKey: "empresa",
     features: [
-      "Todas las funciones del plan Pro",
-      "Almacenamiento ilimitado",
-      "Soporte dedicado",
-      "20 acceso de usuario",
+      "Certificados ilimitados",
+      "Almacenamiento IPFS ilimitado",
+      "Soporte dedicado 24/7",
+      "Administradores ilimitados",
       "Flujos de trabajo personalizables",
     ],
     btnColor: "primary",
     badgeColor: "secondary",
-    priceColor:'primary'
+    priceColor: 'primary'
   },
 ];
 
 export const BasicPricing1data: PricingCardProps[] = [
   {
-    title: "Básico",
+    title: "Institución Pequeña",
     price: "$150",
     year: "Anual",
     percent: "25%",
+    planKey: "basico",
     features: [
-      "Acceso a funciones principales",
-      "5 GB de almacenamiento",
+      "Hasta 500 certificados/año",
+      "5 GB de almacenamiento IPFS",
       "Atención al cliente básica",
-      "1 acceso de usuario",
-      "Notificaciones por correo electrónico",
+      "2 administradores",
+      "Soporte por correo electrónico",
     ],
     btnColor: "primary",
     badgeColor: "secondary",
-    priceColor:'primary'
+    priceColor: 'primary'
   },
   {
-    title: "Pro",
+    title: "Gran Universidad",
     price: "$450",
     year: "Anual",
-    titleColor:"text-fixed-white",
+    titleColor: "text-fixed-white",
     percent: "40%",
+    planKey: "pro",
+    badge: true,
     features: [
-      "Acceso a funciones principales",
-      "50 GB de almacenamiento",
+      "Hasta 5,000 certificados/año",
+      "50 GB de almacenamiento IPFS",
       "Atención al cliente prioritaria",
-      "5 acceso de usuario",
-      "Análisis avanzado",
+      "10 administradores",
+      "Análisis avanzado y trazabilidad",
     ],
     cardClass: "card-bg-primary",
     priceColor: "fixed-white",
     btnColor: "light",
     badgeColor: "white",
-},
+  },
   {
-    title: "Empresa",
+    title: "Institución Premium",
     price: "$990",
     year: "Anual",
     percent: "50%",
+    planKey: "empresa",
     features: [
-      "Todas las funciones del plan Pro",
-      "Almacenamiento ilimitado",
-      "Soporte dedicado",
-      "20 acceso de usuario",
+      "Certificados ilimitados",
+      "Almacenamiento IPFS ilimitado",
+      "Soporte dedicado 24/7",
+      "Administradores ilimitados",
       "Flujos de trabajo personalizables",
     ],
     btnColor: "primary",
     badgeColor: "secondary",
-    priceColor:'primary'
+    priceColor: 'primary'
   },
 ];
 

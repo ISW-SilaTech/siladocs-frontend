@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Card } from "react-bootstrap";
-import SpkButton from "../general-reusable/reusable-uielements/spk-buttons";
+import Link from "next/link";
 import SpkBadge from "../general-reusable/reusable-uielements/spk-badge";
 
 export type BasicFeatureItem = string | { value: string };
@@ -15,15 +15,27 @@ export interface SpkBasicPriceCardProps {
     priceColor?: string;
     badgeColor?: string;
     features: BasicFeatureItem[];
-    titleColor?:string
+    titleColor?: string;
+    planKey?: string;
+    badge?: boolean;
   };
   cardClass?: string;
 }
 
 const SpkBasicPriceCard = ({ price, cardClass = "" }: SpkBasicPriceCardProps) => {
+  const btnClass = `btn btn-lg btn-${price.btnColor} w-100`;
+  const href = price.planKey ? `/onboarding?plan=${price.planKey}` : "#";
+
   return (
     <Fragment>
-      <Card className={`custom-card ${cardClass}`}>
+      <Card className={`custom-card ${cardClass}`} style={{ position: 'relative' }}>
+        {price.badge && (
+          <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', zIndex: 1 }}>
+            <span className="badge bg-warning text-dark px-3 py-2 rounded-pill fw-semibold fs-12">
+              ⭐ Más popular
+            </span>
+          </div>
+        )}
         <Card.Body className="p-4 text-center">
           <h5 className={`fw-semibold mb-3 ${price.titleColor}`}>{price.title}</h5>
           <div className="d-flex align-items-end justify-content-center gap-1 mb-4">
@@ -38,9 +50,11 @@ const SpkBasicPriceCard = ({ price, cardClass = "" }: SpkBasicPriceCardProps) =>
             ))}
           </ul>
           <div>
-            <SpkBadge variant="" Customclass={`bg-${price.badgeColor}-transparent py-1 px-3 fs-13 rounded-pill fw-normal`}> {price.percent} Dscto</SpkBadge>
+            <SpkBadge variant="" Customclass={`bg-${price.badgeColor}-transparent py-1 px-3 fs-13 rounded-pill fw-normal`}>
+              {price.percent} Dscto
+            </SpkBadge>
             <div className="d-grid mt-3">
-              <SpkButton Buttonvariant={price.btnColor} Customclass="btn btn-lg">Elegir Plan</SpkButton>
+              <Link href={href} className={btnClass}>Elegir Plan</Link>
             </div>
           </div>
         </Card.Body>
