@@ -32,7 +32,6 @@ export const MENUITEMS: any = [
         ]
       },
       { path: "/core/carga-masiva", type: "link", icon: Svgicons.Formsicon, active: false, selected: false, dirchange: false, title: "Carga Masiva" },
-      { path: "/gestion/solicitudes", type: "link", icon: Svgicons.Profilesettingicon, active: false, selected: false, dirchange: false, title: "Solicitudes de Registro" },
     ],
   },
   {
