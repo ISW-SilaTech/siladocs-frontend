@@ -44,11 +44,36 @@ interface ValidationResult {
   warnings: string[]
 }
 
+// Enhanced DTO with full data for backend to create/update entities
+interface CarreraData {
+  nombre: string
+  facultad?: string
+  ciclos?: number
+  estado?: string
+}
+
+interface MallaData {
+  nombre: string
+  año?: number
+  numCursos?: number
+  creditos?: number
+  descripcion?: string
+  estado?: string
+}
+
+interface CursoData {
+  codigo: string
+  nombre: string
+  ciclo: number
+  año?: number
+  estado?: string
+  fechaPublicacion?: string
+}
+
 interface BulkCourseRequestDto {
-  carrera: string
-  malla: string
-  ciclo: string
-  curso: string
+  carrera: CarreraData
+  malla: MallaData
+  curso: CursoData
 }
 
 interface BulkUploadResult {
@@ -298,8 +323,28 @@ const BulkUploadPage: React.FC = () => {
     if (!valid.length) return
 
     const payload: BulkCourseRequestDto[] = valid.map(r => ({
-      carrera: r.carreraNombre ?? "", malla: r.mallaNombre ?? "",
-      ciclo: r.cursoCiclo ?? "", curso: r.cursoNombre ?? "",
+      carrera: {
+        nombre: r.carreraNombre ?? "",
+        facultad: r.carreraFacultad ?? undefined,
+        ciclos: r.carreraCiclos ? parseInt(r.carreraCiclos) : undefined,
+        estado: r.carreraEstado || "Activo",
+      },
+      malla: {
+        nombre: r.mallaNombre ?? "",
+        año: r.mallaAño ? parseInt(r.mallaAño) : undefined,
+        numCursos: r.mallaNumCursos ? parseInt(r.mallaNumCursos) : undefined,
+        creditos: r.mallaCreditos ? parseInt(r.mallaCreditos) : undefined,
+        descripcion: r.mallaDescripcion ?? undefined,
+        estado: r.mallaEstado || "Activo",
+      },
+      curso: {
+        codigo: r.cursoCodigo ?? "",
+        nombre: r.cursoNombre ?? "",
+        ciclo: r.cursoCiclo ? parseInt(r.cursoCiclo) : 1,
+        año: r.cursoAño ? parseInt(r.cursoAño) : undefined,
+        estado: r.cursoEstado || "Activo",
+        fechaPublicacion: r.cursoFechaPub ?? undefined,
+      },
     }))
 
     setIsSubmitting(true); setBackendResult(null)
