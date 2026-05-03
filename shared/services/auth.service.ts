@@ -33,6 +33,38 @@ export interface AuthResponse {
   institution: AuthInstitution;
 }
 
+const DEMO_USERS = [
+  {
+    email: 'academico@demo.siladocs.com',
+    password: 'Demo@Academico123',
+    role: 'Administrador Académico',
+  },
+  {
+    email: 'rector@demo.siladocs.com',
+    password: 'Demo@Rector123',
+    role: 'Rector',
+  },
+];
+
+const getDemoResponse = (email: string, password: string): AuthResponse | null => {
+  const demoUser = DEMO_USERS.find((u) => u.email === email && u.password === password);
+
+  if (!demoUser) return null;
+
+  return {
+    accessToken: 'demo-token-' + Date.now(),
+    user: {
+      id: 'demo-user-' + demoUser.role.replace(/\s+/g, '-').toLowerCase(),
+      email: demoUser.email,
+      role: demoUser.role,
+    },
+    institution: {
+      id: 'demo-institution-id',
+      name: 'Universidad Demo - SilaDocs',
+    },
+  };
+};
+
 export const AuthService = {
   validateCode: async (code: string): Promise<ValidateCodeResponse> => {
     const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${code}`);
@@ -45,6 +77,11 @@ export const AuthService = {
   },
 
   login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const demoResponse = getDemoResponse(data.email, data.password);
+    if (demoResponse) {
+      return demoResponse;
+    }
+
     const response = await api.post<AuthResponse>('/auth/login', data);
     return response.data;
   },
@@ -60,6 +97,8 @@ export const AuthService = {
       localStorage.removeItem('user');
     }
   },
+
+  getDemoUsers: () => DEMO_USERS,
 };
 
 export default api;

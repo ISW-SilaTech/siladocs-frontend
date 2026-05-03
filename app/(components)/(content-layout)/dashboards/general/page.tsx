@@ -1,395 +1,329 @@
 "use client"
 
-import SpkSchoolCard from "@/shared/@spk-reusable-components/dashboards-reusable/spk-schoolcard";
-import SpkBadge from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-badge";
-import SpkDropdown from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-dropdown";
 import Spkapexcharts from "@/shared/@spk-reusable-components/reusable-plugins/spk-apexcharts";
-import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
-import { Analyticspayments, SchoolAttendanceOptions, SchoolAttendanceSeries, SchoolCards, SchoolEvents, SchoolOptions, SchoolOverviewOptions, SchoolOverviewSeries, SchoolSeries, StudentActivities, StudentPayments, TopStudents } from "@/shared/data/dashboards/schooldata";
+import SpkBadge from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-badge";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment } from "react";
-import { Card, Col, Dropdown, Form, ListGroup, Pagination, Row } from "react-bootstrap";
+import React, { Fragment, useEffect, useState } from "react";
+import { Card, Col, Row, ListGroup, ProgressBar } from "react-bootstrap";
 import { useAuth } from "@/shared/contextapi";
+import {
+  emissionCreditsData,
+  certificateHistoryData,
+  certificateStats,
+  creditUsageData,
+} from "@/shared/data/dashboards/institutional-dashboard-data";
 
 interface SchoolProps { }
 
 const School: React.FC<SchoolProps> = () => {
+  const { user, institution } = useAuth();
+  const [isClient, setIsClient] = useState(false);
 
-    const { user, institution } = useAuth();
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-    return (
-        <Fragment>
+  const isRector = user?.role === "Rector";
+  const isAcademico = user?.role === "Administrador Académico";
 
-            {/* <!-- Page Header --> */}
+  return (
+    <Fragment>
+      <Seo title="Dashboard Institucional" />
+      <Pageheader title="Dashboard Institucional" currentpage="Dashboard" activepage="Dashboard" />
 
-            <Seo title="Dashboards-School" />
-            <Pageheader title="Dashboard" currentpage="Dashboard" activepage="Dashboard" />
+      {/* Header de institución */}
+      <Card className="custom-card mb-4 border-0 shadow-sm">
+        <Card.Body className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div className="d-flex align-items-center gap-4">
+            <div className="p-3 bg-primary-light rounded-3">
+              <i className="ti ti-school fs-24 text-primary"></i>
+            </div>
+            <div>
+              <h4 className="mb-1 fw-semibold text-dark">{institution?.name ?? "Institución"}</h4>
+              <p className="mb-0 text-muted">
+                Bienvenido, <strong>{user?.email ?? "Usuario"}</strong>
+              </p>
+              <small className="text-muted">Rol: {user?.role || "—"}</small>
+            </div>
+          </div>
 
-            {/* Header de institución y accesos rápidos */}
-            <Card className="custom-card mb-4">
-                <Card.Body className="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    {/* Información de la institución */}
-                    <div className="d-flex align-items-center gap-4">
-                        {/* <Image
-                            src="/assets/images/brand-logos/universities/upc-logo.png" // coloca aquí el logo real
-                            alt="Logo Institución"
-                            width={45}
-                            height={45}
-                            className="rounded"
-                        /> */}
-                        <div>
-                            <h5 className="mb-1 fw-semibold">{institution?.name ?? '—'}</h5>
-                            <span className="text-muted">Bienvenido, {user?.email ?? '—'}</span>
-                        </div>
-                    </div>
-
-                    {/* Accesos rápidos */}
-                    <div className="d-flex gap-2">
-                        <Link href="/gestion/carreras" className="btn btn-primary btn-sm">
-                            Gestión Académica
-                        </Link>
-                        <Link href="/gestion/silabos" className="btn btn-outline-primary btn-sm">
-                            Cargar Sílabos
-                        </Link>
-                        <Link href="/core/blockchain" className="btn btn-light btn-sm">
-                            Ver Trazabilidad
-                        </Link>
-                    </div>
-                </Card.Body>
-            </Card>
+          <div className="d-flex gap-2">
+            <Link href="/gestion/carreras" className="btn btn-primary btn-sm">
+              <i className="ti ti-book me-2"></i>Gestión Académica
+            </Link>
+            <Link href="/core/blockchain" className="btn btn-outline-primary btn-sm">
+              <i className="ti ti-chain me-2"></i>Ver Trazabilidad
+            </Link>
+          </div>
+        </Card.Body>
+      </Card>
 
 
-            {/* <!-- Page Header Close --> */}
+      {/* Row 1: Key Metrics */}
+      <Row className="mb-4">
+        {/* Emission Credits Card */}
+        <Col xxl={6} lg={12} className="mb-3">
+          <Card className="custom-card border-0 shadow-sm h-100">
+            <Card.Header className="d-flex align-items-center justify-content-between border-bottom">
+              <div className="card-title d-flex align-items-center gap-2">
+                <i className="ti ti-coins fs-20 text-warning"></i>
+                <span>Créditos de Emisión</span>
+              </div>
+              <SpkBadge variant="" Customclass="bg-warning-light text-warning">
+                {emissionCreditsData.phase}
+              </SpkBadge>
+            </Card.Header>
+            <Card.Body>
+              <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <h5 className="fw-semibold text-dark">{emissionCreditsData.available} Disponibles</h5>
+                  <small className="text-muted">{emissionCreditsData.percentageUsed}% usado</small>
+                </div>
+                <ProgressBar
+                  now={emissionCreditsData.percentageUsed}
+                  variant="warning"
+                  className="mb-3"
+                  style={{ height: "8px" }}
+                />
+              </div>
 
-            {/* <!-- Start:: row-1 --> */}
-
-            <Row>
-                <Col xxl={3}>
-                    <Row>
-                        {SchoolCards.map((idx, index) => (
-                            <Col xxl={12} lg={6} className="" key={index}>
-                                <SpkSchoolCard cardClass={idx.cardClass} bodyClass={idx.bodyClass} school={idx.school} />
-                            </Col>
-                        ))}
-                    </Row>
+              <Row className="g-3">
+                <Col xs={6}>
+                  <div className="text-center p-3 bg-light rounded">
+                    <p className="mb-1 text-muted small">Comprados</p>
+                    <h6 className="fw-semibold text-dark mb-0">{emissionCreditsData.totalPurchased}</h6>
+                  </div>
                 </Col>
-                <Col xxl={6}>
-                    <Card className="custom-card">
-                        <Card.Header>
-                            <div className="card-title">
-                                Solicitudes
-                            </div>
-                        </Card.Header>
-                        <Card.Body>
-                            <div id="school-revenue">
-                                <Spkapexcharts height={317} type={"line"} width={"100%"} chartOptions={SchoolOptions} chartSeries={SchoolSeries} />
-                            </div>
-                        </Card.Body>
-                    </Card>
+                <Col xs={6}>
+                  <div className="text-center p-3 bg-light rounded">
+                    <p className="mb-1 text-muted small">Usados</p>
+                    <h6 className="fw-semibold text-warning mb-0">{emissionCreditsData.totalUsed}</h6>
+                  </div>
                 </Col>
-                <Col xxl={3}>
-                    <Card className="custom-card">
-                        <Card.Header>
-                            <div className="card-title">
-                                Eventos
-                            </div>
-                        </Card.Header>
-                        <Card.Body>
-                            <ul className="list-unstyled school-events-list">
-                                {SchoolEvents.map((event) => (
-                                    <li key={event.id}>
-                                        <div className="d-flex align-items-center gap-3 flex-wrap flex-xxl-nowrap">
-                                            <div className="lh-1">
-                                                <span className={`avatar avatar-md ${event.bgClass}`}>
-                                                    <i className={`ti ${event.icon} fs-5`}></i>
-                                                </span>
-                                            </div>
-                                            <div className="flex-grow-1">
-                                                <div className="d-flex align-items-center gap-3 justify-content-between flex-wrap">
-                                                    <span className="d-block fw-semibold">{event.title}</span>
-                                                    <SpkBadge variant="" Customclass=" bg-light text-default border">{event.date}</SpkBadge>
-                                                </div>
-                                                <div className="text-muted fs-13 event-description">
-                                                    {event.description}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </Card.Body>
-                    </Card>
+              </Row>
+
+              <div className="mt-3 pt-3 border-top">
+                <small className="text-muted d-block mb-1">Vencimiento: {emissionCreditsData.expiresAt}</small>
+                <Link href="#!" className="text-primary small fw-semibold">
+                  Solicitar más créditos <i className="ti ti-arrow-right ms-1"></i>
+                </Link>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Certificate Statistics */}
+        <Col xxl={6} lg={12} className="mb-3">
+          <Card className="custom-card border-0 shadow-sm h-100">
+            <Card.Header className="d-flex align-items-center justify-content-between border-bottom">
+              <div className="card-title d-flex align-items-center gap-2">
+                <i className="ti ti-certificate fs-20 text-success"></i>
+                <span>Certificados Emitidos</span>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              <Row className="g-3">
+                <Col sm={6}>
+                  <div className="p-3 bg-success-light rounded">
+                    <small className="d-block text-muted mb-2">Total Emitidos</small>
+                    <h5 className="fw-semibold text-success mb-0">{certificateStats.totalIssued}</h5>
+                  </div>
                 </Col>
-            </Row>
-
-            {/* <!-- End:: row-1 --> */}
-
-            {/* <!-- Start:: row-2 --> */}
-
-            <Row>
-                <Col xxl={3}>
-                    <Card className="custom-card">
-                        <Card.Header>
-                            <div className="card-title">
-                                Actividad de Usuarios
-                            </div>
-                        </Card.Header>
-                        <Card.Body>
-                            <ul className="list-unstyled students-activity-list">
-                                {StudentActivities.map((activity) => (
-                                    <li key={activity.id} className={activity.listClass}>
-                                        <div className="d-flex align-items-start gap-2">
-                                            <div className="lh-1">
-                                                <span className="avatar avatar-md avatar-rounded">
-                                                    {activity.avatar ? (
-                                                        <Image width={40} height={40} src={activity.avatar} alt={activity.name} />
-                                                    ) : (
-                                                        <span className="avatar avatar-md avatar-rounded bg-warning">
-                                                            {activity.initials}
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div className="flex-fill">
-                                                <div className="d-flex align-items-start justify-content-between gap-3">
-                                                    <span className="d-block fw-semibold">{activity.name}</span>
-                                                    <SpkBadge variant="" Customclass={`badge ${activity.badgeClass}`}>{activity.date}</SpkBadge>
-                                                </div>
-                                                <span className="fs-13 text-muted">{activity.description}</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </Card.Body>
-                    </Card>
+                <Col sm={6}>
+                  <div className="p-3 bg-info-light rounded">
+                    <small className="d-block text-muted mb-2">Este Mes</small>
+                    <h5 className="fw-semibold text-info mb-0">{certificateStats.issuedThisMonth}</h5>
+                  </div>
                 </Col>
-                <Col xxl={3}>
-                    <Card className="custom-card">
-                        <Card.Header>
-                            <div className="card-title">
-                                Resumen Operaciones
-                            </div>
-                        </Card.Header>
-                        <Card.Body>
-                            <div id="students-overview">
-                                <Spkapexcharts height={227} type={"donut"} width={"100%"} chartOptions={SchoolOverviewOptions} chartSeries={SchoolOverviewSeries} />
-                            </div>
-                        </Card.Body>
-                        <Card.Footer>
-                            <Row className="g-0">
-                                <div className="col border-end border-inline-end-dashed">
-                                    <div className="text-center">
-                                        <span className="student-overview-type boys">Solicitudes</span>
-                                        <h5 className="mb-0 mt-1 fw-semibold d-flex align-items-center justify-content-center gap-1">6560
-                                            <span className="badge bg-success-transparent rounded-pill  d-inline-flex align-items-center">
-                                                <i className="ti ti-arrow-up me-1"></i>2.45%
-                                            </span>
-                                        </h5>
-                                    </div>
-                                </div>
-                                <div className="col">
-                                    <div className="text-center">
-                                        <span className="student-overview-type girls">Cargas</span>
-                                        <h5 className="mb-0 mt-1 fw-semibold d-flex align-items-center justify-content-center gap-1">3354
-                                            <span className="badge bg-danger-transparent rounded-pill  d-inline-flex align-items-center">
-                                                <i className="ti ti-arrow-down me-1"></i>6.76%
-                                            </span>
-                                        </h5>
-                                    </div>
-                                </div>
-                            </Row>
-                        </Card.Footer>
-                    </Card>
+                <Col sm={6}>
+                  <div className="p-3 bg-warning-light rounded">
+                    <small className="d-block text-muted mb-2">Pendientes</small>
+                    <h5 className="fw-semibold text-warning mb-0">{certificateStats.pending}</h5>
+                  </div>
                 </Col>
-                <Col xxl={3}>
-                    <Card className="custom-card overflow-hidden">
-                        <Card.Header className="justify-content-between">
-                            <div className="card-title">
-                                Top Documentos
-                            </div>
-                            <Link scroll={false} href="#!" className="text-muted fs-13">Ver Todo<i className="ti ti-arrow-narrow-right ms-1"></i></Link>
-                        </Card.Header>
-                        <Card.Body className="p-0">
-                            <ListGroup className="list-group-flush">
-                                {TopStudents.map((student) => (
-                                    <ListGroup.Item key={student.id} className="">
-                                        <div className="d-flex align-items-center gap-2">
-                                            <div className="lh-1">
-                                                <span className="avatar avatar-md">
-                                                    <Image width={40} height={40} src={student.avatar} alt={student.name} />
-                                                </span>
-                                            </div>
-                                            <div className="flex-fill">
-                                                <span className="d-block fw-semibold">{student.name}</span>
-                                                <span className="fs-13 text-muted">{student.grade}</span>
-                                            </div>
-                                            <div className="text-end">
-                                                <span>
-                                                    GPA : <span className="fw-medium text-primary">{student.gpa}</span>
-                                                </span>
-                                                <span className={`${student.achievementClass} fs-13 d-block`}>
-                                                    {student.achievement}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        </Card.Body>
-                    </Card>
+                <Col sm={6}>
+                  <div className="p-3 bg-danger-light rounded">
+                    <small className="d-block text-muted mb-2">Revocados</small>
+                    <h5 className="fw-semibold text-danger mb-0">{certificateStats.revoked}</h5>
+                  </div>
                 </Col>
-                <Col xxl={3}>
-                    <Card className="custom-card overflow-hidden">
-                        <Card.Header className="justify-content-between">
-                            <div className="card-title">
-                                Peticiones en Curso
-                            </div>
-                            <Link scroll={false} href="#!" className="text-muted fs-13">View All<i className="ti ti-arrow-narrow-right ms-1"></i></Link>
-                        </Card.Header>
-                        <Card.Body className="p-0">
-                            <div className="table-responsive custom-sales-table">
-                                <table className="table text-nowrap">
-                                    <tbody>
-                                        {Analyticspayments.map((payment, index) => (
-                                            <tr key={index}>
-                                                <td>{payment.id}</td>
-                                                <td>
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <div className="lh-1">
-                                                            <span className="avatar avatar-md avatar-rounded">
-                                                                <Image width={40} height={40} src={payment.imageUrl} alt="img" />
-                                                            </span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="d-block fw-semibold lh-1 mb-1">{payment.name}</span>
-                                                            <span className="fs-13 text-muted">{payment.feeType}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="text-end">
-                                                    <span className={`fs-13 fw-semibold ${payment.status === 'Paid' ? 'text-success' : payment.status === 'Pending' ? 'text-danger' : 'text-warning'}`}>
-                                                        {payment.status}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+              </Row>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
-            {/* <!-- End:: row-2 --> */}
+      {/* Row 2: Credit Usage Chart and Certificate History */}
+      <Row className="mb-4">
+        <Col xxl={6} lg={12} className="mb-3">
+          <Card className="custom-card border-0 shadow-sm">
+            <Card.Header className="d-flex align-items-center justify-content-between border-bottom">
+              <div className="card-title d-flex align-items-center gap-2">
+                <i className="ti ti-chart-line fs-20 text-primary"></i>
+                <span>Uso de Créditos por Mes</span>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {isClient && (
+                <Spkapexcharts
+                  height={300}
+                  type="line"
+                  width="100%"
+                  chartOptions={{
+                    chart: {
+                      sparkline: { enabled: false },
+                      fontFamily: "'Segoe UI', sans-serif",
+                    },
+                    stroke: { curve: "smooth", width: 2 },
+                    colors: ["#F7B42E", "#17E2B9"],
+                    xaxis: {
+                      categories: creditUsageData.categories,
+                      labels: { style: { colors: "#8A92A6" } },
+                    },
+                    yaxis: {
+                      labels: { style: { colors: "#8A92A6" } },
+                    },
+                    legend: { position: "top" },
+                    grid: { borderColor: "#E9EDF4" },
+                  }}
+                  chartSeries={creditUsageData.series}
+                />
+              )}
+            </Card.Body>
+          </Card>
+        </Col>
 
-            {/* <!-- Start:: row-3 --> */}
+        <Col xxl={6} lg={12} className="mb-3">
+          <Card className="custom-card border-0 shadow-sm">
+            <Card.Header className="d-flex align-items-center justify-content-between border-bottom">
+              <div className="card-title d-flex align-items-center gap-2">
+                <i className="ti ti-list fs-20 text-info"></i>
+                <span>Últimos Certificados</span>
+              </div>
+              {isRector && (
+                <Link href="#!" className="btn btn-primary btn-sm">
+                  Emitir Certificado
+                </Link>
+              )}
+            </Card.Header>
+            <Card.Body className="p-0">
+              <div className="table-responsive">
+                <table className="table table-hover mb-0">
+                  <thead className="bg-light">
+                    <tr>
+                      <th className="ps-3">Estudiante</th>
+                      <th>Curso</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {certificateHistoryData.slice(0, 5).map((cert) => (
+                      <tr key={cert.id}>
+                        <td className="ps-3">
+                          <small className="fw-semibold">{cert.studentName}</small>
+                        </td>
+                        <td>
+                          <small className="text-muted">{cert.courseCode}</small>
+                        </td>
+                        <td>
+                          <small className="text-muted">
+                            {new Date(cert.issuedDate).toLocaleDateString("es-ES")}
+                          </small>
+                        </td>
+                        <td>
+                          <SpkBadge
+                            variant=""
+                            Customclass="bg-success-light text-success"
+                          >
+                            Emitido
+                          </SpkBadge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+            <Card.Footer className="text-center py-2">
+              <Link href="#!" className="text-primary small fw-semibold">
+                Ver todos los certificados <i className="ti ti-arrow-right ms-1"></i>
+              </Link>
+            </Card.Footer>
+          </Card>
+        </Col>
+      </Row>
 
-            <Row>
-                <Col xxl={9}>
-                    <Card className="custom-card">
-                        <Card.Header className="justify-content-between">
-                            <div className="card-title">
-                                Tabla de Procesos
-                            </div>
-                            <div className="d-flex flex-wrap gap-2">
-                                <div>
-                                    <Form.Control className="form-control-sm" type="text" placeholder="Search Here" aria-label=".form-control-sm example" />
-                                </div>
-                                <SpkDropdown Id="dropdownMenuButton1" Togglevariant="" Menulabel="dropdownMenuButton1" Toggletext="Sort By" Customtoggleclass="btn btn-primary btn-sm btn-wave waves-effect waves-light no-caret" Arrowicon={true}>
-                                    <Dropdown.Item as="li" href="#!">Recientes</Dropdown.Item>
-                                    <Dropdown.Item as="li" href="#!">Pendientes</Dropdown.Item>
-                                    <Dropdown.Item as="li" href="#!">Priorizados</Dropdown.Item>
-                                </SpkDropdown>
-                            </div>
-                        </Card.Header>
-                        <Card.Body className="p-0">
-                            <div className="table-responsive">
-                                <SpkTables tableClass="text-nowrap" header={[{ title: 'ID Proceso' }, { title: 'Usuario' }, { title: 'Código' }, { title: 'Estado' }, { title: 'Avance (%)' }, { title: 'Progreso (%)' }, { title: 'Last Payment Date' }, { title: 'Total Fees Paid' }]} >
-                                    {StudentPayments.map((payment, index) => (
-                                        <tr key={index}>
-                                            <td>{payment.id}</td>
-                                            <td>
-                                                <div className="d-flex align-items-center gap-2">
-                                                    <div className="lh-1">
-                                                        <span className="avatar avatar-sm avatar-rounded">
-                                                            <Image width={28} height={28} src={payment.imageUrl} alt={payment.name} />
-                                                        </span>
-                                                    </div>
-                                                    <div className="fw-semibold">{payment.name}</div>
-                                                </div>
-                                            </td>
-                                            <td>{payment.grade}</td>
-                                            <td>
-                                                <SpkBadge variant="" Customclass={`${payment.status === 'Paid' ? 'bg-success' : payment.status === 'Pending' ? 'bg-warning' : 'bg-danger'}`}>
-                                                    {payment.status}
-                                                </SpkBadge>
-                                            </td>
-                                            <td>{payment.currentPerformance}</td>
-                                            <td>{payment.previousPerformance}</td>
-                                            <td>{payment.dueDate}</td>
-                                            <td>{payment.amount}</td>
-                                        </tr>
-                                    ))}
-                                </SpkTables>
-                            </div>
-                        </Card.Body>
-                        <Card.Footer className="border-top-0">
-                            <div className="d-flex align-items-center">
-                                <div> Showing 6 Entries <i className="bi bi-arrow-right ms-2 fw-semibold"></i> </div>
-                                <div className="ms-auto">
-                                    <nav aria-label="Page navigation" className="pagination-style-2">
-                                        <Pagination className="mb-0 flex-wrap">
-                                            <Pagination.Prev disabled>Prev</Pagination.Prev>
-                                            <Pagination.Item>1</Pagination.Item>
-                                            <Pagination.Item active>2</Pagination.Item>
-                                            <Pagination.Ellipsis />
-                                            <Pagination.Item>17</Pagination.Item>
-                                            <Pagination.Next className="text-primary">Next</Pagination.Next>
-                                        </Pagination>
-                                    </nav>
-                                </div>
-                            </div>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-                <Col xxl={3}>
-                    <Card className="custom-card">
-                        <Card.Header className="justify-content-between">
-                            <div className="card-title">
-                                Attendance Overview
-                            </div>
-                            <Link scroll={false} href="#!" className="btn btn-primary-light btn-sm">View All</Link>
-                        </Card.Header>
-                        <Card.Body>
-                            <div id="attendance-overview">
-                                <Spkapexcharts height={375} type={"bar"} width={"100%"} chartOptions={SchoolAttendanceOptions} chartSeries={SchoolAttendanceSeries} />
-                            </div>
-                        </Card.Body>
-                        <Card.Footer className="p-0">
-                            <div className="row mt-0 g-0">
-                                <div className="col-6 border-end border-inline-end-dashed text-center p-3">
-                                    <p className="mb-1 fw-medium">Boys</p>
-                                    <h5 className="text-primary fw-semibold mb-0">12.34K</h5>
-                                </div>
-                                <div className="col-6 text-center p-3">
-                                    <p className="mb-1 fw-medium">Girls</p>
-                                    <h5 className="text-warning fw-semibold mb-0">10.19K</h5>
-                                </div>
-                            </div>
-                        </Card.Footer>
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* <!-- End:: row-3 --> */}
-
-        </Fragment>
-    )
+      {/* Row 3: Detailed Certificate List */}
+      <Row>
+        <Col xxl={12}>
+          <Card className="custom-card border-0 shadow-sm">
+            <Card.Header className="d-flex align-items-center justify-content-between border-bottom">
+              <div className="card-title d-flex align-items-center gap-2">
+                <i className="ti ti-book fs-20 text-primary"></i>
+                <span>Historial Detallado de Certificados</span>
+              </div>
+              <small className="text-muted">Total: {certificateHistoryData.length} certificados</small>
+            </Card.Header>
+            <Card.Body className="p-0">
+              <div className="table-responsive">
+                <table className="table table-hover mb-0">
+                  <thead className="bg-light">
+                    <tr>
+                      <th className="ps-3">Estudiante</th>
+                      <th>Correo</th>
+                      <th>Curso</th>
+                      <th>Código</th>
+                      <th>Fecha de Emisión</th>
+                      <th>TX Hash (Blockchain)</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {certificateHistoryData.map((cert) => (
+                      <tr key={cert.id}>
+                        <td className="ps-3 fw-semibold">{cert.studentName}</td>
+                        <td>
+                          <small className="text-muted">{cert.studentEmail}</small>
+                        </td>
+                        <td>{cert.course}</td>
+                        <td>
+                          <SpkBadge variant="" Customclass="bg-light text-dark">
+                            {cert.courseCode}
+                          </SpkBadge>
+                        </td>
+                        <td>{new Date(cert.issuedDate).toLocaleDateString("es-ES")}</td>
+                        <td>
+                          <Link
+                            href={`/core/blockchain?tx=${cert.fabricTxId}`}
+                            className="text-primary small"
+                            title="Ver en blockchain"
+                          >
+                            {cert.fabricTxId.substring(0, 12)}...
+                          </Link>
+                        </td>
+                        <td>
+                          <SpkBadge
+                            variant=""
+                            Customclass="bg-success-light text-success"
+                          >
+                            {cert.status === "issued" ? "Emitido" : cert.status}
+                          </SpkBadge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Fragment>
+  );
 };
 
 export default School;
