@@ -27,6 +27,10 @@ export interface SyllabusUploadResponse {
   status: string;
 }
 
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+}
+
 const mapSyllabus = (s: any): Syllabus => ({
   id: s.id,
   courseId: s.courseId,
@@ -73,5 +77,20 @@ export const SyllabiService = {
 
   delete: async (id: number): Promise<void> => {
     await api.delete(`/syllabi/${id}`);
+  },
+
+  getDownloadUrl: async (id: number): Promise<string> => {
+    const response = await api.get<DownloadUrlResponse>(`/syllabi/${id}/download-url`);
+    return response.data.downloadUrl;
+  },
+
+  download: async (id: number, fileName?: string): Promise<void> => {
+    const downloadUrl = await SyllabiService.getDownloadUrl(id);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName || `syllabus-${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   },
 };
