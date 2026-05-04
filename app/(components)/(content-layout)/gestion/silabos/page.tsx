@@ -170,14 +170,14 @@ const SilabosPage: React.FC = () => {
         }
         setIsLoadingCloud(true); setCloudError(null);
         try {
+            let files;
             if (importSource === "google") {
-                const files = await GoogleDriveOAuthService.listFiles(cloudAccessToken);
-                setCloudFiles(files);
+                files = await GoogleDriveOAuthService.listFiles(cloudAccessToken);
             } else {
-                const files = await OneDriveOAuthService.listFiles(cloudAccessToken);
-                setCloudFiles(files);
+                files = await OneDriveOAuthService.listFiles(cloudAccessToken);
             }
-            if (cloudFiles.length === 0) setCloudError("No se encontraron archivos PDF, DOC o DOCX.");
+            setCloudFiles(files);
+            if (files.length === 0) setCloudError("No se encontraron archivos PDF, DOC o DOCX.");
         } catch {
             setCloudError("Error al listar archivos. Verifique el token de acceso.");
         } finally {
