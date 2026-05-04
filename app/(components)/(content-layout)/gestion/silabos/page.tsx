@@ -5,7 +5,7 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
-import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
+import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -59,6 +59,9 @@ const SilabosPage: React.FC = () => {
     const [formError, setFormError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Preview URL for selected file (object URL)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
     // Download state
     const [downloadingId, setDownloadingId] = useState<number | null>(null);
 
@@ -96,6 +99,14 @@ const SilabosPage: React.FC = () => {
     };
 
     useEffect(() => { fetchSyllabi(); fetchCourses(); }, []);
+
+    // Create / revoke object URL when file changes
+    useEffect(() => {
+        if (!selectedFile) { setPreviewUrl(null); return; }
+        const url = URL.createObjectURL(selectedFile);
+        setPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [selectedFile]);
 
     // --- Upload handlers ---
     const validateFile = (file: File): string | null => {
@@ -370,122 +381,214 @@ const SilabosPage: React.FC = () => {
             </Row>
 
             {/* ── Upload Modal ── */}
-            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="lg" keyboard={false}>
-                <Modal.Header closeButton>
-                    <Modal.Title>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
+                <Modal.Header closeButton className="border-bottom-0 pb-0">
+                    <Modal.Title className="fs-16 fw-bold">
                         <i className="ri-upload-cloud-2-line me-2 text-primary"></i>
                         Subir Sílabo
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body className="pt-2">
                     {uploadResult ? (
-                        // ── Success screen ──
-                        <div className="text-center py-3">
-                            <div className="mb-3"><i className="ri-shield-check-fill text-success" style={{ fontSize: "3.5rem" }}></i></div>
+                        /* ── Success screen ── */
+                        <div className="text-center py-4">
+                            <div className="mb-3">
+                                <span style={{ fontSize: "4rem" }}>🎉</span>
+                            </div>
                             <h5 className="text-success fw-bold mb-1">¡Registrado en Blockchain!</h5>
                             <p className="text-muted mb-4">El sílabo fue subido y verificado en Hyperledger Fabric.</p>
-                            <Row className="g-3 text-start">
-                                <Col xs={12}>
-                                    <div className="border rounded p-3 bg-light">
-                                        <div className="row g-2">
-                                            <div className="col-sm-6">
-                                                <p className="text-muted fs-12 fw-bold mb-1">Curso</p>
-                                                <p className="fw-medium mb-0">{uploadResult.courseName}</p>
-                                            </div>
-                                            <div className="col-sm-6">
-                                                <p className="text-muted fs-12 fw-bold mb-1">Estado</p>
-                                                <SpkBadge variant="" Customclass="bg-success-transparent">Confirmado</SpkBadge>
-                                            </div>
-                                            <div className="col-12">
-                                                <p className="text-muted fs-12 fw-bold mb-1">Hash SHA-256</p>
-                                                <code className="fs-11 text-break d-block">{uploadResult.currentHash}</code>
-                                            </div>
-                                            <div className="col-12">
-                                                <p className="text-muted fs-12 fw-bold mb-1">Transaction ID (Hyperledger Fabric)</p>
-                                                <code className="fs-11 text-break d-block text-primary">{uploadResult.fabricTxId}</code>
-                                            </div>
-                                        </div>
+                            <div className="border rounded-3 p-4 bg-light text-start">
+                                <div className="row g-3">
+                                    <div className="col-sm-6">
+                                        <p className="text-muted fs-12 fw-bold mb-1 text-uppercase ls-1">Curso</p>
+                                        <p className="fw-semibold mb-0">{uploadResult.courseName}</p>
                                     </div>
-                                </Col>
-                            </Row>
+                                    <div className="col-sm-6">
+                                        <p className="text-muted fs-12 fw-bold mb-1 text-uppercase ls-1">Estado</p>
+                                        <SpkBadge variant="" Customclass="bg-success-transparent">
+                                            <i className="ri-check-line me-1"></i>Confirmado en Fabric
+                                        </SpkBadge>
+                                    </div>
+                                    <div className="col-12">
+                                        <p className="text-muted fs-12 fw-bold mb-1 text-uppercase ls-1">Hash SHA-256</p>
+                                        <code className="fs-11 text-break d-block bg-white border rounded p-2">{uploadResult.currentHash}</code>
+                                    </div>
+                                    <div className="col-12">
+                                        <p className="text-muted fs-12 fw-bold mb-1 text-uppercase ls-1">Transaction ID · Hyperledger Fabric</p>
+                                        <code className="fs-11 text-break d-block bg-white border rounded p-2 text-primary">{uploadResult.fabricTxId}</code>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ) : (
-                        <Form>
-                            {formError && <Alert variant="danger" className="py-2">{formError}</Alert>}
+                        /* ── Two-column layout: form + preview ── */
+                        <Row className="g-0" style={{ minHeight: "440px" }}>
+                            {/* LEFT: Form */}
+                            <Col md={selectedFile ? 5 : 12} style={{ transition: "all 0.3s ease" }}>
+                                <div className="pe-md-3" style={{ borderRight: selectedFile ? "1px solid #e9ecef" : "none" }}>
+                                    {formError && <Alert variant="danger" className="py-2 fs-13">{formError}</Alert>}
 
-                            {/* Course selector */}
-                            <Form.Group className="mb-4">
-                                <Form.Label className="fw-semibold">Curso <span className="text-danger">*</span></Form.Label>
-                                <Form.Select value={selectedCourseId} onChange={(e) => setSelectedCourseId(e.target.value)} disabled={isUploading}>
-                                    {courses.length === 0
-                                        ? <option value="">Sin cursos disponibles</option>
-                                        : courses.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)
-                                    }
-                                </Form.Select>
-                            </Form.Group>
+                                    {/* Course selector */}
+                                    <Form.Group className="mb-3">
+                                        <Form.Label className="fw-semibold fs-13">
+                                            <i className="ri-book-open-line me-1 text-primary"></i>
+                                            Curso <span className="text-danger">*</span>
+                                        </Form.Label>
+                                        <Form.Select
+                                            value={selectedCourseId}
+                                            onChange={(e) => setSelectedCourseId(e.target.value)}
+                                            disabled={isUploading}
+                                            style={{ borderRadius: "8px" }}
+                                        >
+                                            {courses.length === 0
+                                                ? <option value="">Sin cursos disponibles</option>
+                                                : courses.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)
+                                            }
+                                        </Form.Select>
+                                    </Form.Group>
 
-                            {/* Drag and drop zone */}
-                            <Form.Group className="mb-3">
-                                <Form.Label className="fw-semibold">Archivo <span className="text-danger">*</span></Form.Label>
-                                <div
-                                    onDragOver={handleDragOver}
-                                    onDragLeave={handleDragLeave}
-                                    onDrop={handleDrop}
-                                    onClick={() => !isUploading && fileInputRef.current?.click()}
-                                    style={{
-                                        border: `2px dashed ${isDragging ? "#6366f1" : selectedFile ? "#22c55e" : "#cbd5e1"}`,
-                                        borderRadius: "12px",
-                                        padding: "2rem",
-                                        textAlign: "center",
-                                        cursor: isUploading ? "not-allowed" : "pointer",
-                                        background: isDragging ? "#f0f0ff" : selectedFile ? "#f0fdf4" : "#f8fafc",
-                                        transition: "all 0.2s ease",
-                                    }}
-                                >
-                                    {selectedFile ? (
-                                        <div>
-                                            <i className={`fs-2 mb-2 d-block ${selectedFile.name.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
-                                            <p className="fw-semibold mb-0">{selectedFile.name}</p>
-                                            <p className="text-muted fs-13 mb-0">{formatBytes(selectedFile.size)}</p>
-                                            {!isUploading && (
-                                                <button className="btn btn-sm btn-link text-danger mt-1 p-0" onClick={(e) => { e.stopPropagation(); setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
-                                                    Cambiar archivo
-                                                </button>
+                                    {/* Drag and drop zone */}
+                                    <Form.Group className="mb-3">
+                                        <Form.Label className="fw-semibold fs-13">
+                                            <i className="ri-attachment-line me-1 text-primary"></i>
+                                            Archivo <span className="text-danger">*</span>
+                                        </Form.Label>
+                                        <div
+                                            onDragOver={handleDragOver}
+                                            onDragLeave={handleDragLeave}
+                                            onDrop={handleDrop}
+                                            onClick={() => !isUploading && fileInputRef.current?.click()}
+                                            style={{
+                                                border: `2px dashed ${isDragging ? "#6366f1" : selectedFile ? "#22c55e" : "#cbd5e1"}`,
+                                                borderRadius: "12px",
+                                                padding: selectedFile ? "1rem" : "2rem",
+                                                textAlign: "center",
+                                                cursor: isUploading ? "not-allowed" : "pointer",
+                                                background: isDragging ? "#eef2ff" : selectedFile ? "#f0fdf4" : "#f8fafc",
+                                                transition: "all 0.25s ease",
+                                            }}
+                                        >
+                                            {selectedFile ? (
+                                                <div className="d-flex align-items-center gap-2">
+                                                    <i className={`fs-3 ${selectedFile.name.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
+                                                    <div className="text-start flex-grow-1 overflow-hidden">
+                                                        <p className="fw-semibold mb-0 fs-13 text-truncate">{selectedFile.name}</p>
+                                                        <p className="text-muted fs-12 mb-0">{formatBytes(selectedFile.size)}</p>
+                                                    </div>
+                                                    {!isUploading && (
+                                                        <button
+                                                            className="btn btn-sm btn-light rounded-circle p-1"
+                                                            style={{ width: 28, height: 28, lineHeight: 1 }}
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                                                            title="Quitar archivo"
+                                                        >
+                                                            <i className="ri-close-line fs-13"></i>
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <i className="ri-upload-cloud-2-line fs-1 mb-2 d-block" style={{ color: isDragging ? "#6366f1" : "#94a3b8" }}></i>
+                                                    <p className="fw-semibold mb-1 fs-14">{isDragging ? "Suelta aquí" : "Arrastra tu archivo"}</p>
+                                                    <p className="text-muted fs-13 mb-1">o haz clic para seleccionar</p>
+                                                    <span className="badge bg-light text-muted fs-11">PDF · DOC · DOCX · máx. 50 MB</span>
+                                                </>
                                             )}
                                         </div>
-                                    ) : (
-                                        <div>
-                                            <i className="ri-upload-cloud-2-line fs-2 text-muted mb-2 d-block"></i>
-                                            <p className="fw-semibold mb-1">Arrastra tu archivo aquí</p>
-                                            <p className="text-muted fs-13 mb-0">o haz clic para seleccionar</p>
-                                            <p className="text-muted fs-12 mt-1">PDF, DOC, DOCX — máx. 50 MB</p>
+                                        <input type="file" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={handleFileChange} className="d-none" />
+                                    </Form.Group>
+
+                                    {/* Upload progress */}
+                                    {isUploading && (
+                                        <div className="mb-3">
+                                            <div className="d-flex justify-content-between fs-12 text-muted mb-1">
+                                                <span><i className="ri-loader-4-line me-1"></i>Registrando en blockchain...</span>
+                                                <span className="fw-semibold">{uploadProgress}%</span>
+                                            </div>
+                                            <ProgressBar animated now={uploadProgress} variant="primary" style={{ height: "6px", borderRadius: "99px" }} />
+                                            <div className="d-flex justify-content-between fs-11 text-muted mt-1">
+                                                <span className={uploadProgress >= 30 ? "text-success" : ""}>
+                                                    <i className="ri-check-line me-1"></i>Subida
+                                                </span>
+                                                <span className={uploadProgress >= 70 ? "text-success" : ""}>
+                                                    <i className="ri-check-line me-1"></i>Hash SHA-256
+                                                </span>
+                                                <span className={uploadProgress >= 95 ? "text-success" : ""}>
+                                                    <i className="ri-links-line me-1"></i>Blockchain
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {!isUploading && (
+                                        <div className="d-flex align-items-start gap-2 p-2 rounded-2 fs-12 text-muted" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+                                            <i className="ri-shield-keyhole-line text-info mt-1 flex-shrink-0"></i>
+                                            <span>El archivo se cifra con <strong>SHA-256</strong> y se registra en <strong>Hyperledger Fabric</strong> con marca de tiempo inmutable.</span>
                                         </div>
                                     )}
                                 </div>
-                                <input type="file" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={handleFileChange} className="d-none" />
-                            </Form.Group>
+                            </Col>
 
-                            {/* Upload progress */}
-                            {isUploading && (
-                                <div className="mb-3">
-                                    <div className="d-flex justify-content-between fs-12 text-muted mb-1">
-                                        <span>Subiendo y registrando en blockchain...</span>
-                                        <span>{uploadProgress}%</span>
+                            {/* RIGHT: File preview */}
+                            {selectedFile && (
+                                <Col md={7} style={{ transition: "all 0.3s ease" }}>
+                                    <div className="ps-md-3 h-100 d-flex flex-column">
+                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                            <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
+                                                <i className="ri-eye-line me-1"></i>Previsualización
+                                            </span>
+                                            <span className={`badge ${selectedFile.name.endsWith(".pdf") ? "bg-danger-transparent text-danger" : "bg-primary-transparent text-primary"}`}>
+                                                {selectedFile.name.endsWith(".pdf") ? "PDF" : "DOCX"}
+                                            </span>
+                                        </div>
+
+                                        {selectedFile.type === "application/pdf" && previewUrl ? (
+                                            <div className="flex-grow-1 border rounded-3 overflow-hidden" style={{ minHeight: "360px" }}>
+                                                <iframe
+                                                    src={previewUrl}
+                                                    width="100%"
+                                                    height="100%"
+                                                    style={{ border: "none", minHeight: "360px" }}
+                                                    title="Vista previa del sílabo"
+                                                />
+                                            </div>
+                                        ) : (
+                                            /* DOCX / DOC: metadata card */
+                                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center border rounded-3 bg-light p-4 text-center" style={{ minHeight: "360px" }}>
+                                                <i className="ri-file-word-line text-primary mb-3" style={{ fontSize: "5rem" }}></i>
+                                                <h6 className="fw-bold mb-1 text-truncate w-100">{selectedFile.name}</h6>
+                                                <p className="text-muted fs-13 mb-3">{formatBytes(selectedFile.size)}</p>
+                                                <div className="d-flex flex-column gap-2 w-100">
+                                                    <div className="d-flex justify-content-between border-bottom pb-2">
+                                                        <span className="text-muted fs-12">Tipo</span>
+                                                        <span className="fw-medium fs-12">Word Document</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between border-bottom pb-2">
+                                                        <span className="text-muted fs-12">Tamaño</span>
+                                                        <span className="fw-medium fs-12">{formatBytes(selectedFile.size)}</span>
+                                                    </div>
+                                                    <div className="d-flex justify-content-between">
+                                                        <span className="text-muted fs-12">Última modificación</span>
+                                                        <span className="fw-medium fs-12">{new Date(selectedFile.lastModified).toLocaleDateString("es-PE")}</span>
+                                                    </div>
+                                                </div>
+                                                <Alert variant="info" className="fs-12 mt-3 mb-0 py-2 text-start w-100">
+                                                    <i className="ri-information-line me-1"></i>
+                                                    La previsualización de DOCX no está disponible en el navegador. El archivo se subirá correctamente.
+                                                </Alert>
+                                            </div>
+                                        )}
                                     </div>
-                                    <ProgressBar animated now={uploadProgress} variant={uploadProgress === 100 ? "success" : "primary"} />
-                                </div>
+                                </Col>
                             )}
-
-                            <Alert variant="info" className="fs-12 mb-0 py-2">
-                                <i className="ri-shield-line me-1"></i>
-                                El archivo se subirá al servidor, se calculará su <strong>hash SHA-256</strong> y se registrará en <strong>Hyperledger Fabric</strong>.
-                            </Alert>
-                        </Form>
+                        </Row>
                     )}
                 </Modal.Body>
-                <Modal.Footer>
+                <Modal.Footer className="border-top-0 pt-0">
                     {uploadResult ? (
-                        <SpkButton Customclass="btn btn-primary" onClick={handleCloseModal}>Cerrar</SpkButton>
+                        <SpkButton Customclass="btn btn-primary" onClick={handleCloseModal}>
+                            <i className="ri-check-line me-1"></i>Cerrar
+                        </SpkButton>
                     ) : (
                         <>
                             <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading}>Cancelar</SpkButton>
