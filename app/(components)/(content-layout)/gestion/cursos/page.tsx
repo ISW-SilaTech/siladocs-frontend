@@ -12,6 +12,8 @@ import { Card, Col, Dropdown, Form, Modal, Pagination, Row, Spinner, Alert } fro
 import { CoursesService, Course, CourseRequest } from "@/shared/services/courses.service";
 import { CareersService } from "@/shared/services/careers.service";
 import { CurriculumsService } from "@/shared/services/curriculums.service";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface CareerOption {
     id: number;
@@ -209,8 +211,10 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         try {
             if (isEditMode && currentCourseId) {
                 await CoursesService.update(currentCourseId, payload as CourseRequest);
+                toast.success("Curso actualizado correctamente", { position: "top-right", autoClose: 3000 });
             } else {
                 await CoursesService.create(payload as CourseRequest);
+                toast.success("Curso creado correctamente", { position: "top-right", autoClose: 3000 });
             }
             await fetchCourses();
             // Close directly — handleCloseModal checks isSaving which is still true here
@@ -223,9 +227,13 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         } catch (err: any) {
             console.error("Error saving course:", err);
             if (err.response?.status === 400 || err.response?.status === 409) {
-                setFormError(err.response.data?.message || "Error de validación (verifique relaciones o código duplicado).");
+                const errorMsg = err.response.data?.message || "Error de validación (verifique relaciones o código duplicado).";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             } else {
-                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+                const errorMsg = "Ocurrió un error al guardar. Intente de nuevo.";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         } finally {
             setIsSaving(false);
@@ -238,9 +246,12 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             try {
                 await CoursesService.delete(id);
                 await fetchCourses();
+                toast.success("Curso eliminado correctamente", { position: "top-right", autoClose: 3000 });
             } catch (err) {
                 console.error("Error deleting course:", err);
-                setError("Error al eliminar el curso.");
+                const errorMsg = "Error al eliminar el curso.";
+                setError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         }
     };
@@ -266,6 +277,7 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
     return (
         <Fragment>
+            <ToastContainer />
             <Seo title="Cursos" />
             <Pageheader title="Gestión Académica" subtitle="Cursos" currentpage="Lista de Cursos" activepage="Gestión de Cursos" />
 

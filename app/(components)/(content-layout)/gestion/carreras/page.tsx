@@ -104,7 +104,7 @@ const ProjectsList: React.FC = () => {
 
     // 🔹 Handle saving (Create or Update)
     const handleSave = async () => {
-        setFormError(null); 
+        setFormError(null);
         setIsSaving(true);
 
         if (!careerData.name || !careerData.faculty || !careerData.cycles) {
@@ -122,15 +122,17 @@ const ProjectsList: React.FC = () => {
         const payload = {
             name: careerData.name,
             faculty: careerData.faculty,
-            cycles: cyclesNum, 
+            cycles: cyclesNum,
             status: careerData.status,
         };
 
         try {
             if (isEditMode && currentCareerId) {
                 await CareersService.update(currentCareerId, payload as CareerRequest);
+                toast.success("Carrera actualizada correctamente", { position: "top-right", autoClose: 3000 });
             } else {
                 await CareersService.create(payload as CareerRequest);
+                toast.success("Carrera creada correctamente", { position: "top-right", autoClose: 3000 });
             }
             await fetchCareers();
             // Close directly — handleCloseModal checks isSaving which is still true here
@@ -142,9 +144,13 @@ const ProjectsList: React.FC = () => {
         } catch (err: any) {
             console.error("Error saving career:", err);
             if (err.response?.status === 409 || err.response?.status === 400) {
-                setFormError(err.response.data?.message || "Error de validación al guardar.");
+                const errorMsg = err.response.data?.message || "Error de validación al guardar.";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             } else {
-                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+                const errorMsg = "Ocurrió un error al guardar. Intente de nuevo.";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         } finally {
             setIsSaving(false);
@@ -157,9 +163,12 @@ const ProjectsList: React.FC = () => {
             try {
                 await CareersService.delete(id);
                 await fetchCareers();
+                toast.success("Carrera eliminada correctamente", { position: "top-right", autoClose: 3000 });
             } catch (err) {
                 console.error("Error deleting career:", err);
-                setError("Error al eliminar la carrera.");
+                const errorMsg = "Error al eliminar la carrera.";
+                setError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         }
     };
@@ -181,6 +190,7 @@ const ProjectsList: React.FC = () => {
     return (
         <div className="min-vh-100 d-flex flex-column">
             <Fragment>
+                <ToastContainer />
                 <Seo title="Carreras" />
                 <Pageheader title="Gestión Académica" subtitle="Carreras" currentpage="Lista de Carreras" activepage="Gestión de Carreras" />
 

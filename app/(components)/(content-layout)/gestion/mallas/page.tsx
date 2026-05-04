@@ -17,6 +17,8 @@ import { Modal } from "react-bootstrap";
 import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap";
 import { CurriculumsService, Curriculum, CurriculumRequest } from "@/shared/services/curriculums.service";
 import { CareersService } from "@/shared/services/careers.service";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface CareerOption {
     id: number;
@@ -160,8 +162,10 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         try {
             if (isEditMode && currentCurriculumId) {
                 await CurriculumsService.update(currentCurriculumId, payload as CurriculumRequest);
+                toast.success("Malla actualizada correctamente", { position: "top-right", autoClose: 3000 });
             } else {
                 await CurriculumsService.create(payload as CurriculumRequest);
+                toast.success("Malla creada correctamente", { position: "top-right", autoClose: 3000 });
             }
             await fetchCurriculums();
             // Close directly — handleCloseModal checks isSaving which is still true here
@@ -173,9 +177,13 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         } catch (err: any) {
             console.error("Error saving curriculum:", err);
             if (err.response?.status === 409 || err.response?.status === 400) {
-                setFormError(err.response.data?.message || "Error de validación al guardar.");
+                const errorMsg = err.response.data?.message || "Error de validación al guardar.";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             } else {
-                setFormError("Ocurrió un error al guardar. Intente de nuevo.");
+                const errorMsg = "Ocurrió un error al guardar. Intente de nuevo.";
+                setFormError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         } finally {
             setIsSaving(false);
@@ -188,9 +196,12 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
             try {
                 await CurriculumsService.delete(id);
                 await fetchCurriculums();
+                toast.success("Malla eliminada correctamente", { position: "top-right", autoClose: 3000 });
             } catch (err) {
                 console.error("Error deleting curriculum:", err);
-                setError("Error al eliminar la malla.");
+                const errorMsg = "Error al eliminar la malla.";
+                setError(errorMsg);
+                toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
             }
         }
     };
@@ -206,6 +217,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     return (
         <div className="min-vh-100 d-flex flex-column">
             <Fragment>
+                <ToastContainer />
                 <Seo title="Mallas" />
                 <Pageheader title="Gestión Académica" subtitle="Mallas" currentpage="Lista de Mallas" activepage="Gestión de Mallas" />
 
