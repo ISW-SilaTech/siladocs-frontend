@@ -1,0 +1,18 @@
+{
+  "name": "siladocs-fabric-api",
+  "version": "1.0.0",
+  "description": "REST middleware between SilaDocs Spring Boot backend and Hyperledger Fabric",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.0",
+    "@hyperledger/fabric-gateway": "^1.4.0",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

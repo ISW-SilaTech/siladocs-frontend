@@ -57,10 +57,15 @@ export const SyllabiService = {
   },
 
   upload: async (courseId: number, file: File): Promise<SyllabusUploadResponse> => {
+    return SyllabiService.uploadWithSession(courseId, file, undefined);
+  },
+
+  uploadWithSession: async (courseId: number, file: File, sessionId?: string): Promise<SyllabusUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('courseId', String(courseId));
     formData.append('action', 'create');
+    if (sessionId) formData.append('sessionId', sessionId);
 
     const response = await api.post<SyllabusUploadResponse>('/syllabi/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

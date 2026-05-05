@@ -13,6 +13,7 @@ import { SyllabiService, Syllabus, SyllabusUploadResponse } from "@/shared/servi
 import { CoursesService } from "@/shared/services/courses.service";
 import { GoogleDriveOAuthService, GoogleDriveFile } from "@/shared/services/google-drive-oauth.service";
 import { OneDriveOAuthService, OneDriveFile } from "@/shared/services/onedrive-oauth.service";
+import { BlockchainEventsService, BlockchainEvent, BlockchainEventsClient } from "@/shared/services/blockchain-events.service";
 import api from "@/shared/config/axios";
 
 interface CourseOption { id: number; name: string; code: string; }
@@ -61,6 +62,11 @@ const SilabosPage: React.FC = () => {
 
     // Preview URL for selected file (object URL)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // SSE live blockchain events
+    const [sseEvents, setSseEvents] = useState<BlockchainEvent[]>([]);
+    const sseClientRef = useRef<BlockchainEventsClient | null>(null);
+    const sseLogRef = useRef<HTMLDivElement>(null);
 
     // Download state
     const [downloadingId, setDownloadingId] = useState<number | null>(null);
@@ -118,14 +124,18 @@ const SilabosPage: React.FC = () => {
     const handleOpenModal = () => {
         setSelectedCourseId(courses.length > 0 ? String(courses[0].id) : "");
         setSelectedFile(null); setFormError(null); setUploadResult(null);
-        setUploadProgress(0); setIsDragging(false);
+        setUploadProgress(0); setIsDragging(false); setSseEvents([]);
+        sseClientRef.current?.close();
+        sseClientRef.current = null;
         setShowModal(true);
     };
 
     const handleCloseModal = () => {
         if (isUploading) return;
+        sseClientRef.current?.close();
+        sseClientRef.current = null;
         setShowModal(false); setUploadResult(null); setFormError(null);
-        setSelectedFile(null); setUploadProgress(0);
+        setSelectedFile(null); setUploadProgress(0); setSseEvents([]);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -155,29 +165,46 @@ const SilabosPage: React.FC = () => {
         if (file) handleFileSelect(file);
     }, []);
 
+    // Auto-scroll SSE log to bottom on new events
+    useEffect(() => {
+        if (sseLogRef.current) {
+            sseLogRef.current.scrollTop = sseLogRef.current.scrollHeight;
+        }
+    }, [sseEvents]);
+
     const handleUpload = async () => {
         setFormError(null);
         if (!selectedCourseId) { setFormError("Seleccione un curso."); return; }
         if (!selectedFile) { setFormError("Seleccione un archivo."); return; }
-        setIsUploading(true); setUploadProgress(0);
 
-        // Simulate progress while uploading
-        const progressInterval = setInterval(() => {
-            setUploadProgress(prev => prev < 85 ? prev + 5 : prev);
-        }, 300);
+        const sessionId = BlockchainEventsService.newSessionId();
+        setSseEvents([]);
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        // Open SSE connection before sending the file so events arrive in order
+        sseClientRef.current?.close();
+        sseClientRef.current = BlockchainEventsService.connect(sessionId, {
+            onEvent: (evt) => {
+                setSseEvents(prev => [...prev, evt]);
+                setUploadProgress(evt.progress);
+            },
+            onComplete: () => {
+                sseClientRef.current = null;
+            },
+        });
 
         try {
-            const result = await SyllabiService.upload(Number(selectedCourseId), selectedFile);
-            clearInterval(progressInterval);
+            const result = await SyllabiService.uploadWithSession(Number(selectedCourseId), selectedFile, sessionId);
             setUploadProgress(100);
             setUploadResult(result);
             toast.success("¡Sílabo subido y confirmado en blockchain!");
             await fetchSyllabi();
         } catch (err: any) {
-            clearInterval(progressInterval);
             setUploadProgress(0);
-            const msg = err?.response?.data?.message || err?.message || "Error al subir el sílabo.";
-            setFormError(msg); toast.error(msg);
+            const msg = err?.response?.data?.error || err?.response?.data?.message || err?.message || "Error al subir el sílabo.";
+            setFormError(msg);
+            toast.error(msg);
         } finally {
             setIsUploading(false);
         }
@@ -498,29 +525,21 @@ const SilabosPage: React.FC = () => {
                                         <input type="file" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={handleFileChange} className="d-none" />
                                     </Form.Group>
 
-                                    {/* Upload progress */}
+                                    {/* Upload progress bar */}
                                     {isUploading && (
-                                        <div className="mb-3">
+                                        <div className="mb-2">
                                             <div className="d-flex justify-content-between fs-12 text-muted mb-1">
-                                                <span><i className="ri-loader-4-line me-1"></i>Registrando en blockchain...</span>
-                                                <span className="fw-semibold">{uploadProgress}%</span>
+                                                <span className="d-flex align-items-center gap-1">
+                                                    <Spinner animation="border" size="sm" style={{ width: "10px", height: "10px", borderWidth: "1px" }} />
+                                                    Procesando...
+                                                </span>
+                                                <span className="fw-semibold text-primary">{uploadProgress}%</span>
                                             </div>
-                                            <ProgressBar animated now={uploadProgress} variant="primary" style={{ height: "6px", borderRadius: "99px" }} />
-                                            <div className="d-flex justify-content-between fs-11 text-muted mt-1">
-                                                <span className={uploadProgress >= 30 ? "text-success" : ""}>
-                                                    <i className="ri-check-line me-1"></i>Subida
-                                                </span>
-                                                <span className={uploadProgress >= 70 ? "text-success" : ""}>
-                                                    <i className="ri-check-line me-1"></i>Hash SHA-256
-                                                </span>
-                                                <span className={uploadProgress >= 95 ? "text-success" : ""}>
-                                                    <i className="ri-links-line me-1"></i>Blockchain
-                                                </span>
-                                            </div>
+                                            <ProgressBar animated now={uploadProgress} variant="primary" style={{ height: "4px", borderRadius: "99px" }} />
                                         </div>
                                     )}
 
-                                    {!isUploading && (
+                                    {!isUploading && sseEvents.length === 0 && (
                                         <div className="d-flex align-items-start gap-2 p-2 rounded-2 fs-12 text-muted" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
                                             <i className="ri-shield-keyhole-line text-info mt-1 flex-shrink-0"></i>
                                             <span>El archivo se cifra con <strong>SHA-256</strong> y se registra en <strong>Hyperledger Fabric</strong> con marca de tiempo inmutable.</span>
@@ -529,54 +548,134 @@ const SilabosPage: React.FC = () => {
                                 </div>
                             </Col>
 
-                            {/* RIGHT: File preview */}
+                            {/* RIGHT: Live blockchain log (while uploading) or file preview */}
                             {selectedFile && (
                                 <Col md={7} style={{ transition: "all 0.3s ease" }}>
                                     <div className="ps-md-3 h-100 d-flex flex-column">
-                                        <div className="d-flex align-items-center justify-content-between mb-2">
-                                            <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
-                                                <i className="ri-eye-line me-1"></i>Previsualización
-                                            </span>
-                                            <span className={`badge ${selectedFile.name.endsWith(".pdf") ? "bg-danger-transparent text-danger" : "bg-primary-transparent text-primary"}`}>
-                                                {selectedFile.name.endsWith(".pdf") ? "PDF" : "DOCX"}
-                                            </span>
-                                        </div>
-
-                                        {selectedFile.type === "application/pdf" && previewUrl ? (
-                                            <div className="flex-grow-1 border rounded-3 overflow-hidden" style={{ minHeight: "360px" }}>
-                                                <iframe
-                                                    src={previewUrl}
-                                                    width="100%"
-                                                    height="100%"
-                                                    style={{ border: "none", minHeight: "360px" }}
-                                                    title="Vista previa del sílabo"
-                                                />
-                                            </div>
-                                        ) : (
-                                            /* DOCX / DOC: metadata card */
-                                            <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center border rounded-3 bg-light p-4 text-center" style={{ minHeight: "360px" }}>
-                                                <i className="ri-file-word-line text-primary mb-3" style={{ fontSize: "5rem" }}></i>
-                                                <h6 className="fw-bold mb-1 text-truncate w-100">{selectedFile.name}</h6>
-                                                <p className="text-muted fs-13 mb-3">{formatBytes(selectedFile.size)}</p>
-                                                <div className="d-flex flex-column gap-2 w-100">
-                                                    <div className="d-flex justify-content-between border-bottom pb-2">
-                                                        <span className="text-muted fs-12">Tipo</span>
-                                                        <span className="fw-medium fs-12">Word Document</span>
-                                                    </div>
-                                                    <div className="d-flex justify-content-between border-bottom pb-2">
-                                                        <span className="text-muted fs-12">Tamaño</span>
-                                                        <span className="fw-medium fs-12">{formatBytes(selectedFile.size)}</span>
-                                                    </div>
-                                                    <div className="d-flex justify-content-between">
-                                                        <span className="text-muted fs-12">Última modificación</span>
-                                                        <span className="fw-medium fs-12">{new Date(selectedFile.lastModified).toLocaleDateString("es-PE")}</span>
-                                                    </div>
+                                        {isUploading || sseEvents.length > 0 ? (
+                                            /* ── Live blockchain event log ── */
+                                            <>
+                                                <div className="d-flex align-items-center justify-content-between mb-2">
+                                                    <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
+                                                        <i className="ri-radio-button-line me-1 text-danger" style={{ animation: isUploading ? "pulse 1s infinite" : "none" }}></i>
+                                                        Blockchain · En vivo
+                                                    </span>
+                                                    <span className="badge bg-dark fs-11">{sseEvents.length} eventos</span>
                                                 </div>
-                                                <Alert variant="info" className="fs-12 mt-3 mb-0 py-2 text-start w-100">
-                                                    <i className="ri-information-line me-1"></i>
-                                                    La previsualización de DOCX no está disponible en el navegador. El archivo se subirá correctamente.
-                                                </Alert>
-                                            </div>
+                                                <div
+                                                    ref={sseLogRef}
+                                                    className="flex-grow-1 border rounded-3 p-3"
+                                                    style={{
+                                                        background: "#0f172a",
+                                                        color: "#e2e8f0",
+                                                        fontFamily: "monospace",
+                                                        fontSize: "12px",
+                                                        overflowY: "auto",
+                                                        minHeight: "360px",
+                                                        maxHeight: "400px",
+                                                    }}
+                                                >
+                                                    {sseEvents.length === 0 && (
+                                                        <div className="text-center py-4" style={{ color: "#64748b" }}>
+                                                            <Spinner animation="border" size="sm" className="me-2" />
+                                                            Conectando con Hyperledger Fabric...
+                                                        </div>
+                                                    )}
+                                                    {sseEvents.map((evt, idx) => {
+                                                        const isError = evt.eventType === 'ERROR';
+                                                        const isDone = evt.eventType === 'COMPLETED';
+                                                        const isFabric = evt.eventType.startsWith('FABRIC');
+                                                        const iconMap: Record<string, string> = {
+                                                            FILE_RECEIVED:      '📥',
+                                                            HASH_COMPUTING:     '⚙️',
+                                                            HASH_COMPUTED:      '🔑',
+                                                            STORAGE_UPLOADING:  '☁️',
+                                                            STORAGE_UPLOADED:   '✅',
+                                                            FABRIC_CONNECTING:  '🔗',
+                                                            FABRIC_SUBMITTING:  '⛓️',
+                                                            FABRIC_CONFIRMED:   '🏆',
+                                                            DB_SAVING:          '💾',
+                                                            COMPLETED:          '🎉',
+                                                            BATCH_PROGRESS:     '📦',
+                                                            ERROR:              '❌',
+                                                        };
+                                                        const icon = iconMap[evt.eventType] ?? '▸';
+                                                        const color = isError ? '#f87171' : isDone ? '#4ade80' : isFabric ? '#a78bfa' : '#94a3b8';
+                                                        const ts = new Date(evt.timestamp).toLocaleTimeString('es-PE', { hour12: false });
+                                                        return (
+                                                            <div key={idx} className="mb-2" style={{ borderLeft: `2px solid ${color}`, paddingLeft: "8px" }}>
+                                                                <div style={{ color: '#64748b', fontSize: '11px' }}>{ts}</div>
+                                                                <div style={{ color }}>
+                                                                    {icon} <strong>{evt.message}</strong>
+                                                                    {evt.progress > 0 && (
+                                                                        <span style={{ color: '#64748b', fontSize: '11px' }}> · {evt.progress}%</span>
+                                                                    )}
+                                                                </div>
+                                                                {evt.detail && (
+                                                                    <div style={{ color: '#64748b', wordBreak: 'break-all', fontSize: '11px' }}>{evt.detail}</div>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    {isUploading && (
+                                                        <div style={{ color: '#64748b' }}>
+                                                            <span className="me-1" style={{ animation: "blink 1s step-end infinite" }}>▊</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <style>{`
+                                                    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+                                                    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+                                                `}</style>
+                                            </>
+                                        ) : (
+                                            /* ── Static file preview ── */
+                                            <>
+                                                <div className="d-flex align-items-center justify-content-between mb-2">
+                                                    <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
+                                                        <i className="ri-eye-line me-1"></i>Previsualización
+                                                    </span>
+                                                    <span className={`badge ${selectedFile.name.endsWith(".pdf") ? "bg-danger-transparent text-danger" : "bg-primary-transparent text-primary"}`}>
+                                                        {selectedFile.name.endsWith(".pdf") ? "PDF" : "DOCX"}
+                                                    </span>
+                                                </div>
+
+                                                {selectedFile.type === "application/pdf" && previewUrl ? (
+                                                    <div className="flex-grow-1 border rounded-3 overflow-hidden" style={{ minHeight: "360px" }}>
+                                                        <iframe
+                                                            src={previewUrl}
+                                                            width="100%"
+                                                            height="100%"
+                                                            style={{ border: "none", minHeight: "360px" }}
+                                                            title="Vista previa del sílabo"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center border rounded-3 bg-light p-4 text-center" style={{ minHeight: "360px" }}>
+                                                        <i className="ri-file-word-line text-primary mb-3" style={{ fontSize: "5rem" }}></i>
+                                                        <h6 className="fw-bold mb-1 text-truncate w-100">{selectedFile.name}</h6>
+                                                        <p className="text-muted fs-13 mb-3">{formatBytes(selectedFile.size)}</p>
+                                                        <div className="d-flex flex-column gap-2 w-100">
+                                                            <div className="d-flex justify-content-between border-bottom pb-2">
+                                                                <span className="text-muted fs-12">Tipo</span>
+                                                                <span className="fw-medium fs-12">Word Document</span>
+                                                            </div>
+                                                            <div className="d-flex justify-content-between border-bottom pb-2">
+                                                                <span className="text-muted fs-12">Tamaño</span>
+                                                                <span className="fw-medium fs-12">{formatBytes(selectedFile.size)}</span>
+                                                            </div>
+                                                            <div className="d-flex justify-content-between">
+                                                                <span className="text-muted fs-12">Última modificación</span>
+                                                                <span className="fw-medium fs-12">{new Date(selectedFile.lastModified).toLocaleDateString("es-PE")}</span>
+                                                            </div>
+                                                        </div>
+                                                        <Alert variant="info" className="fs-12 mt-3 mb-0 py-2 text-start w-100">
+                                                            <i className="ri-information-line me-1"></i>
+                                                            La previsualización de DOCX no está disponible en el navegador.
+                                                        </Alert>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </Col>
