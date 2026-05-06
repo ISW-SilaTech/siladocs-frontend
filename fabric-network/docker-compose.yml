@@ -84,9 +84,9 @@ services:
     networks:
       - fabric-net
 
-  peer0.org1.siladocs.com:
+  peer0.siladocs.com:
     image: hyperledger/fabric-peer:2.5.4
-    container_name: peer0.org1.siladocs.com
+    container_name: peer0.siladocs.com
     environment:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=siladocs-fabric
@@ -95,20 +95,20 @@ services:
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
-      - CORE_PEER_ID=peer0.org1.siladocs.com
-      - CORE_PEER_ADDRESS=peer0.org1.siladocs.com:7051
+      - CORE_PEER_ID=peer0.siladocs.com
+      - CORE_PEER_ADDRESS=peer0.siladocs.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.siladocs.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.siladocs.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.siladocs.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.siladocs.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.siladocs.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.siladocs.com:7051
       - CORE_PEER_LOCALMSPID=Org1MSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb0:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
-      - CORE_OPERATIONS_LISTENADDRESS=peer0.org1.siladocs.com:9444
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.siladocs.com:9444
     ports:
       - "7051:7051"
       - "9444:9444"
@@ -134,7 +134,7 @@ services:
     container_name: fabric-api
     environment:
       - PORT=8000
-      - PEER_ENDPOINT=peer0.org1.siladocs.com:7051
+      - PEER_ENDPOINT=peer0.siladocs.com:7051
       - ORDERER_ENDPOINT=orderer.siladocs.com:7050
       - CHANNEL_NAME=silabos-channel
       - CHAINCODE_NAME=silabos-cc
@@ -147,6 +147,6 @@ services:
       - ./crypto-config/peerOrganizations/siladocs.com/peers/peer0.siladocs.com/tls:/crypto/peer-tls
       - ./crypto-config/ordererOrganizations/siladocs.com/orderers/orderer.siladocs.com/tls:/crypto/orderer-tls
     depends_on:
-      - peer0.org1.siladocs.com
+      - peer0.siladocs.com
     networks:
       - fabric-net

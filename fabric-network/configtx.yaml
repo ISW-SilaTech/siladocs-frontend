@@ -33,7 +33,7 @@ Organizations:
         Type: Signature
         Rule: "OR('Org1MSP.member')"
     AnchorPeers:
-      - Host: peer0.org1.siladocs.com
+      - Host: peer0.siladocs.com
         Port: 7051
 
 Capabilities:
