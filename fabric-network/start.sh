@@ -45,7 +45,8 @@ echo "⏳ Waiting 15s for orderer & peer to initialize..."
 sleep 15
 
 echo "📡 Creating channel ${CHANNEL}..."
-docker exec peer0.org1.siladocs.com peer channel create \
+docker exec -e CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+  peer0.org1.siladocs.com peer channel create \
   -o orderer.siladocs.com:7050 \
   -c ${CHANNEL} \
   -f /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.tx \

@@ -117,6 +117,7 @@ services:
       - peer0-data:/var/hyperledger/production
       - ./crypto-config/peerOrganizations/siladocs.com/peers/peer0.siladocs.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/siladocs.com/peers/peer0.siladocs.com/tls:/etc/hyperledger/fabric/tls
+      - ./crypto-config/peerOrganizations/siladocs.com/users/Admin@siladocs.com/msp:/etc/hyperledger/fabric/admin-msp
       - ./crypto-config/ordererOrganizations/siladocs.com/orderers/orderer.siladocs.com/tls/ca.crt:/etc/hyperledger/fabric/orderer-tls/ca.crt
       - ./channel-artifacts:/etc/hyperledger/fabric/channel-artifacts
       - ./chaincode:/etc/hyperledger/fabric/chaincode
