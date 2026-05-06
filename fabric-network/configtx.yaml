@@ -1,12 +1,10 @@
-# SilaDocs Configuration Transaction Structure
-# Defines organizations, orderers, and channel configurations
-
+---
 Organizations:
   - &OrdererOrg
     Name: OrdererOrg
     ID: OrdererMSP
     MSPDir: crypto-config/ordererOrganizations/siladocs.com/msp
-    Policies: &OrdererOrgPolicies
+    Policies:
       Readers:
         Type: Signature
         Rule: "OR('OrdererMSP.member')"
@@ -21,7 +19,7 @@ Organizations:
     Name: Org1MSP
     ID: Org1MSP
     MSPDir: crypto-config/peerOrganizations/siladocs.com/msp
-    Policies: &Org1Policies
+    Policies:
       Readers:
         Type: Signature
         Rule: "OR('Org1MSP.member')"
@@ -48,7 +46,7 @@ Capabilities:
 
 Application: &ApplicationDefaults
   Organizations:
-  Policies: &ApplicationDefaultPolicies
+  Policies:
     LifecycleEndorsement:
       Type: ImplicitMeta
       Rule: "MAJORITY Endorsement"
@@ -73,13 +71,14 @@ Orderer: &OrdererDefaults
     Consenters:
       - Host: orderer.siladocs.com
         Port: 7050
-        ClientTLSCertFile: crypto-config/ordererOrganizations/siladocs.com/orderers/orderer.siladocs.com/tls/server.crt
   BatchTimeout: 2s
   BatchSize:
     MaxMessageCount: 10
     AbsoluteMaxBytes: 10485760
     PreferredMaxBytes: 2097152
-  Policies: &OrdererPolicies
+  Organizations:
+    - *OrdererOrg
+  Policies:
     BlockValidation:
       Type: ImplicitMeta
       Rule: "ANY Writers"
@@ -110,8 +109,6 @@ Profiles:
     <<: *ChannelDefaults
     Orderer:
       <<: *OrdererDefaults
-      Organizations:
-        - *OrdererOrg
       Capabilities:
         <<: *OrdererCapabilities
     Consortiums:
