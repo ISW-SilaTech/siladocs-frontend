@@ -127,6 +127,19 @@ services:
     networks:
       - fabric-net
 
+  silabos-cc:
+    build:
+      context: ./chaincode
+      dockerfile: Dockerfile
+    container_name: silabos-cc
+    environment:
+      - CHAINCODE_SERVER_ADDRESS=0.0.0.0:7052
+      - CHAINCODE_ID=${CHAINCODE_ID:-silabos-cc_1.0:placeholder}
+    ports:
+      - "7060:7052"
+    networks:
+      - fabric-net
+
   fabric-api:
     build:
       context: ./fabric-api

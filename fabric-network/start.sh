@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# SilaDocs · Fabric Network Startup Script (TLS enabled)
+# SilaDocs · Fabric Network Startup Script (TLS + External Chaincode)
 # Bootstraps crypto, generates genesis, starts containers, deploys chaincode
 # ─────────────────────────────────────────────────────────────────────────────
 set -e
@@ -8,6 +8,7 @@ set -e
 CHANNEL="silabos-channel"
 CC_NAME="silabos-cc"
 CC_VERSION="1.0"
+CC_LABEL="${CC_NAME}_${CC_VERSION}"
 ORDERER_CA="/etc/hyperledger/fabric/orderer-tls/ca.crt"
 
 echo "📦 Pulling Fabric tools..."
@@ -60,26 +61,36 @@ docker exec peer0.siladocs.com bash -c \
    peer channel join \
    -b /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.block"
 
-echo "📦 Packaging chaincode (JavaScript - no compilation needed)..."
-docker exec peer0.siladocs.com bash -c \
-  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
-   peer lifecycle chaincode package /tmp/${CC_NAME}.tar.gz \
-   --path /etc/hyperledger/fabric/chaincode \
-   --lang node \
-   --label ${CC_NAME}_${CC_VERSION}"
+# ── External Chaincode (CCaaS) workflow ──────────────────────────────────────
+echo "🔨 Building chaincode service image..."
+docker compose build silabos-cc
 
-echo "🔧 Installing chaincode..."
+echo "📦 Packaging chaincode as External (no Docker-in-Docker)..."
+mkdir -p ./chaincode-pkg-tmp
+cp ./chaincode-pkg/connection.json ./chaincode-pkg-tmp/connection.json
+cp ./chaincode-pkg/metadata.json   ./chaincode-pkg-tmp/metadata.json
+( cd ./chaincode-pkg-tmp && tar czf code.tar.gz connection.json )
+( cd ./chaincode-pkg-tmp && tar czf ${CC_NAME}.tar.gz code.tar.gz metadata.json )
+docker cp ./chaincode-pkg-tmp/${CC_NAME}.tar.gz peer0.siladocs.com:/tmp/${CC_NAME}.tar.gz
+rm -rf ./chaincode-pkg-tmp
+
+echo "🔧 Installing chaincode package on peer..."
 docker exec peer0.siladocs.com bash -c \
   "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
    peer lifecycle chaincode install /tmp/${CC_NAME}.tar.gz"
 
-echo "✅ Approving chaincode for org..."
+echo "🔍 Querying installed chaincode..."
 PACKAGE_ID=$(docker exec peer0.siladocs.com bash -c \
   "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
    peer lifecycle chaincode queryinstalled" \
   | grep "Package ID:" | awk '{print $3}' | tr -d ',')
 echo "   Package ID: ${PACKAGE_ID}"
 
+echo "🚢 Starting chaincode service container..."
+CHAINCODE_ID="${PACKAGE_ID}" docker compose up -d silabos-cc
+sleep 5
+
+echo "✅ Approving chaincode for org..."
 docker exec peer0.siladocs.com bash -c \
   "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
    peer lifecycle chaincode approveformyorg \
@@ -107,9 +118,10 @@ docker compose up -d fabric-api
 
 echo ""
 echo "✅ SilaDocs Fabric Network is UP!"
-echo "   Peer:        peer0.siladocs.com:7051"
+echo "   Peer:        peer0.siladocs.com:7051 (TLS)"
 echo "   Orderer:     orderer.siladocs.com:7050 (TLS)"
 echo "   CouchDB:     http://localhost:5984/_utils  (admin/adminpw)"
 echo "   Fabric API:  http://localhost:8000"
 echo "   Channel:     ${CHANNEL}"
-echo "   Chaincode:   ${CC_NAME} v${CC_VERSION}"
+echo "   Chaincode:   ${CC_NAME} v${CC_VERSION} (External / CCaaS)"
+echo "   Package ID:  ${PACKAGE_ID}"
