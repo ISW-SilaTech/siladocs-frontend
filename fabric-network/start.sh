@@ -60,9 +60,47 @@ docker exec peer0.siladocs.com bash -c \
    peer channel join \
    -b /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.block"
 
-echo "⏭️  Chaincode installation skipped (requires Go in peer container)"
-echo "    To install chaincode later: use peer lifecycle chaincode package/install/approve/commit"
-echo "    Or build a JavaScript/TypeScript chaincode that doesn't require compilation"
+echo "📦 Packaging chaincode (JavaScript - no compilation needed)..."
+docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer lifecycle chaincode package /tmp/${CC_NAME}.tar.gz \
+   --path /etc/hyperledger/fabric/chaincode \
+   --lang node \
+   --label ${CC_NAME}_${CC_VERSION}"
+
+echo "🔧 Installing chaincode..."
+docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer lifecycle chaincode install /tmp/${CC_NAME}.tar.gz"
+
+echo "✅ Approving chaincode for org..."
+PACKAGE_ID=$(docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer lifecycle chaincode queryinstalled" \
+  | grep "Package ID:" | awk '{print $3}' | tr -d ',')
+echo "   Package ID: ${PACKAGE_ID}"
+
+docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer lifecycle chaincode approveformyorg \
+   -o orderer.siladocs.com:7050 \
+   --tls --cafile ${ORDERER_CA} \
+   --channelID ${CHANNEL} \
+   --name ${CC_NAME} \
+   --version ${CC_VERSION} \
+   --package-id ${PACKAGE_ID} \
+   --sequence 1"
+
+echo "📢 Committing chaincode..."
+docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer lifecycle chaincode commit \
+   -o orderer.siladocs.com:7050 \
+   --tls --cafile ${ORDERER_CA} \
+   --channelID ${CHANNEL} \
+   --name ${CC_NAME} \
+   --version ${CC_VERSION} \
+   --sequence 1"
 
 echo "🌐 Starting Fabric REST API..."
 docker compose up -d fabric-api
