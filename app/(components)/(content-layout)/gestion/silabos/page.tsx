@@ -6,6 +6,7 @@ import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tab
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import Link from "next/link";
 import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -442,9 +443,14 @@ const SilabosPage: React.FC = () => {
                                     </div>
                                     <div className="col-12">
                                         <p className="text-muted fs-12 fw-bold mb-1 text-uppercase ls-1">Transaction ID · Hyperledger Fabric</p>
-                                        <code className="fs-11 text-break d-block bg-white border rounded p-2 text-primary">{uploadResult.fabricTxId}</code>
+                                        <code className="fs-11 text-break d-block bg-white border rounded p-2 text-primary">{uploadResult.fabricTxId ?? '—'}</code>
                                     </div>
                                 </div>
+                            </div>
+                            <div className="mt-3 text-center">
+                                <Link href="/core/blockchain" className="btn btn-outline-primary btn-sm">
+                                    <i className="ri-link-m me-1"></i>Ver trazabilidad en el ledger
+                                </Link>
                             </div>
                         </div>
                     ) : (

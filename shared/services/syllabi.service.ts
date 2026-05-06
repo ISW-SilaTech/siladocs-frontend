@@ -71,13 +71,7 @@ export const SyllabiService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    const data = response.data;
-    if (!data.fabricTxId) {
-      throw new Error(
-        'El sílabo se guardó pero no se recibió confirmación de blockchain (fabricTxId es null). Intente de nuevo.'
-      );
-    }
-    return data;
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
