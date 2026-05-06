@@ -109,6 +109,7 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
       - CORE_OPERATIONS_LISTENADDRESS=peer0.siladocs.com:9444
+      - CORE_CHAINCODE_EXTERNALBUILDERS=[{"name":"ccaas_builder","path":"/opt/hyperledger/ccaas_builder","propagateEnvironment":["CHAINCODE_SERVER_ADDRESS","CHAINCODE_ID"]}]
     ports:
       - "7051:7051"
       - "9444:9444"
