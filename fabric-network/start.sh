@@ -55,8 +55,10 @@ docker exec peer0.siladocs.com bash -c \
    --outputBlock /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.block"
 
 echo "🔗 Joining peer to channel..."
-docker exec peer0.siladocs.com peer channel join \
-  -b /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.block
+docker exec peer0.siladocs.com bash -c \
+  "CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/admin-msp \
+   peer channel join \
+   -b /etc/hyperledger/fabric/channel-artifacts/${CHANNEL}.block"
 
 echo "📦 Packaging chaincode..."
 docker exec peer0.siladocs.com peer lifecycle chaincode package \
