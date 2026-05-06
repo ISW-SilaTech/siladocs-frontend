@@ -1,0 +1,132 @@
+# SilaDocs Configuration Transaction Structure
+# Defines organizations, orderers, and channel configurations
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/siladocs.com/msp
+    Policies: &OrdererOrgPolicies
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &Org1
+    Name: Org1MSP
+    ID: Org1MSP
+    MSPDir: crypto-config/peerOrganizations/siladocs.com/msp
+    Policies: &Org1Policies
+      Readers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org1MSP.member')"
+    AnchorPeers:
+      - Host: peer0.org1.siladocs.com
+        Port: 7051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies: &ApplicationDefaultPolicies
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer.siladocs.com:7050
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.siladocs.com
+        Port: 7050
+        ClientTLSCertHash: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJrVENDQVRlZ0F3SUJBZ0lRQWZGODRHRmxrQ25Bb0VCdWY0eENUQkVCZ3Nxa0hraUc5dzBCUVFzRkFERUwKTUI0WERUSXhNVGcxTkRnNU5qRXdORm9YRFRJeE1UZzJNRGM1TmpFd05Gb3dZekVVTUJNR0ExVUVBeE1zWlhoaApiM0p2TFdSaGRHRXhGekFWQmdOVkJBY1REbk41YjNWdVpERlBhMmxoYmlCWFlXUnBaVzUwTVJRd0VnWURWUVFECkV3dHJkV1JsY201bGRHVnpNRmt3RXdZSEtvWkl6ajBDQVFZSUtvWkl6ajBEQVFjRENBWWdBREJBQ0dFMEQyVHEKQ3pSLy83WTdhVnhseUQrZVJSenZLTXdXWDlMZHJhTWZlWUlHdTFjY1RDQjJhdGZlT1k0dEpMck9kWGNLNGg1VApRckpVUkRSMExHUEhNTWRvdDgrWDk3YjJBT3A2TFBKY1hJSGZzTWdHMjB2N1I2TVFJTUtoVnlDMlJJZGU0PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 10485760
+    PreferredMaxBytes: 2097152
+  Policies: &OrdererPolicies
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+Profiles:
+  TwoOrgsOrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Consortiums:
+      SilaCons:
+        Organizations:
+          - *Org1
+    Capabilities:
+      <<: *ChannelCapabilities
+
+  TwoOrgsChannel:
+    <<: *ChannelDefaults
+    Consortium: SilaCons
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Org1
+      Capabilities:
+        <<: *ApplicationCapabilities
