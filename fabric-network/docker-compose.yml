@@ -88,7 +88,7 @@ services:
     image: hyperledger/fabric-peer:2.5.4
     container_name: peer0.siladocs.com
     environment:
-      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_ENDPOINT=unix:///var/run/docker.sock
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=siladocs-fabric
       - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_TLS_ENABLED=true
@@ -113,7 +113,7 @@ services:
       - "7051:7051"
       - "9444:9444"
     volumes:
-      - /var/run/docker.sock:/host/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock
       - peer0-data:/var/hyperledger/production
       - ./crypto-config/peerOrganizations/siladocs.com/peers/peer0.siladocs.com/msp:/etc/hyperledger/fabric/msp
       - ./crypto-config/peerOrganizations/siladocs.com/peers/peer0.siladocs.com/tls:/etc/hyperledger/fabric/tls
