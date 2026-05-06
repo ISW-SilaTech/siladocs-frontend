@@ -71,6 +71,8 @@ Orderer: &OrdererDefaults
     Consenters:
       - Host: orderer.siladocs.com
         Port: 7050
+        ClientTLSCert: crypto-config/ordererOrganizations/siladocs.com/orderers/orderer.siladocs.com/tls/server.crt
+        ServerTLSCert: crypto-config/ordererOrganizations/siladocs.com/orderers/orderer.siladocs.com/tls/server.crt
   BatchTimeout: 2s
   BatchSize:
     MaxMessageCount: 10
