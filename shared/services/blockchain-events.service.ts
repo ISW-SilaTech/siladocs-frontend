@@ -11,7 +11,7 @@
  *   client.close();
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080/api';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
 
 export type BlockchainEventType =
   | 'file_received'
