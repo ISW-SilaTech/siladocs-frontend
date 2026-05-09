@@ -115,6 +115,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
               <InputGroup className="mt-3 mb-2">
                 <InputGroup.Text><i className="ri-search-line"></i></InputGroup.Text>
                 <Form.Control
+                  id="coach-blockchain-search"
                   placeholder="Buscar curso o código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -122,7 +123,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
               </InputGroup>
             </Card.Header>
             <Card.Body className="p-0">
-              <div className="list-group list-group-flush" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              <div id="coach-blockchain-list" className="list-group list-group-flush" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                 {isLoadingList ? (
                   <div className="p-5 text-center"><Spinner animation="border" variant="primary" /></div>
                 ) : filteredCourses.length > 0 ? (
@@ -193,13 +194,19 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
                   </Col>
                 </Row>
 
-                <h6 className="fw-bold mb-4 text-muted"><i className="ri-history-line me-2"></i>Historial de Transacciones</h6>
+                <h6 id="coach-blockchain-history" className="fw-bold mb-4 text-muted"><i className="ri-history-line me-2"></i>Historial de Transacciones</h6>
 
                 {isLoadingHistory ? (
                   <div className="text-center p-5"><Spinner animation="grow" variant="secondary" /></div>
+                ) : (selectedTrace.history?.length ?? 0) === 0 ? (
+                  <div className="text-center py-5 text-muted">
+                    <i className="ri-node-tree fs-1 mb-3 d-block"></i>
+                    <p className="mb-1 fw-medium">Sin historial detallado</p>
+                    <small>El sílabo está registrado en el ledger pero no se encontraron eventos adicionales.</small>
+                  </div>
                 ) : (
                   <div className="timeline-container px-2">
-                    {selectedTrace.history?.map((record, index) => (
+                    {selectedTrace.history.map((record, index) => (
                       <div key={index} className="d-flex mb-4 position-relative">
                         {index !== selectedTrace.history.length - 1 && (
                           <div className="position-absolute" style={{ left: '15px', top: '30px', bottom: '-20px', width: '2px', backgroundColor: '#e9ecef', zIndex: 0 }}></div>
@@ -211,7 +218,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
                             <span className="text-muted fs-12">{new Date(record.timestamp).toLocaleString('es-ES')}</span>
                           </div>
                           <p className="mb-1 fs-13 text-muted">Actor: <strong>{record.actor}</strong></p>
-                          <Badge bg="light" text="dark" className="font-monospace border">TxID: {record.txId}</Badge>
+                          <Badge bg="light" text="dark" className="font-monospace border">TxID: {record.txId.substring(0, 32)}...</Badge>
                         </div>
                       </div>
                     ))}

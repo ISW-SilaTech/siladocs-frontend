@@ -37,7 +37,7 @@ export const MENUITEMS: any = [
   {
     title: "Blockchain", icon: Svgicons.Cryptoicon, type: "sub", active: false, dirchange: false, children: [
       { path: "/core/blockchain", type: "link", icon: Svgicons.Cryptoicon, active: false, selected: false, dirchange: false, title: "Blockchain" },
-      { path: "/blockchain/historial", type: "link", icon: Svgicons.Timelineicon, active: false, selected: false, dirchange: false, title: "Auditoría" }
+      { path: "/core/blockchain", type: "link", icon: Svgicons.Timelineicon, active: false, selected: false, dirchange: false, title: "Auditoría" }
     ],
   },
   {

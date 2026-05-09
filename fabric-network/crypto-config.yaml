@@ -1,0 +1,20 @@
+# SilaDocs Cryptographic Materials Configuration
+# Defines certificate structure for Orderer and Peer Organizations
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: siladocs.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        CommonName: orderer.siladocs.com
+
+PeerOrgs:
+  - Name: Org1
+    Domain: siladocs.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      Hostname: peer0
+    Users:
+      Count: 1

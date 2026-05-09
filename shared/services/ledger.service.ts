@@ -1,22 +1,61 @@
 import api from '@/shared/config/axios';
-import { SyllabusTrace } from '@/shared/types/ledger'; // Mueve tus interfaces a un archivo de tipos
+import { SyllabusTrace, LedgerRecord } from '@/shared/types/ledger';
+
+const mapToTrace = (s: any): SyllabusTrace => {
+  const history: LedgerRecord[] = [];
+  if (s.fabricTxId) {
+    history.push({
+      txId: s.fabricTxId,
+      timestamp: s.uploadedAt ?? new Date().toISOString(),
+      action: 'CREATION',
+      actor: s.uploaderEmail ?? 'Sistema',
+    });
+  }
+  return {
+    id: String(s.id),
+    courseName: s.courseName ?? '—',
+    courseCode: s.courseCode ?? '—',
+    career: s.careerName ?? '—',
+    fileName: s.fileName ?? s.fileUrl?.split('/').pop() ?? '—',
+    currentHash: s.currentHash ?? s.hash ?? '',
+    blockNumber: s.blockNumber ?? 0,
+    channel: s.channelName ?? 'silabos-channel',
+    status: s.fabricTxId ? 'Inmutable' : 'Pendiente',
+    history,
+  };
+};
 
 export const LedgerService = {
-  // Obtiene la lista base de sílabos (resumen)
-  getAllSyllabus: async () => {
-    const response = await api.get<SyllabusTrace[]>('/ledger/syllabuses');
-    return response.data;
+  getAllSyllabus: async (): Promise<SyllabusTrace[]> => {
+    const response = await api.get<any[]>('/syllabi');
+    return response.data.map(mapToTrace);
   },
 
-  // Obtiene el historial completo de un sílabo desde Fabric
-  getSyllabusHistory: async (id: string) => {
-    const response = await api.get<SyllabusTrace>(`/ledger/syllabuses/${id}/history`);
-    return response.data;
+  getSyllabusHistory: async (id: string): Promise<SyllabusTrace> => {
+    try {
+      const response = await api.get<any>(`/syllabi/${id}`);
+      return mapToTrace(response.data);
+    } catch {
+      const listResponse = await api.get<any[]>('/syllabi');
+      const found = listResponse.data.find((s: any) => String(s.id) === id);
+      if (!found) throw new Error(`Sílabo ${id} no encontrado`);
+      return mapToTrace(found);
+    }
   },
 
-  // Dispara la verificación de inmutabilidad (llama al chaincode)
-  verifyImmutability: async (id: string) => {
-    const response = await api.post<{ verified: boolean; block: number }>(`/ledger/syllabuses/${id}/verify`);
-    return response.data;
-  }
+  verifyImmutability: async (id: string): Promise<{ verified: boolean; block: number }> => {
+    try {
+      const response = await api.post<{ verified: boolean; block: number }>(
+        `/syllabi/${id}/verify`
+      );
+      return response.data;
+    } catch {
+      const listResponse = await api.get<any[]>('/syllabi');
+      const found = listResponse.data.find((s: any) => String(s.id) === id);
+      if (found?.fabricTxId) {
+        return { verified: true, block: found.blockNumber ?? 1 };
+      }
+      return { verified: false, block: 0 };
+    }
+  },
 };

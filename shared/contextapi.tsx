@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { AuthService, RegisterRequest } from "@/shared/services/auth.service";
 import { useRouter } from "next/navigation";
+import { safeStorage } from "@/shared/utils/safeStorage";
 
 interface User {
   id: string;
@@ -41,20 +42,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const initAuth = () => {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("accessToken")
-          : null;
+      const token = safeStorage.getItem("accessToken");
 
       if (token) {
-        const savedData = localStorage.getItem(AUTH_DATA_KEY);
+        const savedData = safeStorage.getItem(AUTH_DATA_KEY);
         if (savedData) {
           try {
             const parsed = JSON.parse(savedData);
             setUser(parsed.user);
             setInstitution(parsed.institution);
           } catch {
-            localStorage.removeItem(AUTH_DATA_KEY);
+            safeStorage.removeItem(AUTH_DATA_KEY);
           }
         }
       }
@@ -66,8 +64,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const data = await AuthService.login({ email, password });
-    localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: data.user, institution: data.institution }));
+    safeStorage.setItem("accessToken", data.accessToken);
+    safeStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: data.user, institution: data.institution }));
     setUser(data.user);
     setInstitution(data.institution);
     router.push("/dashboards/general");
@@ -75,8 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const register = async (data: RegisterRequest) => {
     const response = await AuthService.register(data);
-    localStorage.setItem("accessToken", response.accessToken);
-    localStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: response.user, institution: response.institution }));
+    safeStorage.setItem("accessToken", response.accessToken);
+    safeStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: response.user, institution: response.institution }));
     setUser(response.user);
     setInstitution(response.institution);
     router.push("/dashboards/general");
@@ -84,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     AuthService.logout();
-    localStorage.removeItem(AUTH_DATA_KEY);
+    safeStorage.removeItem(AUTH_DATA_KEY);
     setUser(null);
     setInstitution(null);
     router.push("/authentication/sign-in/cover");

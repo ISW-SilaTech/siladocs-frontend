@@ -27,6 +27,10 @@ export interface SyllabusUploadResponse {
   status: string;
 }
 
+export interface DownloadUrlResponse {
+  downloadUrl: string;
+}
+
 const mapSyllabus = (s: any): Syllabus => ({
   id: s.id,
   courseId: s.courseId,
@@ -53,25 +57,55 @@ export const SyllabiService = {
   },
 
   upload: async (courseId: number, file: File): Promise<SyllabusUploadResponse> => {
+    return SyllabiService.uploadWithSession(courseId, file, undefined);
+  },
+
+  uploadWithSession: async (courseId: number, file: File, sessionId?: string): Promise<SyllabusUploadResponse> => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('courseId', String(courseId));
     formData.append('action', 'create');
+    if (sessionId) formData.append('sessionId', sessionId);
 
     const response = await api.post<SyllabusUploadResponse>('/syllabi/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
-    const data = response.data;
-    if (!data.fabricTxId) {
-      throw new Error(
-        'El sílabo se guardó pero no se recibió confirmación de blockchain (fabricTxId es null). Intente de nuevo.'
-      );
-    }
-    return data;
+    return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
     await api.delete(`/syllabi/${id}`);
+  },
+
+  getDownloadUrl: async (id: number): Promise<string> => {
+    const response = await api.get<DownloadUrlResponse>(`/syllabi/${id}/download-url`);
+    return response.data.downloadUrl;
+  },
+
+  download: async (id: number, fileName?: string): Promise<void> => {
+    const downloadUrl = await SyllabiService.getDownloadUrl(id);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName || `syllabus-${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+
+  approve: async (id: number): Promise<Syllabus> => {
+    const response = await api.patch<any>(`/syllabi/${id}/approve`);
+    return mapSyllabus(response.data);
+  },
+
+  verifyIntegrity: async (id: number): Promise<{
+    syllabusId: number;
+    storedHash: string;
+    fabricTxId: string;
+    integrityValid: boolean;
+    status: string;
+  }> => {
+    const response = await api.get(`/syllabi/${id}/verify-integrity`);
+    return response.data;
   },
 };

@@ -163,6 +163,7 @@ const Landing = () => {
     }, [])
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
         window.addEventListener('resize', menuClose);
         return () => {
             window.removeEventListener('resize', menuClose);
@@ -258,6 +259,7 @@ const Landing = () => {
     const handleShow = () => setShow(true);
 
     const handleClick = (e: any) => {
+        if (typeof window === 'undefined') return;
         e.preventDefault();
         const target = e.currentTarget.getAttribute("href");
         const location = document.getElementById(target.substring(1))?.offsetTop;
@@ -284,6 +286,7 @@ const Landing = () => {
     }, []);
 
     const onScroll = () => {
+        if (typeof window === 'undefined') return;
         const sections = documentSelectors(".side-menu__item");
         const scrollPos =
             window.scrollY ||
