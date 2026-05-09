@@ -311,7 +311,7 @@ const ProfileSettings: React.FC = () => {
                                             menuplacement="auto"
                                             classNameprefix="Select2"
                                             defaultvalue={[selectedLanguage]}
-                                            onChange={(val: any) => setSelectedLanguage(val)}
+                                            onfunchange={(val: any) => setSelectedLanguage(val)}
                                         />
                                     </Col>
                                     <Col sm={6}>
@@ -323,7 +323,7 @@ const ProfileSettings: React.FC = () => {
                                             menuplacement="auto"
                                             classNameprefix="Select2"
                                             defaultvalue={[selectedTimezone]}
-                                            onChange={(val: any) => setSelectedTimezone(val)}
+                                            onfunchange={(val: any) => setSelectedTimezone(val)}
                                         />
                                     </Col>
                                 </Row>
