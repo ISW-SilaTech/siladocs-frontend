@@ -383,7 +383,8 @@ const SilabosPage: React.FC = () => {
                                 ) : error ? (
                                     <Alert variant="danger" className="m-3">{error}</Alert>
                                 ) : (
-                                    <SpkTables tableClass="text-nowrap" id="coach-syllabus-table" header={[
+                                    <div id="coach-syllabus-table">
+                                    <SpkTables tableClass="text-nowrap" header={[
                                         { title: "Archivo" }, { title: "Curso" }, { title: "Hash SHA-256" },
                                         { title: "Tx Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "Acciones" },
                                     ]}>
@@ -449,6 +450,7 @@ const SilabosPage: React.FC = () => {
                                             </tr>
                                         ))}
                                     </SpkTables>
+                                    </div>
                                 )}
                             </div>
                         </Card.Body>
