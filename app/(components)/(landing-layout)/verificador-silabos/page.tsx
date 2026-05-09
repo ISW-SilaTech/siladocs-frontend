@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, InputGroup, Form, Button, Spinner, Alert, Badge, Nav, Tab } from "react-bootstrap";
 import { LedgerService } from "@/shared/services/ledger.service";
 import { SyllabiService } from "@/shared/services/syllabi.service";
+import { AzureBlobService } from "@/shared/services/azure-blob.service";
 import { SyllabusTrace } from "@/shared/types/ledger";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
@@ -18,10 +19,39 @@ const VerificadorSilabus: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [allSyllabi, setAllSyllabi] = useState<SyllabusTrace[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [isLoadingUrls, setIsLoadingUrls] = useState(false);
 
   useEffect(() => {
     loadAllSyllabi();
   }, []);
+
+  useEffect(() => {
+    const loadBlobUrls = async () => {
+      if (!result || !result.fileName) {
+        setPreviewUrl(null);
+        setDownloadUrl(null);
+        return;
+      }
+
+      setIsLoadingUrls(true);
+      try {
+        const preview = await AzureBlobService.getPreviewUrl(result.fileName);
+        const download = await AzureBlobService.getDownloadUrl(result.fileName);
+        setPreviewUrl(preview);
+        setDownloadUrl(download);
+      } catch (err) {
+        console.error("Error loading blob URLs:", err);
+        setPreviewUrl(null);
+        setDownloadUrl(null);
+      } finally {
+        setIsLoadingUrls(false);
+      }
+    };
+
+    loadBlobUrls();
+  }, [result]);
 
   const loadAllSyllabi = async () => {
     try {
@@ -261,32 +291,42 @@ const VerificadorSilabus: React.FC = () => {
                                     <i className="ri-file-pdf-line me-2"></i>
                                     {result.fileName}
                                   </p>
-                                  <iframe
-                                    src={`${result.fileName}#toolbar=0`}
-                                    style={{
-                                      width: "100%",
-                                      height: "600px",
-                                      border: "1px solid #e0e0e0",
-                                      borderRadius: "4px"
-                                    }}
-                                    title="PDF Preview"
-                                    onError={() => (
-                                      <div className="alert alert-info">
-                                        <i className="ri-information-line me-2"></i>
-                                        No se puede visualizar el PDF en el navegador. Descárgalo para ver el contenido.
+                                  {isLoadingUrls ? (
+                                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "600px" }}>
+                                      <Spinner animation="border" role="status">
+                                        <span className="visually-hidden">Cargando vista previa...</span>
+                                      </Spinner>
+                                    </div>
+                                  ) : previewUrl ? (
+                                    <>
+                                      <iframe
+                                        src={`${previewUrl}#toolbar=0`}
+                                        style={{
+                                          width: "100%",
+                                          height: "600px",
+                                          border: "1px solid #e0e0e0",
+                                          borderRadius: "4px"
+                                        }}
+                                        title="PDF Preview"
+                                      ></iframe>
+                                      <div className="mt-3">
+                                        <Button
+                                          variant="outline-primary"
+                                          size="sm"
+                                          onClick={() => downloadUrl && window.open(downloadUrl, "_blank")}
+                                          disabled={!downloadUrl}
+                                        >
+                                          <i className="ri-download-2-line me-2"></i>
+                                          Descargar PDF
+                                        </Button>
                                       </div>
-                                    )}
-                                  ></iframe>
-                                  <div className="mt-3">
-                                    <Button
-                                      variant="outline-primary"
-                                      size="sm"
-                                      onClick={() => window.open(result.fileName, "_blank")}
-                                    >
-                                      <i className="ri-download-2-line me-2"></i>
-                                      Descargar PDF
-                                    </Button>
-                                  </div>
+                                    </>
+                                  ) : (
+                                    <Alert variant="warning">
+                                      <i className="ri-alert-line me-2"></i>
+                                      No se puede cargar la vista previa del archivo. El archivo puede no estar disponible en el almacenamiento.
+                                    </Alert>
+                                  )}
                                 </div>
                               ) : (
                                 <Alert variant="info">
