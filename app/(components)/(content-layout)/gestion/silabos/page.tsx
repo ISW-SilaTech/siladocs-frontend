@@ -349,7 +349,7 @@ const SilabosPage: React.FC = () => {
                         <Card.Body className="p-3">
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div className="d-flex flex-wrap gap-2">
-                                    <SpkButton Customclass="btn btn-primary" onClick={handleOpenModal} id="coach-btn-nuevo-silabo">
+                                    <SpkButton Customclass="btn btn-primary" onClick={handleOpenModal} Id="coach-btn-nuevo-silabo">
                                         <i className="ri-upload-cloud-2-line me-1 fw-medium align-middle"></i>
                                         Subir Sílabo
                                     </SpkButton>
