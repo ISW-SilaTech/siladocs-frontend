@@ -143,7 +143,7 @@ const PublicVerifyContent: React.FC = () => {
                     <i className="ri-file-text-line me-2"></i>Código: <strong>{result.courseCode}</strong>
                   </p>
                   <p className="text-muted mb-0 fs-13">
-                    <i className="ri-building-2-line me-2"></i>Carrera: <strong>{result.career}</strong>
+                    <i className="ri-building-2-line me-2"></i>Carrera: <strong>{result.career || "No especificada"}</strong>
                   </p>
                 </div>
 
