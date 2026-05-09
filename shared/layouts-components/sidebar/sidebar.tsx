@@ -781,15 +781,16 @@ const Sidebar = () => {
 										<div className="d-flex flex-column align-items-center justify-content-between h-100">
 											<div className="fs-15 fw-medium">Verificador de Sílabos en Blockchain</div>
 											<div>
-												<span className="avatar avatar-lg p-1">
-													<Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/media/media-80.png`} alt="" className="" />
+												<span className="avatar avatar-lg p-2 bg-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+													<i className="ri-shield-check-line" style={{ fontSize: '36px', color: 'white' }}></i>
 
-													<span className="top-right"></span>
-													<span className="bottom-right"></span>
 												</span>
 											</div>
 											<div className="d-grid w-100">
-												<button className="btn btn-white border-0">Probar</button>
+												<Link href="/verificador-silabos" className="btn btn-white border-0 text-dark">
+													<i className="ri-search-line me-2"></i>
+													Verificar
+												</Link>
 											</div>
 										</div>
 									</li>
