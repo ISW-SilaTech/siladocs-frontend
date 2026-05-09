@@ -11,6 +11,7 @@ export interface SyllabusTrace {
   courseCode: string;
   career: string;
   fileName: string;
+  fileUrl: string;
   currentHash: string;
   blockNumber: number;
   channel: string;

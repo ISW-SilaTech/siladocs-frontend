@@ -29,7 +29,7 @@ const VerificadorSilabus: React.FC = () => {
 
   useEffect(() => {
     const loadBlobUrls = async () => {
-      if (!result || !result.fileName) {
+      if (!result || !result.fileUrl) {
         setPreviewUrl(null);
         setDownloadUrl(null);
         return;
@@ -37,8 +37,8 @@ const VerificadorSilabus: React.FC = () => {
 
       setIsLoadingUrls(true);
       try {
-        const preview = await AzureBlobService.getPreviewUrl(result.fileName);
-        const download = await AzureBlobService.getDownloadUrl(result.fileName);
+        const preview = await AzureBlobService.getPreviewUrl(result.fileUrl);
+        const download = await AzureBlobService.getDownloadUrl(result.fileUrl);
         setPreviewUrl(preview);
         setDownloadUrl(download);
       } catch (err) {

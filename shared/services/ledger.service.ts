@@ -11,12 +11,14 @@ const mapToTrace = (s: any): SyllabusTrace => {
       actor: s.uploaderEmail ?? 'Sistema',
     });
   }
+  const fileUrl = s.fileUrl ?? '';
   return {
     id: String(s.id),
     courseName: s.courseName ?? '—',
     courseCode: s.courseCode ?? '—',
     career: s.careerName ?? '—',
-    fileName: s.fileName ?? s.fileUrl?.split('/').pop() ?? '—',
+    fileName: s.fileName ?? fileUrl.split('/').pop() ?? '—',
+    fileUrl: fileUrl,
     currentHash: s.currentHash ?? s.hash ?? '',
     blockNumber: s.blockNumber ?? 0,
     channel: s.channelName ?? 'silabos-channel',
