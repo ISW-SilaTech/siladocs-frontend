@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
+import ConfigService from "@/shared/services/config.service";
 
 export default function SystemConfig() {
   const [formData, setFormData] = useState({
@@ -16,18 +17,41 @@ export default function SystemConfig() {
   });
 
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const loadConfig = async () => {
+    try {
+      setLoading(true);
+      const config = await ConfigService.getSystemConfig();
+      setFormData(config);
+    } catch (err: any) {
+      console.error("Error loading system config:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
+    const newValue = type === "checkbox" ? checked : Number(value);
     setFormData(prev => ({ ...prev, [name]: newValue }));
   };
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    // TODO: Implementar API call
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setError("");
+    try {
+      await ConfigService.updateSystemConfig(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error al guardar la configuración");
+    }
   };
 
   return (
@@ -50,6 +74,11 @@ export default function SystemConfig() {
                   Parámetros del Sistema
                 </h4>
 
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError("")}>
+                    {error}
+                  </Alert>
+                )}
                 {saved && (
                   <Alert variant="success" dismissible>
                     ✓ Configuración actualizada exitosamente

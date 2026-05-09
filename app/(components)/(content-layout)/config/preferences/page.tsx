@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
+import ConfigService from "@/shared/services/config.service";
 
 export default function PreferencesConfig() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,24 @@ export default function PreferencesConfig() {
   });
 
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadPreferences();
+  }, []);
+
+  const loadPreferences = async () => {
+    try {
+      setLoading(true);
+      const prefs = await ConfigService.getUserPreferences();
+      setFormData(prefs);
+    } catch (err: any) {
+      console.error("Error loading preferences:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -26,9 +45,14 @@ export default function PreferencesConfig() {
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    // TODO: Implementar API call
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setError("");
+    try {
+      await ConfigService.updateUserPreferences(formData);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Error al guardar las preferencias");
+    }
   };
 
   return (
@@ -51,6 +75,11 @@ export default function PreferencesConfig() {
                   Preferencias
                 </h4>
 
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError("")}>
+                    {error}
+                  </Alert>
+                )}
                 {saved && (
                   <Alert variant="success" dismissible>
                     ✓ Preferencias actualizadas exitosamente
