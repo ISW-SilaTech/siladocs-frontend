@@ -5,7 +5,7 @@ import Header from '@/shared/layouts-components/header/header'
 import { data$, getState } from '@/shared/layouts-components/services/switcherServices'
 import Sidebar from '@/shared/layouts-components/sidebar/sidebar'
 import Switcher from '@/shared/layouts-components/switcher/switcher'
-import TestCoach from '@/shared/components/TestCoach'
+import ProductOnboarding from '@/shared/components/ProductOnboarding'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
@@ -63,7 +63,7 @@ const Layout = ({ children }: any) => {
         <Footer />
       </div>
       <Backtotop />
-      <TestCoach />
+      <ProductOnboarding />
     </Fragment>
   )
 }
