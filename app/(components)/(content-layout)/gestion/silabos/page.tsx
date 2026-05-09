@@ -412,9 +412,11 @@ const SilabosPage: React.FC = () => {
                                                 </td>
                                                 <td className="fs-13">{formatDate(s.uploadedAt)}</td>
                                                 <td>
-                                                    <SpkBadge Id="coach-status-badge" variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
-                                                        {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
-                                                    </SpkBadge>
+                                                    <div id="coach-status-badge">
+                                                        <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                            {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
+                                                        </SpkBadge>
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <div className="d-flex gap-1">
