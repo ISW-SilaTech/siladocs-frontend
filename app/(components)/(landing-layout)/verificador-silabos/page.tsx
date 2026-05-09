@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, InputGroup, Form, Button, Spinner, Alert, Badge, Nav, Tab } from "react-bootstrap";
+import { Container, Row, Col, Card, InputGroup, Form, Button, Spinner, Alert, Badge, Nav, Tab, Modal } from "react-bootstrap";
 import { LedgerService } from "@/shared/services/ledger.service";
 import { SyllabiService } from "@/shared/services/syllabi.service";
 import { AzureBlobService } from "@/shared/services/azure-blob.service";
-import { SyllabusTrace } from "@/shared/types/ledger";
+import { SyllabusTrace, SyllabusVersion } from "@/shared/types/ledger";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Swal from "sweetalert2";
+import { QRCodeSVG } from "qrcode.react";
+import { useSearchParams } from "next/navigation";
 
 const VerificadorSilabus: React.FC = () => {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -22,6 +25,12 @@ const VerificadorSilabus: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [isLoadingUrls, setIsLoadingUrls] = useState(false);
+  const [versions, setVersions] = useState<SyllabusVersion[]>([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedVersionForQR, setSelectedVersionForQR] = useState<SyllabusVersion | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("preview");
+  const [highlightedVersionNumber, setHighlightedVersionNumber] = useState<number | null>(null);
 
   useEffect(() => {
     loadAllSyllabi();
@@ -53,10 +62,50 @@ const VerificadorSilabus: React.FC = () => {
     loadBlobUrls();
   }, [result]);
 
+  useEffect(() => {
+    const loadVersions = async () => {
+      if (!result) {
+        setVersions([]);
+        return;
+      }
+
+      setIsLoadingVersions(true);
+      try {
+        const versionsData = await LedgerService.getSyllabusVersions(result.id);
+        setVersions(versionsData || []);
+
+        // Check if version param exists and highlight it
+        const versionParam = searchParams.get("version");
+        if (versionParam) {
+          const versionNum = parseInt(versionParam, 10);
+          setHighlightedVersionNumber(versionNum);
+          setActiveTab("timeline");
+        }
+      } catch (err) {
+        console.error("Error loading versions:", err);
+        setVersions([]);
+      } finally {
+        setIsLoadingVersions(false);
+      }
+    };
+
+    loadVersions();
+  }, [result, searchParams]);
+
   const loadAllSyllabi = async () => {
     try {
       const data = await LedgerService.getAllSyllabus();
       setAllSyllabi(data);
+
+      // Auto-load from URL parameters
+      const idParam = searchParams.get("id");
+      if (idParam) {
+        const found = data.find(s => s.id === idParam);
+        if (found) {
+          setResult(found);
+          setHasSearched(true);
+        }
+      }
     } catch (err) {
       console.error("Error loading syllabi:", err);
     }
@@ -262,7 +311,7 @@ const VerificadorSilabus: React.FC = () => {
                       </div>
 
                       {/* Tabs para PDF y Timeline */}
-                      <Tab.Container defaultActiveKey="preview">
+                      <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab(k || "preview")}>
                         <Nav variant="tabs" className="mb-4 border-bottom">
                           <Nav.Item>
                             <Nav.Link eventKey="preview" className="fw-semibold">
@@ -340,30 +389,35 @@ const VerificadorSilabus: React.FC = () => {
                           {/* TAB: TIMELINE */}
                           <Tab.Pane eventKey="timeline">
                             <div className="mb-4">
-                              {result.history && result.history.length > 0 ? (
+                              {isLoadingVersions ? (
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "300px" }}>
+                                  <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Cargando versiones...</span>
+                                  </Spinner>
+                                </div>
+                              ) : versions && versions.length > 0 ? (
                                 <div className="timeline-container ps-4">
-                                  {result.history.map((record, index) => {
-                                    const getEventIcon = (action: string) => {
-                                      switch (action) {
-                                        case "CREATION":
-                                          return { icon: "ri-file-add-line", bg: "bg-primary", label: "Creación" };
-                                        case "UPDATE":
-                                          return { icon: "ri-edit-line", bg: "bg-info", label: "Actualización" };
-                                        case "VERIFICATION":
-                                          return { icon: "ri-check-double-line", bg: "bg-success", label: "Validación" };
-                                        case "APPROVAL":
-                                          return { icon: "ri-thumb-up-line", bg: "bg-success", label: "Aprobación" };
-                                        default:
-                                          return { icon: "ri-node-tree", bg: "bg-secondary", label: action };
-                                      }
+                                  {versions.map((version, index) => {
+                                    const versionDate = new Date(version.createdAt);
+                                    const getStatusIcon = (isOnBlockchain: boolean) => {
+                                      return isOnBlockchain ? { icon: "ri-shield-check-fill", color: "success" } : { icon: "ri-time-line", color: "warning" };
                                     };
 
-                                    const eventInfo = getEventIcon(record.action);
-                                    const eventDate = new Date(record.timestamp);
+                                    const statusInfo = getStatusIcon(version.isOnBlockchain);
+                                    const isHighlighted = version.versionNumber === highlightedVersionNumber;
 
                                     return (
-                                      <div key={index} className="d-flex mb-4 position-relative">
-                                        {index !== result.history.length - 1 && (
+                                      <div
+                                        key={index}
+                                        className="d-flex mb-4 position-relative"
+                                        style={isHighlighted ? {
+                                          backgroundColor: "#fff3cd",
+                                          padding: "12px",
+                                          borderRadius: "4px",
+                                          border: "2px solid #ffc107"
+                                        } : {}}
+                                      >
+                                        {index !== versions.length - 1 && (
                                           <div
                                             className="position-absolute"
                                             style={{
@@ -377,22 +431,42 @@ const VerificadorSilabus: React.FC = () => {
                                           ></div>
                                         )}
                                         <div
-                                          className={`avatar avatar-sm text-white rounded-circle ${eventInfo.bg} d-flex align-items-center justify-content-center position-relative`}
+                                          className={`avatar avatar-sm text-white rounded-circle bg-${statusInfo.color} d-flex align-items-center justify-content-center position-relative`}
                                           style={{ width: "40px", height: "40px", zIndex: 1, flexShrink: 0 }}
                                         >
-                                          <i className={eventInfo.icon}></i>
+                                          <i className={statusInfo.icon}></i>
                                         </div>
                                         <div className="flex-fill ps-3 pb-3 border-bottom">
                                           <div className="d-flex justify-content-between align-items-start mb-2">
                                             <div>
-                                              <h6 className="fw-semibold mb-1">{eventInfo.label}</h6>
+                                              <h6 className="fw-semibold mb-1">
+                                                Versión {version.versionNumber}
+                                                {version.isOnBlockchain && (
+                                                  <Badge bg="success" className="ms-2 fs-11">
+                                                    <i className="ri-shield-check-fill me-1"></i>
+                                                    En Blockchain
+                                                  </Badge>
+                                                )}
+                                              </h6>
                                               <p className="text-muted fs-13 mb-1">
                                                 <i className="ri-user-3-line me-1"></i>
-                                                {record.actor}
+                                                Subido por: {version.uploadedBy || "Sistema"}
                                               </p>
+                                              {version.status && (
+                                                <p className="text-muted fs-13 mb-1">
+                                                  <i className="ri-flag-line me-1"></i>
+                                                  Estado: <strong>{version.status}</strong>
+                                                </p>
+                                              )}
+                                              {version.notes && (
+                                                <p className="text-muted fs-13 mb-1">
+                                                  <i className="ri-sticky-note-line me-1"></i>
+                                                  {version.notes}
+                                                </p>
+                                              )}
                                             </div>
                                             <small className="text-muted">
-                                              {eventDate.toLocaleDateString("es-ES", {
+                                              {versionDate.toLocaleDateString("es-ES", {
                                                 year: "numeric",
                                                 month: "short",
                                                 day: "numeric",
@@ -401,10 +475,27 @@ const VerificadorSilabus: React.FC = () => {
                                               })}
                                             </small>
                                           </div>
-                                          <div className="bg-light p-2 rounded mt-2">
-                                            <code className="text-dark fs-11 text-break">
-                                              TxID: {record.txId.substring(0, 40)}...
-                                            </code>
+                                          <div className="row g-2 mt-2">
+                                            <div className="col-auto">
+                                              <div className="bg-light p-2 rounded">
+                                                <code className="text-dark fs-11 text-break d-block">
+                                                  Hash: {version.fileHash.substring(0, 32)}...
+                                                </code>
+                                              </div>
+                                            </div>
+                                            <div className="col-auto">
+                                              <Button
+                                                variant="outline-primary"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setSelectedVersionForQR(version);
+                                                  setShowQRModal(true);
+                                                }}
+                                              >
+                                                <i className="ri-qr-code-2-line me-1"></i>
+                                                QR
+                                              </Button>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
@@ -414,7 +505,7 @@ const VerificadorSilabus: React.FC = () => {
                               ) : (
                                 <Alert variant="info">
                                   <i className="ri-information-line me-2"></i>
-                                  No hay historial detallado disponible para este sílabo.
+                                  No hay versiones disponibles para este sílabo. {isLoadingVersions ? "Cargando..." : ""}
                                 </Alert>
                               )}
                             </div>
@@ -535,6 +626,53 @@ const VerificadorSilabus: React.FC = () => {
           </Col>
         </Row>
       </Container>
+
+      {/* QR Code Modal */}
+      <Modal show={showQRModal} onHide={() => setShowQRModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="ri-qr-code-2-line me-2"></i>Código QR - Versión {selectedVersionForQR?.versionNumber}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center py-4">
+          {selectedVersionForQR && result && (
+            <>
+              <div className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
+                <QRCodeSVG
+                  value={`${window.location.origin}/verificador-silabos?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
+                  size={256}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <p className="text-muted mb-2">
+                <i className="ri-information-line me-2"></i>
+                Escanea este código QR para acceder a la versión {selectedVersionForQR.versionNumber}
+              </p>
+              <code className="d-block bg-light p-2 rounded text-break fs-11 mb-3">
+                {`${window.location.origin}/verificador-silabos?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
+              </code>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={() => {
+                  const qrElement = document.querySelector("svg");
+                  if (qrElement) {
+                    const link = document.createElement("a");
+                    link.download = `syllabus-v${selectedVersionForQR.versionNumber}-qr.svg`;
+                    const svgData = new XMLSerializer().serializeToString(qrElement);
+                    link.href = "data:image/svg+xml;base64," + btoa(svgData);
+                    link.click();
+                  }
+                }}
+              >
+                <i className="ri-download-2-line me-2"></i>
+                Descargar QR
+              </Button>
+            </>
+          )}
+        </Modal.Body>
+      </Modal>
     </>
   );
 };
