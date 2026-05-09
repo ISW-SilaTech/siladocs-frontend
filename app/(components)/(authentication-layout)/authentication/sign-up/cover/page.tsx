@@ -228,9 +228,9 @@ const Cover: React.FC = () => {
                                                         <input className="form-check-input" type="checkbox" defaultChecked id="termsCheck" />
                                                         <label className="form-check-label" htmlFor="termsCheck">
                                                             Acepto los{" "}
-                                                            <a href="https://www.ejemplo.com/terminos" target="_blank" rel="noopener noreferrer" style={{ color: "#4767ed" }}>
+                                                            <Link href="/terminos-condiciones" target="_blank" style={{ color: "#4767ed" }}>
                                                                 términos y condiciones
-                                                            </a>
+                                                            </Link>
                                                         </label>
                                                     </div>
                                                 </div>
