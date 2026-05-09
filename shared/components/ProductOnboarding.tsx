@@ -305,7 +305,6 @@ export default function ProductOnboarding() {
                   border: 'none', cursor: 'pointer',
                   transition: 'background 0.2s',
                 }}
-                onHover={{}}
               >
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   <div style={{
