@@ -34,6 +34,7 @@ const statusBadge: Record<string, string> = {
     failed: "bg-danger-transparent",
     create: "bg-primary-transparent",
     update: "bg-info-transparent",
+    validated: "bg-success",
 };
 
 const statusLabel: Record<string, string> = {
@@ -42,6 +43,7 @@ const statusLabel: Record<string, string> = {
     failed: "Fallido",
     create: "Creado",
     update: "Actualizado",
+    validated: "Validado",
 };
 
 const SilabosPage: React.FC = () => {
@@ -224,6 +226,40 @@ const SilabosPage: React.FC = () => {
         }
     };
 
+    // --- Approve handler (TC-02) ---
+    const [approvingId, setApprovingId] = useState<number | null>(null);
+    const handleApprove = async (id: number) => {
+        if (!window.confirm("¿Aprobar este sílabo? El estado cambiará a 'Validado'.")) return;
+        setApprovingId(id);
+        try {
+            await SyllabiService.approve(id);
+            toast.success("Sílabo aprobado correctamente.");
+            await fetchSyllabi();
+        } catch {
+            toast.error("Error al aprobar el sílabo.");
+        } finally {
+            setApprovingId(null);
+        }
+    };
+
+    // --- Verify integrity handler (TC-04) ---
+    const [verifyingId, setVerifyingId] = useState<number | null>(null);
+    const handleVerifyIntegrity = async (syllabus: Syllabus) => {
+        setVerifyingId(syllabus.id);
+        try {
+            const result = await SyllabiService.verifyIntegrity(syllabus.id);
+            if (result.integrityValid) {
+                toast.success(`Integridad verificada ✓ Hash coincide con blockchain. TxID: ${result.fabricTxId}`);
+            } else {
+                toast.warning("Advertencia: No se pudo verificar la integridad completa del documento.");
+            }
+        } catch {
+            toast.error("Error al verificar la integridad.");
+        } finally {
+            setVerifyingId(null);
+        }
+    };
+
     // --- Delete handler ---
     const handleDelete = async (id: number) => {
         if (!window.confirm("¿Está seguro de que desea eliminar este sílabo?")) return;
@@ -386,6 +422,24 @@ const SilabosPage: React.FC = () => {
                                                         </button>
                                                         <button className="btn btn-sm btn-icon btn-success-light" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
                                                             {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
+                                                        </button>
+                                                        {s.status?.toLowerCase() !== "validated" && (
+                                                            <button
+                                                                className="btn btn-sm btn-icon btn-warning-light"
+                                                                title="Aprobar sílabo (TC-02)"
+                                                                onClick={() => handleApprove(s.id)}
+                                                                disabled={approvingId === s.id}
+                                                            >
+                                                                {approvingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-checkbox-circle-line"></i>}
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            className="btn btn-sm btn-icon btn-purple-light"
+                                                            title="Verificar integridad (TC-04)"
+                                                            onClick={() => handleVerifyIntegrity(s)}
+                                                            disabled={verifyingId === s.id}
+                                                        >
+                                                            {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
                                                         </button>
                                                         <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar" onClick={() => handleDelete(s.id)}>
                                                             <i className="ri-delete-bin-line"></i>

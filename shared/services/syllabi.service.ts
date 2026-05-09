@@ -92,4 +92,20 @@ export const SyllabiService = {
     link.click();
     document.body.removeChild(link);
   },
+
+  approve: async (id: number): Promise<Syllabus> => {
+    const response = await api.patch<any>(`/syllabi/${id}/approve`);
+    return mapSyllabus(response.data);
+  },
+
+  verifyIntegrity: async (id: number): Promise<{
+    syllabusId: number;
+    storedHash: string;
+    fabricTxId: string;
+    integrityValid: boolean;
+    status: string;
+  }> => {
+    const response = await api.get(`/syllabi/${id}/verify-integrity`);
+    return response.data;
+  },
 };
