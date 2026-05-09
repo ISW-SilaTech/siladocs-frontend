@@ -652,23 +652,42 @@ const VerificadorSilabus: React.FC = () => {
               <code className="d-block bg-light p-2 rounded text-break fs-11 mb-3">
                 {`${window.location.origin}/verificador-silabos?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
               </code>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                onClick={() => {
-                  const qrElement = document.querySelector("svg");
-                  if (qrElement) {
-                    const link = document.createElement("a");
-                    link.download = `syllabus-v${selectedVersionForQR.versionNumber}-qr.svg`;
-                    const svgData = new XMLSerializer().serializeToString(qrElement);
-                    link.href = "data:image/svg+xml;base64," + btoa(svgData);
-                    link.click();
-                  }
-                }}
-              >
-                <i className="ri-download-2-line me-2"></i>
-                Descargar QR
-              </Button>
+              <div className="d-flex gap-2">
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    Swal.fire({
+                      title: "URL Copiada",
+                      text: "La URL pública se copió al portapapeles",
+                      icon: "success",
+                      confirmButtonColor: "#198754",
+                    });
+                  }}
+                >
+                  <i className="ri-file-copy-line me-2"></i>
+                  Copiar URL
+                </Button>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  onClick={() => {
+                    const qrElement = document.querySelector("svg");
+                    if (qrElement) {
+                      const link = document.createElement("a");
+                      link.download = `syllabus-v${selectedVersionForQR.versionNumber}-qr.svg`;
+                      const svgData = new XMLSerializer().serializeToString(qrElement);
+                      link.href = "data:image/svg+xml;base64," + btoa(svgData);
+                      link.click();
+                    }
+                  }}
+                >
+                  <i className="ri-download-2-line me-2"></i>
+                  Descargar QR
+                </Button>
+              </div>
             </>
           )}
         </Modal.Body>
