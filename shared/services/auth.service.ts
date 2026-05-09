@@ -69,6 +69,21 @@ export const AuthService = {
     safeStorage.removeItem('user');
   },
 
+  forgotPasswordRequest: async (email: string): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>('/auth/forgot-password/request', { email });
+    return response.data;
+  },
+
+  forgotPasswordVerify: async (email: string, code: string): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>('/auth/forgot-password/verify', { email, code });
+    return response.data;
+  },
+
+  forgotPasswordReset: async (email: string, code: string, newPassword: string): Promise<{ message: string }> => {
+    const response = await api.post<{ message: string }>('/auth/forgot-password/reset', { email, code, newPassword });
+    return response.data;
+  },
+
 };
 
 export default api;

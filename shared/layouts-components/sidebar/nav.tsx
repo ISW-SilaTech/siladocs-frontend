@@ -41,13 +41,6 @@ export const MENUITEMS: any = [
     ],
   },
   {
-    title: "Usuarios", icon: Svgicons.Profileicon, type: "sub", active: false, dirchange: false, children: [
-      { path: "/users/teachers", type: "link", icon: Svgicons.Profileicon, active: false, selected: false, dirchange: false, title: "Profesores" },
-      { path: "/users/students", type: "link", icon: Svgicons.Profileicon, active: false, selected: false, dirchange: false, title: "Alumnos" },
-      { path: "/users/administrators", type: "link", icon: Svgicons.Profileicon, active: false, selected: false, dirchange: false, title: "Administradores" },
-    ],
-  },
-  {
     title: "Configuración", icon: Svgicons.Profilesettingicon, type: "sub", active: false, dirchange: false, children: [
       { path: "/config/institution", type: "link", icon: Svgicons.Courseicon, active: false, selected: false, dirchange: false, title: "Institución" },
       { path: "/config/system", type: "link", icon: Svgicons.Courseicon, active: false, selected: false, dirchange: false, title: "Parámetros del sistema" },
