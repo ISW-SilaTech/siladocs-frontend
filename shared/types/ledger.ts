@@ -5,6 +5,19 @@ export interface LedgerRecord {
   actor: string;
 }
 
+export interface SyllabusVersion {
+  versionId: number;
+  versionNumber: number;
+  fileUrl: string;
+  fileHash: string;
+  status: string;
+  uploadedBy: string;
+  createdAt: string;
+  notes?: string;
+  isOnBlockchain: boolean;
+  fabricTxId?: string;
+}
+
 export interface SyllabusTrace {
   id: string;
   courseName: string;
@@ -17,4 +30,5 @@ export interface SyllabusTrace {
   channel: string;
   status: "Inmutable" | "Modificado" | "Pendiente";
   history: LedgerRecord[];
+  versions?: SyllabusVersion[];
 }

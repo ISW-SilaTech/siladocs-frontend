@@ -60,4 +60,18 @@ export const LedgerService = {
       return { verified: false, block: 0 };
     }
   },
+
+  getSyllabusVersions: async (id: string): Promise<any[]> => {
+    try {
+      const response = await api.get<any[]>(`/syllabi/${id}/versions`);
+      return response.data;
+    } catch {
+      return [];
+    }
+  },
+
+  getSpecificVersion: async (id: string, versionNumber: number): Promise<any> => {
+    const response = await api.get<any>(`/syllabi/${id}/versions/${versionNumber}`);
+    return response.data;
+  },
 };
