@@ -349,7 +349,7 @@ const SilabosPage: React.FC = () => {
                         <Card.Body className="p-3">
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
                                 <div className="d-flex flex-wrap gap-2">
-                                    <SpkButton Customclass="btn btn-primary" onClick={handleOpenModal}>
+                                    <SpkButton Customclass="btn btn-primary" onClick={handleOpenModal} id="coach-btn-nuevo-silabo">
                                         <i className="ri-upload-cloud-2-line me-1 fw-medium align-middle"></i>
                                         Subir Sílabo
                                     </SpkButton>
@@ -383,7 +383,7 @@ const SilabosPage: React.FC = () => {
                                 ) : error ? (
                                     <Alert variant="danger" className="m-3">{error}</Alert>
                                 ) : (
-                                    <SpkTables tableClass="text-nowrap" header={[
+                                    <SpkTables tableClass="text-nowrap" id="coach-syllabus-table" header={[
                                         { title: "Archivo" }, { title: "Curso" }, { title: "Hash SHA-256" },
                                         { title: "Tx Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "Acciones" },
                                     ]}>
@@ -411,7 +411,7 @@ const SilabosPage: React.FC = () => {
                                                 </td>
                                                 <td className="fs-13">{formatDate(s.uploadedAt)}</td>
                                                 <td>
-                                                    <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                    <SpkBadge id="coach-status-badge" variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
                                                         {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
                                                     </SpkBadge>
                                                 </td>
@@ -420,12 +420,12 @@ const SilabosPage: React.FC = () => {
                                                         <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => setPreviewSyllabus(s)}>
                                                             <i className="ri-eye-line"></i>
                                                         </button>
-                                                        <button className="btn btn-sm btn-icon btn-success-light" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
+                                                        <button className="btn btn-sm btn-icon btn-success-light coach-download-btn" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
                                                             {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
                                                         </button>
                                                         {s.status?.toLowerCase() !== "validated" && (
                                                             <button
-                                                                className="btn btn-sm btn-icon btn-warning-light"
+                                                                className="btn btn-sm btn-icon btn-warning-light coach-approve-btn"
                                                                 title="Aprobar sílabo (TC-02)"
                                                                 onClick={() => handleApprove(s.id)}
                                                                 disabled={approvingId === s.id}
@@ -434,7 +434,7 @@ const SilabosPage: React.FC = () => {
                                                             </button>
                                                         )}
                                                         <button
-                                                            className="btn btn-sm btn-icon btn-purple-light"
+                                                            className="btn btn-sm btn-icon btn-purple-light coach-verify-btn"
                                                             title="Verificar integridad (TC-04)"
                                                             onClick={() => handleVerifyIntegrity(s)}
                                                             disabled={verifyingId === s.id}
@@ -522,6 +522,7 @@ const SilabosPage: React.FC = () => {
                                             Curso <span className="text-danger">*</span>
                                         </Form.Label>
                                         <Form.Select
+                                            id="coach-modal-curso"
                                             value={selectedCourseId}
                                             onChange={(e) => setSelectedCourseId(e.target.value)}
                                             disabled={isUploading}
@@ -541,6 +542,7 @@ const SilabosPage: React.FC = () => {
                                             Archivo <span className="text-danger">*</span>
                                         </Form.Label>
                                         <div
+                                            id="coach-modal-file-drop"
                                             onDragOver={handleDragOver}
                                             onDragLeave={handleDragLeave}
                                             onDrop={handleDrop}
@@ -623,6 +625,7 @@ const SilabosPage: React.FC = () => {
                                                     <span className="badge bg-dark fs-11">{sseEvents.length} eventos</span>
                                                 </div>
                                                 <div
+                                                    id="coach-sse-progress"
                                                     ref={sseLogRef}
                                                     className="flex-grow-1 border rounded-3 p-3"
                                                     style={{

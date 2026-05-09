@@ -5,6 +5,7 @@ import Header from '@/shared/layouts-components/header/header'
 import { data$, getState } from '@/shared/layouts-components/services/switcherServices'
 import Sidebar from '@/shared/layouts-components/sidebar/sidebar'
 import Switcher from '@/shared/layouts-components/switcher/switcher'
+import TestCoach from '@/shared/components/TestCoach'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 
 const layout = ({ children }: any) => {
@@ -52,6 +53,7 @@ const layout = ({ children }: any) => {
         <Footer />
       </div>
       <Backtotop />
+      <TestCoach />
     </Fragment>
   )
 }

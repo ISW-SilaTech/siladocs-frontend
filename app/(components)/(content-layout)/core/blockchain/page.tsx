@@ -115,6 +115,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
               <InputGroup className="mt-3 mb-2">
                 <InputGroup.Text><i className="ri-search-line"></i></InputGroup.Text>
                 <Form.Control
+                  id="coach-blockchain-search"
                   placeholder="Buscar curso o código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -122,7 +123,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
               </InputGroup>
             </Card.Header>
             <Card.Body className="p-0">
-              <div className="list-group list-group-flush" style={{ maxHeight: '600px', overflowY: 'auto' }}>
+              <div id="coach-blockchain-list" className="list-group list-group-flush" style={{ maxHeight: '600px', overflowY: 'auto' }}>
                 {isLoadingList ? (
                   <div className="p-5 text-center"><Spinner animation="border" variant="primary" /></div>
                 ) : filteredCourses.length > 0 ? (
@@ -193,7 +194,7 @@ const SyllabusTraceabilityDashboard: React.FC = () => {
                   </Col>
                 </Row>
 
-                <h6 className="fw-bold mb-4 text-muted"><i className="ri-history-line me-2"></i>Historial de Transacciones</h6>
+                <h6 id="coach-blockchain-history" className="fw-bold mb-4 text-muted"><i className="ri-history-line me-2"></i>Historial de Transacciones</h6>
 
                 {isLoadingHistory ? (
                   <div className="text-center p-5"><Spinner animation="grow" variant="secondary" /></div>
