@@ -140,7 +140,8 @@ const Cover: React.FC = () => {
                                         <div className="text-center my-3 authentication-barrier">
                                             <span className="op-4 fs-13">O</span>
                                         </div>
-                                        <div className="d-grid mb-3">
+                                        {/* Google y Outlook deshabilitados */}
+                                        {/* <div className="d-grid mb-3">
                                             <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3">
                                                 <span className="avatar avatar-xs">
                                                     <Image fill src="../../../assets/images/media/apps/google.png" alt="" />
@@ -153,7 +154,7 @@ const Cover: React.FC = () => {
                                                 </span>
                                                 <span className="lh-1 ms-2 fs-13 text-default fw-medium">Ingresa con Outlook</span>
                                             </SpkButton>
-                                        </div>
+                                        </div> */}
                                         <div className="text-center mt-3 fw-medium">
                                             ¿No tienes una cuenta?{" "}
                                             <Link scroll={false} href="/authentication/sign-up/cover/" className="text-primary animated-underline">

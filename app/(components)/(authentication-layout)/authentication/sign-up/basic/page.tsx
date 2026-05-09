@@ -124,7 +124,7 @@ const Basic: React.FC<BasicProps> = () => {
                                         <SpkButton Buttontype="submit" Customclass="btn btn-primary">Sign In</SpkButton>
                                     </div>
                                 </Form>
-                                <div className="text-center my-3 authentication-barrier">
+                                <div className="text-center my-3 authentication-barrier" style={{display: "none"}}>
                                     <span className="op-4 fs-13">OR</span>
                                 </div>
                                 <div className="d-grid mb-3">
