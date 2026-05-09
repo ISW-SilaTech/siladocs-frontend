@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, InputGroup, Form, Button, Spinner, Alert, Badge } from "react-bootstrap";
+import { Container, Row, Col, Card, InputGroup, Form, Button, Spinner, Alert, Badge, Nav, Tab } from "react-bootstrap";
 import { LedgerService } from "@/shared/services/ledger.service";
+import { SyllabiService } from "@/shared/services/syllabi.service";
 import { SyllabusTrace } from "@/shared/types/ledger";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
@@ -213,14 +214,15 @@ const VerificadorSilabus: React.FC = () => {
                 {/* Resultado de la Búsqueda */}
                 {result && (
                   <div className="mt-5">
-                    <div className="border-top pt-4 mb-4">
+                    <div className="border-top pt-4">
+                      {/* Encabezado */}
                       <div className="d-flex justify-content-between align-items-start mb-4">
                         <div>
                           <h5 className="fw-bold mb-2">{result.courseName}</h5>
                           <p className="text-muted mb-1 fs-13">
                             <i className="ri-file-text-line me-2"></i>Código: <strong>{result.courseCode}</strong>
                           </p>
-                          <p className="text-muted mb-3 fs-13">
+                          <p className="text-muted mb-0 fs-13">
                             <i className="ri-building-2-line me-2"></i>Carrera: <strong>{result.career}</strong>
                           </p>
                         </div>
@@ -229,75 +231,239 @@ const VerificadorSilabus: React.FC = () => {
                         </Badge>
                       </div>
 
-                      {/* Información del Hash */}
-                      <div className="bg-light p-4 rounded mb-4">
-                        <p className="text-muted mb-2 fs-12 fw-bold">
-                          <i className="ri-link-chain me-2"></i>HASH SHA-256
-                        </p>
-                        <code className="text-dark fs-14 text-break d-block p-2 bg-white rounded border" style={{ wordBreak: "break-all" }}>
-                          {result.currentHash || "No disponible"}
-                        </code>
-                      </div>
+                      {/* Tabs para PDF y Timeline */}
+                      <Tab.Container defaultActiveKey="preview">
+                        <Nav variant="tabs" className="mb-4 border-bottom">
+                          <Nav.Item>
+                            <Nav.Link eventKey="preview" className="fw-semibold">
+                              <i className="ri-file-pdf-line me-2"></i>Vista Previa
+                            </Nav.Link>
+                          </Nav.Item>
+                          <Nav.Item>
+                            <Nav.Link eventKey="timeline" className="fw-semibold">
+                              <i className="ri-history-line me-2"></i>Historial de Versiones
+                            </Nav.Link>
+                          </Nav.Item>
+                          <Nav.Item>
+                            <Nav.Link eventKey="details" className="fw-semibold">
+                              <i className="ri-information-line me-2"></i>Detalles Blockchain
+                            </Nav.Link>
+                          </Nav.Item>
+                        </Nav>
 
-                      {/* Información del Blockchain */}
-                      <Row className="g-3 mb-4">
-                        <Col md={6}>
-                          <div className="p-3 border rounded bg-white">
-                            <p className="text-muted mb-1 fs-12 fw-bold">
-                              <i className="ri-node-tree me-2"></i>BLOQUE DE RED
-                            </p>
-                            <h5 className="text-primary font-monospace mb-0">
-                              #{result.blockNumber || "—"}
-                            </h5>
-                          </div>
-                        </Col>
-                        <Col md={6}>
-                          <div className="p-3 border rounded bg-white">
-                            <p className="text-muted mb-1 fs-12 fw-bold">
-                              <i className="ri-link-m me-2"></i>CANAL
-                            </p>
-                            <h5 className="text-primary mb-0">{result.channel || "—"}</h5>
-                          </div>
-                        </Col>
-                      </Row>
-
-                      {/* Resultado de Verificación */}
-                      {verificationResult && (
-                        <div className={`alert alert-${verificationResult.verified ? "success" : "warning"} mb-4`}>
-                          <div className="d-flex align-items-center">
-                            <i className={`ri-${verificationResult.verified ? "check-double-fill" : "alert-fill"} me-2 fs-5`}></i>
-                            <div>
-                              <strong>{verificationResult.verified ? "✓ Documento Verificado" : "⚠ Documento No Verificado"}</strong>
-                              <p className="mb-0 mt-1 fs-13">
-                                {verificationResult.verified
-                                  ? `El sílabo ha sido validado en el bloque #${verificationResult.block}`
-                                  : "Este documento no se encuentra en el registro blockchain"}
-                              </p>
+                        <Tab.Content>
+                          {/* TAB: PREVIEW PDF */}
+                          <Tab.Pane eventKey="preview">
+                            <div className="mb-4">
+                              {result.fileName && result.fileName !== "—" ? (
+                                <div className="bg-light p-4 rounded mb-3 text-center" style={{ minHeight: "600px" }}>
+                                  <p className="text-muted mb-3 fs-13">
+                                    <i className="ri-file-pdf-line me-2"></i>
+                                    {result.fileName}
+                                  </p>
+                                  <iframe
+                                    src={`${result.fileName}#toolbar=0`}
+                                    style={{
+                                      width: "100%",
+                                      height: "600px",
+                                      border: "1px solid #e0e0e0",
+                                      borderRadius: "4px"
+                                    }}
+                                    title="PDF Preview"
+                                    onError={() => (
+                                      <div className="alert alert-info">
+                                        <i className="ri-information-line me-2"></i>
+                                        No se puede visualizar el PDF en el navegador. Descárgalo para ver el contenido.
+                                      </div>
+                                    )}
+                                  ></iframe>
+                                  <div className="mt-3">
+                                    <Button
+                                      variant="outline-primary"
+                                      size="sm"
+                                      onClick={() => window.open(result.fileName, "_blank")}
+                                    >
+                                      <i className="ri-download-2-line me-2"></i>
+                                      Descargar PDF
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <Alert variant="info">
+                                  <i className="ri-information-line me-2"></i>
+                                  No hay archivo disponible para esta versión del sílabo.
+                                </Alert>
+                              )}
                             </div>
-                          </div>
-                        </div>
-                      )}
+                          </Tab.Pane>
 
-                      {/* Botón de Verificación */}
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        className="w-100"
-                        onClick={handleVerify}
-                        disabled={isVerifying}
-                      >
-                        {isVerifying ? (
-                          <>
-                            <Spinner as="span" animation="border" size="sm" className="me-2" />
-                            Verificando en blockchain...
-                          </>
-                        ) : (
-                          <>
-                            <i className="ri-shield-keyhole-line me-2"></i>
-                            Verificar Integridad
-                          </>
-                        )}
-                      </Button>
+                          {/* TAB: TIMELINE */}
+                          <Tab.Pane eventKey="timeline">
+                            <div className="mb-4">
+                              {result.history && result.history.length > 0 ? (
+                                <div className="timeline-container ps-4">
+                                  {result.history.map((record, index) => {
+                                    const getEventIcon = (action: string) => {
+                                      switch (action) {
+                                        case "CREATION":
+                                          return { icon: "ri-file-add-line", bg: "bg-primary", label: "Creación" };
+                                        case "UPDATE":
+                                          return { icon: "ri-edit-line", bg: "bg-info", label: "Actualización" };
+                                        case "VERIFICATION":
+                                          return { icon: "ri-check-double-line", bg: "bg-success", label: "Validación" };
+                                        case "APPROVAL":
+                                          return { icon: "ri-thumb-up-line", bg: "bg-success", label: "Aprobación" };
+                                        default:
+                                          return { icon: "ri-node-tree", bg: "bg-secondary", label: action };
+                                      }
+                                    };
+
+                                    const eventInfo = getEventIcon(record.action);
+                                    const eventDate = new Date(record.timestamp);
+
+                                    return (
+                                      <div key={index} className="d-flex mb-4 position-relative">
+                                        {index !== result.history.length - 1 && (
+                                          <div
+                                            className="position-absolute"
+                                            style={{
+                                              left: "-25px",
+                                              top: "40px",
+                                              bottom: "-30px",
+                                              width: "2px",
+                                              backgroundColor: "#e9ecef",
+                                              zIndex: 0,
+                                            }}
+                                          ></div>
+                                        )}
+                                        <div
+                                          className={`avatar avatar-sm text-white rounded-circle ${eventInfo.bg} d-flex align-items-center justify-content-center position-relative`}
+                                          style={{ width: "40px", height: "40px", zIndex: 1, flexShrink: 0 }}
+                                        >
+                                          <i className={eventInfo.icon}></i>
+                                        </div>
+                                        <div className="flex-fill ps-3 pb-3 border-bottom">
+                                          <div className="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                              <h6 className="fw-semibold mb-1">{eventInfo.label}</h6>
+                                              <p className="text-muted fs-13 mb-1">
+                                                <i className="ri-user-3-line me-1"></i>
+                                                {record.actor}
+                                              </p>
+                                            </div>
+                                            <small className="text-muted">
+                                              {eventDate.toLocaleDateString("es-ES", {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                              })}
+                                            </small>
+                                          </div>
+                                          <div className="bg-light p-2 rounded mt-2">
+                                            <code className="text-dark fs-11 text-break">
+                                              TxID: {record.txId.substring(0, 40)}...
+                                            </code>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <Alert variant="info">
+                                  <i className="ri-information-line me-2"></i>
+                                  No hay historial detallado disponible para este sílabo.
+                                </Alert>
+                              )}
+                            </div>
+                          </Tab.Pane>
+
+                          {/* TAB: DETALLES BLOCKCHAIN */}
+                          <Tab.Pane eventKey="details">
+                            <div className="mb-4">
+                              {/* Hash */}
+                              <div className="mb-4">
+                                <p className="text-muted mb-2 fs-12 fw-bold">
+                                  <i className="ri-link-chain me-2"></i>HASH SHA-256
+                                </p>
+                                <div className="bg-light p-3 rounded">
+                                  <code
+                                    className="text-dark fs-14 text-break d-block p-2 bg-white rounded border"
+                                    style={{ wordBreak: "break-all" }}
+                                  >
+                                    {result.currentHash || "No disponible"}
+                                  </code>
+                                </div>
+                              </div>
+
+                              {/* Información del Blockchain */}
+                              <Row className="g-3 mb-4">
+                                <Col md={6}>
+                                  <div className="p-3 border rounded bg-white">
+                                    <p className="text-muted mb-2 fs-12 fw-bold">
+                                      <i className="ri-node-tree me-2"></i>BLOQUE DE RED
+                                    </p>
+                                    <h5 className="text-primary font-monospace mb-0">
+                                      #{result.blockNumber || "—"}
+                                    </h5>
+                                  </div>
+                                </Col>
+                                <Col md={6}>
+                                  <div className="p-3 border rounded bg-white">
+                                    <p className="text-muted mb-2 fs-12 fw-bold">
+                                      <i className="ri-link-m me-2"></i>CANAL
+                                    </p>
+                                    <h5 className="text-primary mb-0">{result.channel || "—"}</h5>
+                                  </div>
+                                </Col>
+                              </Row>
+
+                              {/* Resultado de Verificación */}
+                              {verificationResult && (
+                                <div className={`alert alert-${verificationResult.verified ? "success" : "warning"} mb-4`}>
+                                  <div className="d-flex align-items-center">
+                                    <i
+                                      className={`ri-${verificationResult.verified ? "check-double-fill" : "alert-fill"} me-2 fs-5`}
+                                    ></i>
+                                    <div>
+                                      <strong>
+                                        {verificationResult.verified ? "✓ Documento Verificado" : "⚠ Documento No Verificado"}
+                                      </strong>
+                                      <p className="mb-0 mt-1 fs-13">
+                                        {verificationResult.verified
+                                          ? `El sílabo ha sido validado en el bloque #${verificationResult.block}`
+                                          : "Este documento no se encuentra en el registro blockchain"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Botón de Verificación */}
+                              <Button
+                                variant="primary"
+                                className="w-100"
+                                onClick={handleVerify}
+                                disabled={isVerifying}
+                              >
+                                {isVerifying ? (
+                                  <>
+                                    <Spinner as="span" animation="border" size="sm" className="me-2" />
+                                    Verificando en blockchain...
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="ri-shield-keyhole-line me-2"></i>
+                                    Verificar Integridad
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </Tab.Pane>
+                        </Tab.Content>
+                      </Tab.Container>
                     </div>
                   </div>
                 )}
