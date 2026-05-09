@@ -1,6 +1,7 @@
 "use client"
 
 import { BehaviorSubject } from "rxjs"
+import { safeStorage } from "@/shared/utils/safeStorage"
 
 interface Body {
     class: string;
@@ -113,7 +114,7 @@ export const setState: any = (newState: Partial<InitialState>) => {
     if (newState.toggled !== undefined) {
         const simpleValues = ["", "close", "open"];
         if (simpleValues.includes(newState.toggled)) {
-            localStorage.setItem('sidebarToggled', newState.toggled);
+            safeStorage.setItem('sidebarToggled', newState.toggled);
         }
     }
 }

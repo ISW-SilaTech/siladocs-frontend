@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { safeStorage } from '@/shared/utils/safeStorage';
 
 type TCStatus = 'pending' | 'pass' | 'fail';
 type ShepherdTour = any;
@@ -342,9 +343,8 @@ export default function TestCoach() {
 
   // Load saved statuses
   useEffect(() => {
-    if (typeof window === 'undefined') return;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = safeStorage.getItem(STORAGE_KEY);
       if (saved) setStatuses(JSON.parse(saved));
     } catch { /* ignore */ }
   }, []);
@@ -352,7 +352,7 @@ export default function TestCoach() {
   const saveStatus = useCallback((tcId: string, status: TCStatus) => {
     setStatuses(prev => {
       const next = { ...prev, [tcId]: status };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      safeStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });
   }, []);

@@ -1,4 +1,5 @@
 import api from '@/shared/config/axios';
+import { safeStorage } from '@/shared/utils/safeStorage';
 
 export interface ValidateCodeResponse {
   institutionName: string;
@@ -64,10 +65,8 @@ export const AuthService = {
   },
 
   logout: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-    }
+    safeStorage.removeItem('accessToken');
+    safeStorage.removeItem('user');
   },
 
 };

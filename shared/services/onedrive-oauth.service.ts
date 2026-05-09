@@ -1,4 +1,5 @@
 import api from '@/shared/config/axios';
+import { safeStorage } from '@/shared/utils/safeStorage';
 
 export interface OneDriveFile {
   id: string;
@@ -95,27 +96,20 @@ export const OneDriveOAuthService = {
    * Store access token in localStorage (for frontend-only flow)
    */
   storeAccessToken: (token: string): void => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('onedrive_access_token', token);
-    }
+    safeStorage.setItem('onedrive_access_token', token);
   },
 
   /**
    * Retrieve stored access token
    */
   getAccessToken: (): string | null => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('onedrive_access_token');
-    }
-    return null;
+    return safeStorage.getItem('onedrive_access_token');
   },
 
   /**
    * Clear stored access token
    */
   clearAccessToken: (): void => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('onedrive_access_token');
-    }
+    safeStorage.removeItem('onedrive_access_token');
   },
 };
