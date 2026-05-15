@@ -595,7 +595,7 @@ const Landing = () => {
                         {/* Contenedor responsivo para el video */}
                         <div className="ratio ratio-16x9">
                             <iframe
-                                src="https://upcedupe-my.sharepoint.com/personal/u20181h198_upc_edu_pe/_layouts/15/embed.aspx?UniqueId=623b52ff-6f6a-43fd-ad67-e01f3eb2a8c6&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create"
+                                src="https://upcedupe-my.sharepoint.com/personal/u20181h198_upc_edu_pe/_layouts/15/embed.aspx?UniqueId=5e6b3b55-5f88-4ed8-adec-e5fb20e437ae&embed=%7B%22ust%22%3Atrue%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create"
                                 width="640" // Estos anchos/altos son ignorados por ratio-16x9 pero buenos como fallback
                                 height="360"
                                 frameBorder="0" // Cambiado a frameBorder (camelCase en React)
