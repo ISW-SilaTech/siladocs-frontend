@@ -442,7 +442,7 @@ const Header = () => {
 
                         <div className="header-element">
                             <div className="horizontal-logo">
-                                <Link scroll={false} href="/dashboards/sales/" className="header-logo">
+                                <Link scroll={false} href="/dashboards/general/" className="header-logo">
                                     <Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/brand-logos/desktop-logo.png`} alt="logo" className="desktop-logo" />
                                     <Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/brand-logos/toggle-logo.png`} alt="logo" className="toggle-logo" />
                                     <Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/brand-logos/desktop-dark.png`} alt="logo" className="desktop-dark" />

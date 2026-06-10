@@ -39,15 +39,15 @@ const Cover: React.FC<CoverProps> = () => {
  
      const validate = () => {
          const errors: any = {};
- 
+
          if (!formData.password || formData.password.length < 6) {
-             errors.password = 'Password must be at least 6 characters';
+             errors.password = 'Debe incluir al menos 6 caracteres.';
          }
- 
+
          if (formData.confirmPassword !== formData.password) {
-             errors.confirmPassword = 'Passwords do not match';
+             errors.confirmPassword = 'Las contraseñas no coinciden.';
          }
- 
+
          setFormErrors(errors);
          return Object.keys(errors).length === 0;
      };
@@ -55,8 +55,8 @@ const Cover: React.FC<CoverProps> = () => {
      const handleSubmit = (e: any) => {
          e.preventDefault();
          if (validate()) {
-             router.push('/dashboards/sales/');
-             toast.success('Create Password successful', {
+             router.push('/dashboards/general/');
+             toast.success('Contraseña creada exitosamente', {
                  position: 'top-right',
                  autoClose: 1500,
                  hideProgressBar: false,
@@ -71,7 +71,7 @@ const Cover: React.FC<CoverProps> = () => {
     return (
         <Fragment>
 
-            <Seo title="Createpassword-Cover" />
+            <Seo title="Crear Contraseña" />
 
             <Row className="authentication authentication-cover-main mx-0">
                 <Col xxl={9} xl={9} className="">
@@ -80,19 +80,19 @@ const Cover: React.FC<CoverProps> = () => {
                             <Card className="custom-card border-0 shadow-none my-4">
                                 <Card.Body className="p-5">
                                     <div>
-                                        <h4 className="mb-1 fw-semibold">Create Password</h4>
-                                        <p className="mb-4 text-muted fw-normal">Set your new password</p>
+                                        <h4 className="mb-1 fw-semibold">Crear Contraseña</h4>
+                                        <p className="mb-4 text-muted fw-normal">Define tu nueva contraseña</p>
                                     </div>
                                        <Form onSubmit={handleSubmit}>
                                     <Row className=" gy-3">
                                         <Col xl={12} className="">
-                                            <Form.Label htmlFor="create-password" className="text-default">Password</Form.Label>
+                                            <Form.Label htmlFor="create-password" className="text-default">Contraseña</Form.Label>
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type={passwordVisibility.password ? 'text' : 'password'}
                                                     className="form-control form-control-lg"
                                                     id="password"
-                                                    placeholder="password"
+                                                    placeholder="Contraseña"
                                                     value={formData.password}
                                                     onChange={handleChange}
                                                 />
@@ -103,13 +103,13 @@ const Cover: React.FC<CoverProps> = () => {
                                             )}
                                         </Col>
                                         <Col xl={12}>
-                                            <Form.Label htmlFor="create-confirmpassword" className="text-default">Confirm Password</Form.Label>
+                                            <Form.Label htmlFor="create-confirmpassword" className="text-default">Confirmar Contraseña</Form.Label>
                                             <div className="position-relative">
                                                 <Form.Control
                                                     type={passwordVisibility.passwords ? 'text' : 'password'}
                                                     className="form-control form-control-lg"
                                                     id="confirmPassword"
-                                                    placeholder="confirm password"
+                                                    placeholder="Confirmar contraseña"
                                                     value={formData.confirmPassword}
                                                     onChange={handleChange}
                                                 />
@@ -122,35 +122,35 @@ const Cover: React.FC<CoverProps> = () => {
                                                 <div className="form-check mb-0">
                                                     <input className="form-check-input" type="checkbox" defaultValue="" id="defaultCheck1" defaultChecked />
                                                     <label className="form-check-label" htmlFor="defaultCheck1">
-                                                        Remember password ?
+                                                        ¿Recordar contraseña?
                                                     </label>
                                                 </div>
                                             </div>
                                         </Col>
                                     </Row>
                                     <div className="d-grid mt-3">
-                                    <SpkButton Buttontype="submit" Customclass="btn btn-primary">Create Password</SpkButton>
+                                    <SpkButton Buttontype="submit" Customclass="btn btn-primary">Crear Contraseña</SpkButton>
                                     </div>
                                     </Form>
                                     <div className="text-center my-3 authentication-barrier" style={{display: "none"}}>
-                                        <span className="op-4 fs-13">OR</span>
+                                        <span className="op-4 fs-13">O</span>
                                     </div>
                                     <div className="d-grid mb-3">
                                         <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill mb-3">
                                             <span className="avatar avatar-xs">
                                                 <Image fill src="../../../assets/images/media/apps/google.png" alt="" />
                                             </span>
-                                            <span className="lh-1 ms-2 fs-13 text-default fw-medium">Signup with Google</span>
+                                            <span className="lh-1 ms-2 fs-13 text-default fw-medium">Registrarse con Google</span>
                                         </SpkButton>
                                         <SpkButton Customclass="btn btn-white btn-w-lg border d-flex align-items-center justify-content-center flex-fill">
                                             <span className="avatar avatar-xs">
                                                 <Image fill src="../../../assets/images/media/apps/facebook.png" alt="" />
                                             </span>
-                                            <span className="lh-1 ms-2 fs-13 text-default fw-medium">Signup with Facebook</span>
+                                            <span className="lh-1 ms-2 fs-13 text-default fw-medium">Registrarse con Facebook</span>
                                         </SpkButton>
                                     </div>
                                     <div className="text-center mt-3 fw-medium">
-                                        Dont have an account? <Link scroll={false} href="/authentication/sign-up/basic" className="text-primary">Sign Up</Link>
+                                        ¿No tienes una cuenta? <Link scroll={false} href="/authentication/sign-up/cover" className="text-primary">Regístrate</Link>
                                     </div>
                                 </Card.Body>
                             </Card>
@@ -160,7 +160,7 @@ const Cover: React.FC<CoverProps> = () => {
                 <Col xxl={3} xl={3} lg={12} className="d-xl-block d-none px-0">
                     <div className="authentication-cover overflow-hidden">
                         <div className="authentication-cover-logo">
-                            <Link scroll={false} href="/dashboards/sales">
+                            <Link scroll={false} href="/dashboards/general">
                                 <Image fill src="../../../assets/images/brand-logos/toggle-logo.png" alt="logo" className="desktop-dark" />
                             </Link>
                         </div>
@@ -169,8 +169,8 @@ const Cover: React.FC<CoverProps> = () => {
                         </div>
                         <div className="authentication-cover-content">
                             <div className="p-5">
-                                <h3 className="fw-semibold lh-base">Welcome to Dashboard</h3>
-                                <p className="mb-0 text-muted fw-medium">Manage your website and content with ease using our powerful admin tools.</p>
+                                <h3 className="fw-semibold lh-base">Bienvenido a SilaDocs</h3>
+                                <p className="mb-0 text-muted fw-medium">Administra los sílabos de tu institución de forma segura y trazable con tecnología blockchain.</p>
                             </div>
                             <div>
                                 <Image fill src="../../../assets/images/media/media-72.png" alt="" className="img-fluid" />

@@ -40,11 +40,4 @@ export const MENUITEMS: any = [
       { path: "/core/blockchain", type: "link", icon: Svgicons.Timelineicon, active: false, selected: false, dirchange: false, title: "Auditoría" }
     ],
   },
-  {
-    title: "Configuración", icon: Svgicons.Profilesettingicon, type: "sub", active: false, dirchange: false, children: [
-      { path: "/config/institution", type: "link", icon: Svgicons.Courseicon, active: false, selected: false, dirchange: false, title: "Institución" },
-      { path: "/config/system", type: "link", icon: Svgicons.Courseicon, active: false, selected: false, dirchange: false, title: "Parámetros del sistema" },
-      { path: "/config/preferences", type: "link", icon: Svgicons.Courseicon, active: false, selected: false, dirchange: false, title: "Preferencias" },
-    ],
-  }
 ]

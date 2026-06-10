@@ -10,8 +10,8 @@ export interface SyllabusVersion {
   versionNumber: number;
   fileUrl: string;
   fileHash: string;
-  status: string;
-  uploadedBy: string;
+  status?: string;
+  uploadedBy?: string;
   createdAt: string;
   notes?: string;
   isOnBlockchain: boolean;

@@ -65,7 +65,7 @@ const Cover: React.FC<CoverProps> = () => {
 
         <Fragment>
 
-            <Seo title="Lockscreen-Cover" />
+            <Seo title="Bloqueo de Pantalla" />
 
             <Row className="authentication authentication-cover-main mx-0">
                 <Col xxl={9} xl={9}>

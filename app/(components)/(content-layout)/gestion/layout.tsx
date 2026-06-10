@@ -7,11 +7,21 @@ import Sidebar from '@/shared/layouts-components/sidebar/sidebar'
 import Switcher from '@/shared/layouts-components/switcher/switcher'
 import ProductOnboarding from '@/shared/components/ProductOnboarding'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useAuth } from '@/shared/contextapi'
+import { Spinner, Container, Row, Col } from 'react-bootstrap'
 
 const Layout = ({ children }: any) => {
   const progressRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname(); // 👈 obtenemos la ruta actual
+  const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/authentication/sign-in/cover');
+    }
+  }, [user, loading, router]);
 
   // Barra de progreso en scroll
   useEffect(() => {
@@ -47,6 +57,25 @@ const Layout = ({ children }: any) => {
   useEffect(() => {
     window.dispatchEvent(new Event("resize"));
   }, [pathname]);
+
+  if (loading) {
+    return (
+      <Container className="py-5">
+        <Row className="justify-content-center">
+          <Col lg={8} className="text-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </Spinner>
+            <p className="mt-3 text-muted">Verificando autenticación...</p>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Fragment>

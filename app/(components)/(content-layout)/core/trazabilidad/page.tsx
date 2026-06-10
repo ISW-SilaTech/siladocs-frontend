@@ -186,7 +186,7 @@ const Trazabilidad: React.FC = () => {
               <Card.Body>
                 <div className="text-center">
                   <h4 className="fw-bold text-primary mb-2">
-                    {metrics?.avgVersionsPerSyllabus.toFixed(1) || 0}
+                    {metrics?.avgVersionsPerSyllabus?.toFixed(1) || 0}
                   </h4>
                   <p className="text-muted mb-0">
                     <i className="ri-git-branch-line me-1"></i>
@@ -229,7 +229,7 @@ const Trazabilidad: React.FC = () => {
                       <div>
                         <h6 className="fw-semibold">Gestión Ágil</h6>
                         <p className="text-muted fs-13 mb-0">
-                          Control de versiones con {metrics?.avgVersionsPerSyllabus.toFixed(1) || 0} versiones promedio
+                          Control de versiones con {metrics?.avgVersionsPerSyllabus?.toFixed(1) || 0} versiones promedio
                         </p>
                       </div>
                     </div>

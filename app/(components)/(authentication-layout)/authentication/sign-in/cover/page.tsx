@@ -59,7 +59,7 @@ const Cover: React.FC = () => {
                 animate={{ filter: "blur(0px)", opacity: 1 }}
                 transition={{ duration: 0.4, ease: "easeIn" }}
             >
-                <Seo title="Signin-Cover" />
+                <Seo title="Iniciar Sesión" />
 
                 <Row className="authentication authentication-cover-main mx-0">
                     <Col xxl={9} xl={9}>

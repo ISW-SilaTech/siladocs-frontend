@@ -132,7 +132,7 @@ const Cover: React.FC = () => {
                 }
                 .btn.opacity-50 { opacity: 0.5 !important; pointer-events: none; }
                 `}</style>
-                <Seo title="Signup-Cover" />
+                <Seo title="Crear Cuenta" />
                 <Row className="authentication authentication-cover-main mx-0">
                     <Col xxl={9} xl={9}>
                         <Row className="justify-content-center align-items-center h-100">

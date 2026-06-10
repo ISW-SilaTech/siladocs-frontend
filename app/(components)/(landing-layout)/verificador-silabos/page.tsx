@@ -302,7 +302,7 @@ const VerificadorSilabus: React.FC = () => {
                             <i className="ri-file-text-line me-2"></i>Código: <strong>{result.courseCode}</strong>
                           </p>
                           <p className="text-muted mb-0 fs-13">
-                            <i className="ri-building-2-line me-2"></i>Carrera: <strong>{result.career}</strong>
+                            <i className="ri-building-2-line me-2"></i>Carrera: <strong>{result.career || "No especificada"}</strong>
                           </p>
                         </div>
                         <Badge bg={getStatusColor(result.status)} className="px-3 py-2 fs-12">
@@ -639,7 +639,7 @@ const VerificadorSilabus: React.FC = () => {
             <>
               <div className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
                 <QRCodeSVG
-                  value={`${window.location.origin}/verificador-silabos?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
+                  value={`${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
                   size={256}
                   level="H"
                   includeMargin={true}
@@ -650,7 +650,7 @@ const VerificadorSilabus: React.FC = () => {
                 Escanea este código QR para acceder a la versión {selectedVersionForQR.versionNumber}
               </p>
               <code className="d-block bg-light p-2 rounded text-break fs-11 mb-3">
-                {`${window.location.origin}/verificador-silabos?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
+                {`${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
               </code>
               <div className="d-flex gap-2">
                 <Button

@@ -1,5 +1,5 @@
 import api from '@/shared/config/axios';
-import { SyllabusTrace, LedgerRecord } from '@/shared/types/ledger';
+import { SyllabusTrace, LedgerRecord, SyllabusVersion } from '@/shared/types/ledger';
 
 const mapToTrace = (s: any): SyllabusTrace => {
   const history: LedgerRecord[] = [];
@@ -17,6 +17,7 @@ const mapToTrace = (s: any): SyllabusTrace => {
     courseName: s.courseName ?? '—',
     courseCode: s.courseCode ?? '—',
     career: s.careerName ?? '—',
+<<<<<<< HEAD
     fileName: s.fileName ?? fileUrl.split('/').pop() ?? '—',
     fileUrl: fileUrl,
     currentHash: s.currentHash ?? s.hash ?? '',
@@ -61,10 +62,11 @@ export const LedgerService = {
     }
   },
 
-  getSyllabusVersions: async (id: string): Promise<any[]> => {
+<<<<<<< HEAD
+  getSyllabusVersions: async (id: string): Promise<SyllabusVersion[]> => {
     try {
-      const response = await api.get<any[]>(`/syllabi/${id}/versions`);
-      return response.data;
+      const response = await api.get<SyllabusVersion[]>(`/syllabi/${id}/versions`);
+      return response.data || [];
     } catch {
       return [];
     }

@@ -7,10 +7,20 @@ import Sidebar from '@/shared/layouts-components/sidebar/sidebar'
 import Switcher from '@/shared/layouts-components/switcher/switcher'
 import ProductOnboarding from '@/shared/components/ProductOnboarding'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/shared/contextapi'
+import { Spinner, Container, Row, Col } from 'react-bootstrap'
 
 const layout = ({ children }: any) => {
-
   const progressRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/authentication/sign-in/cover');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,6 +47,25 @@ const layout = ({ children }: any) => {
   }, []);
 
   let containerclass = variable.dataPageStyle === 'flat' ? "main-body-container" : ""
+
+  if (loading) {
+    return (
+      <Container className="py-5">
+        <Row className="justify-content-center">
+          <Col lg={8} className="text-center">
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </Spinner>
+            <p className="mt-3 text-muted">Verificando autenticación...</p>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Fragment>

@@ -82,7 +82,7 @@ const Cover: React.FC<CoverProps> = () => {
 
     return (
         <Fragment>
-            <Seo title="Twostep-Cover" />
+            <Seo title="Verificación de Dos Pasos" />
 
             <Row className="authentication authentication-cover-main mx-0">
                 <Col xxl={9} xl={9}>
