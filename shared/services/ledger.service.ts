@@ -17,7 +17,6 @@ const mapToTrace = (s: any): SyllabusTrace => {
     courseName: s.courseName ?? '—',
     courseCode: s.courseCode ?? '—',
     career: s.careerName ?? '—',
-<<<<<<< HEAD
     fileName: s.fileName ?? fileUrl.split('/').pop() ?? '—',
     fileUrl: fileUrl,
     currentHash: s.currentHash ?? s.hash ?? '',
@@ -62,7 +61,6 @@ export const LedgerService = {
     }
   },
 
-<<<<<<< HEAD
   getSyllabusVersions: async (id: string): Promise<SyllabusVersion[]> => {
     try {
       const response = await api.get<SyllabusVersion[]>(`/syllabi/${id}/versions`);
