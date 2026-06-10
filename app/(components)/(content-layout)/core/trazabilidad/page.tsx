@@ -301,7 +301,7 @@ const Trazabilidad: React.FC = () => {
                             </Badge>
                           </td>
                           <td className="font-monospace fs-12 text-truncate" style={{ maxWidth: "200px" }}>
-                            {syllabus.currentHash.substring(0, 20)}...
+                            {syllabus.currentHash ? `${syllabus.currentHash.substring(0, 20)}...` : "—"}
                           </td>
                         </tr>
                       ))}

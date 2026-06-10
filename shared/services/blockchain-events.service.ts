@@ -68,12 +68,19 @@ export const BlockchainEventsService = {
     const url = `${API_BASE}/blockchain/events/stream?sessionId=${encodeURIComponent(sessionId)}`;
     const source = new EventSource(url);
 
+    // Cierre de seguridad: si el backend nunca emite completed/error, no dejar la conexión abierta
+    const timeoutId = setTimeout(() => {
+      source.close();
+      options.onComplete?.();
+    }, 5 * 60 * 1000);
+
     ALL_EVENT_TYPES.forEach((type) => {
       source.addEventListener(type, (raw: MessageEvent) => {
         try {
           const event: BlockchainEvent = JSON.parse(raw.data);
           options.onEvent(event);
           if (type === 'completed' || type === 'error') {
+            clearTimeout(timeoutId);
             source.close();
             options.onComplete?.();
           }
@@ -84,13 +91,17 @@ export const BlockchainEventsService = {
     });
 
     source.onerror = (err) => {
+      clearTimeout(timeoutId);
       options.onError?.(err);
       source.close();
     };
 
     return {
       sessionId,
-      close: () => source.close(),
+      close: () => {
+        clearTimeout(timeoutId);
+        source.close();
+      },
     };
   },
 

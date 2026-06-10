@@ -77,9 +77,19 @@ const PublicVerifyContent: React.FC = () => {
     }
   };
 
-  const copyShareUrl = () => {
+  const copyShareUrl = async () => {
     const url = `${window.location.origin}/public/verify?id=${syllabusId}&version=${versionParam || ""}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // Fallback para navegadores sin Clipboard API (o contexto no seguro)
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
     Swal.fire({
       title: "URL Copiada",
       text: "La URL de compartir se copió al portapapeles",

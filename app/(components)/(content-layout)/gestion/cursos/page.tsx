@@ -31,6 +31,7 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
     // 🔹 State Management
     const [courses, setCourses] = useState<Course[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [careers, setCareers] = useState<CareerOption[]>([]); // For modal dropdown
     const [allCurriculums, setAllCurriculums] = useState<CurriculumOption[]>([]); // All curriculums for filtering
     const [filteredCurriculums, setFilteredCurriculums] = useState<CurriculumOption[]>([]); // Curriculums filtered by selected career
@@ -258,19 +259,21 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
     // --- Badge Mapping (Combined Status) ---
     const getStatusBadge = (courseStatus: string) => {
-        // Simple mapping for course status
         switch (courseStatus?.toLowerCase()) {
             case 'active': return 'bg-success-transparent';
-            case 'closed': return 'bg-danger-transparent'; // Example for 'Closed'
-            default: return 'bg-light text-default';
+            case 'closed': return 'bg-danger-transparent';
+            case 'pending': return 'bg-warning-transparent';
+            case 'archived': return 'bg-secondary-transparent';
+            default: return 'bg-secondary-transparent';
         }
     };
      const getMallaStatusBadge = (mallaStatus: string | undefined) => {
-         // Simple mapping for malla status
          switch (mallaStatus?.toLowerCase()) {
              case 'activo': return 'bg-success-transparent';
              case 'inactivo': return 'bg-secondary-transparent';
-             default: return 'bg-light text-default';
+             case 'suspendido': return 'bg-warning-transparent';
+             case 'en revisión': return 'bg-info-transparent';
+             default: return 'bg-secondary-transparent';
          }
      };
 
@@ -291,7 +294,14 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                     <i className="ri-add-line me-1 align-middle"></i>Crear Curso
                                 </SpkButton>
                                 {/* Search and Sort controls */}
-                                <div><Form.Control type="text" placeholder="Buscar Curso" /></div>
+                                <div>
+                                    <Form.Control
+                                        type="text"
+                                        placeholder="Buscar Curso"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
                                 <SpkDropdown Customtoggleclass="btn btn-primary btn-wave no-caret" Toggletext="Ordenar por" Arrowicon={true}>
                                     {/* ... Dropdown items ... */}
                                 </SpkDropdown>
@@ -305,7 +315,11 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                     <Alert variant="danger" className="m-3">{error}</Alert>
                                 ) : (
                                     <SpkTables tableClass="table-hover text-nowrap" Customcheckclass="ps-4" header={[{ title: 'Curso' }, { title: 'Carrera' }, { title: 'Facultad' }, { title: 'Nº Sílabos' }, { title: 'Año' }, { title: 'Estado' }, { title: 'Malla' }, { title: 'Publicación' }, { title: 'Acción' }]}>
-                                        {courses.map((course) => (
+                                        {courses.filter((course) => {
+                                            const q = searchTerm.trim().toLowerCase();
+                                            if (!q) return true;
+                                            return course.name?.toLowerCase().includes(q) || course.code?.toLowerCase().includes(q);
+                                        }).map((course) => (
                                             <tr key={course.id}>
                                                 <td>
                                                     <div className="d-flex align-items-center">

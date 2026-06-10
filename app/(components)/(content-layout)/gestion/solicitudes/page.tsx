@@ -367,7 +367,7 @@ export default function SolicitudesPage() {
               <Button variant="light" onClick={handleCloseModal} disabled={saving}>Cancelar</Button>
               <Button variant="primary" type="submit" form="inst-form" disabled={saving} className="d-flex align-items-center gap-2">
                 {saving && <Spinner size="sm" />}
-                {saving ? "Creando..." : "Crear Institución →"}
+                {saving ? "Creando..." : "Siguiente →"}
               </Button>
             </>
           ) : (

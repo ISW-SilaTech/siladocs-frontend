@@ -5,7 +5,7 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
-import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
@@ -649,9 +649,10 @@ const SilabosPage: React.FC = () => {
                                                         </div>
                                                     )}
                                                     {sseEvents.map((evt, idx) => {
-                                                        const isError = evt.eventType === 'ERROR';
-                                                        const isDone = evt.eventType === 'COMPLETED';
-                                                        const isFabric = evt.eventType.startsWith('FABRIC');
+                                                        const evtType = (evt.eventType || '').toUpperCase();
+                                                        const isError = evtType === 'ERROR';
+                                                        const isDone = evtType === 'COMPLETED';
+                                                        const isFabric = evtType.startsWith('FABRIC');
                                                         const iconMap: Record<string, string> = {
                                                             FILE_RECEIVED:      '📥',
                                                             HASH_COMPUTING:     '⚙️',
@@ -666,7 +667,7 @@ const SilabosPage: React.FC = () => {
                                                             BATCH_PROGRESS:     '📦',
                                                             ERROR:              '❌',
                                                         };
-                                                        const icon = iconMap[evt.eventType] ?? '▸';
+                                                        const icon = iconMap[evtType] ?? '▸';
                                                         const color = isError ? '#f87171' : isDone ? '#4ade80' : isFabric ? '#a78bfa' : '#94a3b8';
                                                         const ts = new Date(evt.timestamp).toLocaleTimeString('es-PE', { hour12: false });
                                                         return (
@@ -896,7 +897,7 @@ const SilabosPage: React.FC = () => {
                         <div className="d-flex gap-2">
                             <Form.Control
                                 type="password"
-                                placeholder={importSource === "google" ? "ya29.xxxxx (Google access_token)" : "eyJ0eXAi... (Microsoft access_token)"}
+                                placeholder={importSource === "google" ? "Pega aquí tu token de acceso de Google" : "Pega aquí tu token de acceso de Microsoft"}
                                 value={cloudAccessToken}
                                 onChange={(e) => setCloudAccessToken(e.target.value)}
                                 disabled={isLoadingCloud}

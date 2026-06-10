@@ -62,6 +62,7 @@ const ProfileSettings: React.FC = () => {
             } catch {
                 // Fallback: use auth context data
                 setFullName(user?.email?.split('@')[0] || '');
+                toast.warn('No se pudo cargar el perfil completo. Se muestran datos básicos de la sesión.');
             } finally {
                 setIsLoadingProfile(false);
             }

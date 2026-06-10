@@ -10,8 +10,10 @@ import SimpleBar from 'simplebar-react';
 import { MENUITEMS } from '../sidebar/nav';
 import { getState, setState } from '../services/switcherServices';
 import SpkButton from '@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons';
+import { useAuth } from '@/shared/contextapi';
 
 const Header = () => {
+  const { user, logout } = useAuth();
 
     let [variable, setVariable] = useState(getState());
 
@@ -864,8 +866,8 @@ const Header = () => {
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="d-block fw-semibold lh-1">Juan Pérez</span>
-                                            <span className="text-muted fs-12">juan@upc.edu.pe</span>
+                                            <span className="d-block fw-semibold lh-1">{user?.email?.split('@')[0] || 'Usuario'}</span>
+                                            <span className="text-muted fs-12">{user?.email || ''}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -894,7 +896,7 @@ const Header = () => {
                                             </li>
                                         </ul>
                                     </li>
-                                    <li><Link scroll={false} className="dropdown-item d-flex align-items-center" href="/"><i className="ti ti-logout me-2 fs-18"></i>Cerrar Sesión</Link></li>
+                                    <li><Link scroll={false} className="dropdown-item d-flex align-items-center" href="/authentication/sign-in/cover" onClick={() => logout()}><i className="ti ti-logout me-2 fs-18"></i>Cerrar Sesión</Link></li>
                                 </ul>
                             </Dropdown.Menu>
                         </Dropdown>

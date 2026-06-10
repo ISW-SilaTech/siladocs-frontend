@@ -637,7 +637,7 @@ const VerificadorSilabus: React.FC = () => {
         <Modal.Body className="text-center py-4">
           {selectedVersionForQR && result && (
             <>
-              <div className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
+              <div id="qr-share-container" className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
                 <QRCodeSVG
                   value={`${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
                   size={256}
@@ -656,9 +656,18 @@ const VerificadorSilabus: React.FC = () => {
                 <Button
                   variant="outline-primary"
                   size="sm"
-                  onClick={() => {
+                  onClick={async () => {
                     const shareUrl = `${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`;
-                    navigator.clipboard.writeText(shareUrl);
+                    try {
+                      await navigator.clipboard.writeText(shareUrl);
+                    } catch {
+                      const textarea = document.createElement("textarea");
+                      textarea.value = shareUrl;
+                      document.body.appendChild(textarea);
+                      textarea.select();
+                      document.execCommand("copy");
+                      document.body.removeChild(textarea);
+                    }
                     Swal.fire({
                       title: "URL Copiada",
                       text: "La URL pública se copió al portapapeles",
@@ -674,7 +683,7 @@ const VerificadorSilabus: React.FC = () => {
                   variant="outline-primary"
                   size="sm"
                   onClick={() => {
-                    const qrElement = document.querySelector("svg");
+                    const qrElement = document.querySelector("#qr-share-container svg");
                     if (qrElement) {
                       const link = document.createElement("a");
                       link.download = `syllabus-v${selectedVersionForQR.versionNumber}-qr.svg`;

@@ -29,6 +29,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
     // 🔹 State for curriculums, careers, loading, and errors
     const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [careers, setCareers] = useState<CareerOption[]>([]); // For dropdown
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -234,8 +235,15 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                         <SpkSelect name="colors" option={Projectselectdata} mainClass="projects-sort basic-multi-select" menuplacement='auto' classNameprefix="Select2" placeholder="Ordenar por" />
                                     </div>
                                     <div className="d-flex" role="search">
-                                        <Form.Control className="me-2" type="search" placeholder="Buscar Malla" aria-label="Search" />
-                                        <SpkButton Buttonvariant="light" Customclass="btn" Buttontype="submit">Buscar</SpkButton>
+                                        <Form.Control
+                                            className="me-2"
+                                            type="search"
+                                            placeholder="Buscar Malla"
+                                            aria-label="Search"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                        <SpkButton Buttonvariant="light" Customclass="btn" Buttontype="button">Buscar</SpkButton>
                                     </div>
                                 </div>
                             </Card.Body>
@@ -256,7 +264,11 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                     ) : (
                                         <SpkTables tableClass="text-nowrap" header={[{ title: 'Malla' }, { title: "Año" }, { title: 'Nº Cursos' }, { title: 'Créditos' }, { title: 'Estado' }, { title: 'Descripción' }, { title: 'Acciones' }]} >
                                             {/* 🔹 Map over fetched curriculums data */}
-                                            {curriculums.map((curriculum) => (
+                                            {curriculums.filter((curriculum) => {
+                                                const q = searchTerm.trim().toLowerCase();
+                                                if (!q) return true;
+                                                return curriculum.name?.toLowerCase().includes(q);
+                                            }).map((curriculum) => (
                                                 <tr key={curriculum.id}>
                                                     <td>{curriculum.name}</td>
                                                     <td>
@@ -271,7 +283,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                                             {curriculum.status}
                                                         </SpkBadge>
                                                     </td>
-                                                    <td>{curriculum.description}</td>
+                                                    <td>{curriculum.description || "—"}</td>
                                                     <td>
                                                         <SpkDropdown toggleas="a" Icon={true} Navigate="#!" Customtoggleclass="btn btn-icon btn-sm btn-light no-caret" IconClass="fe fe-more-vertical">
                                                             <Dropdown.Item href="#!" onClick={() => handleOpenEditModal(curriculum)}><i className="ti ti-edit me-1 d-inline-block"></i>Editar</Dropdown.Item>

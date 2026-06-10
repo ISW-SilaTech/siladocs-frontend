@@ -25,6 +25,7 @@ const ProjectsList: React.FC = () => {
     const [careers, setCareers] = useState<Career[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState("");
 
     // 🔹 State for the modal and its form fields (matching CareerRequest DTO)
     const [showModal, setShowModal] = useState(false);
@@ -208,8 +209,15 @@ const ProjectsList: React.FC = () => {
                                         <SpkSelect name="colors" option={Projectselectdata} mainClass="projects-sort basic-multi-select" menuplacement='auto' classNameprefix="Select2" placeholder="Ordenar por" />
                                     </div>
                                     <div className="d-flex" role="search">
-                                        <Form.Control className="me-2" type="search" placeholder="Buscar Carrera" aria-label="Search" />
-                                        <SpkButton Buttonvariant="light" Customclass="btn" Buttontype="submit">Buscar</SpkButton>
+                                        <Form.Control
+                                            className="me-2"
+                                            type="search"
+                                            placeholder="Buscar Carrera"
+                                            aria-label="Search"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                        <SpkButton Buttonvariant="light" Customclass="btn" Buttontype="button">Buscar</SpkButton>
                                     </div>
                                 </div>
                             </Card.Body>
@@ -235,7 +243,11 @@ const ProjectsList: React.FC = () => {
                                     ) : (
                                         <SpkTables tableClass="text-nowrap" header={[{ title: 'Carrera' }, { title: "Facultad" }, { title: 'Ciclos' }, { title: 'Actualización' }, { title: 'Estado' }, { title: 'Acciones' }]} >
                                             {/* 🔹 Map over fetched careers data */}
-                                            {careers.map((career) => (
+                                            {careers.filter((career) => {
+                                                const q = searchTerm.trim().toLowerCase();
+                                                if (!q) return true;
+                                                return career.name?.toLowerCase().includes(q) || career.faculty?.toLowerCase().includes(q);
+                                            }).map((career) => (
                                                 <tr key={career.id}>
                                                     <td>{career.name}</td>
                                                     <td>

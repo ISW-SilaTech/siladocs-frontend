@@ -24,9 +24,14 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401 || error.response?.status === 403) {
       if (typeof window !== 'undefined') {
-        safeStorage.removeItem('accessToken');
-        safeStorage.removeItem('user');
-        window.location.href = '/authentication/sign-in/cover';
+        // Las rutas públicas (verificación, landing) no deben redirigir a login
+        const publicPaths = ['/public', '/verificador-silabos', '/landing', '/terminos-condiciones', '/contacto'];
+        const isPublicPath = publicPaths.some((p) => window.location.pathname.startsWith(p));
+        if (!isPublicPath) {
+          safeStorage.removeItem('accessToken');
+          safeStorage.removeItem('user');
+          window.location.href = '/authentication/sign-in/cover';
+        }
       }
     }
     return Promise.reject(error);
