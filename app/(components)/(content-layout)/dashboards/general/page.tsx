@@ -71,6 +71,7 @@ const School: React.FC<SchoolProps> = () => {
               <div className="card-title d-flex align-items-center gap-2">
                 <i className="ti ti-coins fs-20 text-warning"></i>
                 <span>Créditos de Emisión</span>
+                <SpkBadge variant="" Customclass="bg-secondary-transparent fs-10">Demo</SpkBadge>
               </div>
               <SpkBadge variant="" Customclass="bg-warning-light text-warning">
                 {emissionCreditsData.phase}
@@ -122,6 +123,7 @@ const School: React.FC<SchoolProps> = () => {
               <div className="card-title d-flex align-items-center gap-2">
                 <i className="ti ti-certificate fs-20 text-success"></i>
                 <span>Certificados Emitidos</span>
+                <SpkBadge variant="" Customclass="bg-secondary-transparent fs-10">Demo</SpkBadge>
               </div>
             </Card.Header>
             <Card.Body>
@@ -265,6 +267,7 @@ const School: React.FC<SchoolProps> = () => {
               <div className="card-title d-flex align-items-center gap-2">
                 <i className="ti ti-book fs-20 text-primary"></i>
                 <span>Historial Detallado de Certificados</span>
+                <SpkBadge variant="" Customclass="bg-secondary-transparent fs-10">Demo</SpkBadge>
               </div>
               <small className="text-muted">Total: {certificateHistoryData.length} certificados</small>
             </Card.Header>

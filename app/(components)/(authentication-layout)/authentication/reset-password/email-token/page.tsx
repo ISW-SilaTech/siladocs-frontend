@@ -2,61 +2,98 @@
 
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons";
 import Seo from "@/shared/layouts-components/seo/seo";
-import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment, useState } from "react"; // 🔹 Importa useState
-import { Card, Col, Form, Row, Alert, Spinner } from "react-bootstrap"; // 🔹 Importa Alert y Spinner
+import React, { Fragment, useState } from "react";
+import { Card, Col, Form, Row, Alert, Spinner } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
-import { useForm } from 'react-hook-form';
 import { useRouter } from "next/navigation";
-import axios from 'axios'; // 🔹 Importa axios
-
-//Efectos
 import { motion } from "framer-motion";
+import { AuthService } from "@/shared/services/auth.service";
 
-interface CoverProps { }
+type Step = "email" | "code" | "password";
 
-const Cover: React.FC<CoverProps> = () => {
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    }: any = useForm();
-
-    // 🔹 Estados para manejar la carga y los mensajes
-    const [isLoading, setIsLoading] = useState(false);
-    const [apiMessage, setApiMessage] = useState<string | null>(null); // Mensaje de éxito/error
-    const [apiError, setApiError] = useState(false); // Para colorear el mensaje
-
+const Cover: React.FC = () => {
     const router = useRouter();
 
-    // 🔹 onSubmit actualizado para llamar al backend
-    const onSubmit = async (data: any) => {
+    const [step, setStep] = useState<Step>("email");
+    const [email, setEmail] = useState("");
+    const [code, setCode] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [apiMessage, setApiMessage] = useState<string | null>(null);
+    const [apiError, setApiError] = useState(false);
+    const [fieldError, setFieldError] = useState<string | null>(null);
+
+    const isValidEmail = (value: string) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value);
+
+    const handleRequestCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setFieldError(null);
+        if (!email) { setFieldError("Se requiere un email"); return; }
+        if (!isValidEmail(email)) { setFieldError("Dirección de email inválida"); return; }
+
         setIsLoading(true);
         setApiMessage(null);
         setApiError(false);
-
         try {
-            // 🔹 Llama al endpoint de "olvidé contraseña"
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
-            const response = await axios.post(`${apiUrl}/auth/forgot-password`, {
-                email: data.email
-            });
-
-            // Éxito: Muestra el mensaje del backend (siempre es exitoso por seguridad)
-            setApiMessage(response.data.message || "Si el email está registrado, se ha enviado un enlace.");
-            toast.success(response.data.message || "Solicitud enviada.", { autoClose: 3000 });
-
+            const data = await AuthService.forgotPasswordRequest(email);
+            setApiMessage(data.message || "Si el email está registrado, se ha enviado un código de verificación.");
+            toast.success("Código enviado. Revisa tu correo.", { autoClose: 3000 });
+            setStep("code");
         } catch (error: any) {
-            // Aunque el backend siempre responde OK, manejamos errores de red
-            console.error("Error solicitando reseteo:", error);
             setApiError(true);
-            setApiMessage("Error al conectar con el servidor. Intenta de nuevo.");
-            toast.error("Error de red.", { autoClose: 2500 });
+            setApiMessage(error?.response?.data?.message || "Error al conectar con el servidor. Intenta de nuevo.");
         } finally {
-            setIsLoading(false); // Detiene la carga
+            setIsLoading(false);
         }
+    };
+
+    const handleVerifyCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setFieldError(null);
+        if (!code.trim()) { setFieldError("Ingresa el código de verificación"); return; }
+
+        setIsLoading(true);
+        setApiMessage(null);
+        setApiError(false);
+        try {
+            await AuthService.forgotPasswordVerify(email, code.trim());
+            toast.success("Código verificado correctamente.", { autoClose: 2000 });
+            setStep("password");
+        } catch (error: any) {
+            setApiError(true);
+            setApiMessage(error?.response?.data?.message || "Código inválido o expirado. Verifica e intenta de nuevo.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setFieldError(null);
+        if (!newPassword || newPassword.length < 6) { setFieldError("Debe incluir al menos 6 caracteres."); return; }
+        if (newPassword !== confirmPassword) { setFieldError("Las contraseñas no coinciden."); return; }
+
+        setIsLoading(true);
+        setApiMessage(null);
+        setApiError(false);
+        try {
+            await AuthService.forgotPasswordReset(email, code.trim(), newPassword);
+            toast.success("Contraseña restablecida correctamente. Ya puedes iniciar sesión.", { autoClose: 2500 });
+            setTimeout(() => router.push("/authentication/sign-in/cover"), 1800);
+        } catch (error: any) {
+            setApiError(true);
+            setApiMessage(error?.response?.data?.message || "No se pudo restablecer la contraseña. Intenta de nuevo.");
+            setIsLoading(false);
+        }
+    };
+
+    const stepTitles: Record<Step, { title: string; subtitle: string }> = {
+        email: { title: "¿Olvidaste tu contraseña?", subtitle: "Ingresa tu email y te enviaremos un código de verificación." },
+        code: { title: "Verifica tu código", subtitle: `Hemos enviado un código de verificación a ${email}.` },
+        password: { title: "Nueva contraseña", subtitle: "Define tu nueva contraseña para completar el proceso." },
     };
 
     return (
@@ -66,7 +103,7 @@ const Cover: React.FC<CoverProps> = () => {
                 animate={{ filter: "blur(0px)", opacity: 1 }}
                 transition={{ duration: 0.4, ease: "easeIn" }}
             >
-                <Seo title="Olvidé Contraseña - Cover" /> {/* 🔹 Título actualizado */}
+                <Seo title="Recuperar Contraseña" />
 
                 <Row className="authentication authentication-cover-main mx-0 min-vh-100 d-flex align-items-center justify-content-center">
                     <Row className="justify-content-center align-items-center h-100">
@@ -74,54 +111,119 @@ const Cover: React.FC<CoverProps> = () => {
                             <Card className="custom-card border-0 shadow-none my-4">
                                 <Card.Body className="p-5">
                                     <div>
-                                        <h4 className="mb-1 fw-semibold">¿Olvidaste tu contraseña?</h4>
-                                        <p className="mb-4 text-muted">
-                                            Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.
-                                        </p>
+                                        <h4 className="mb-1 fw-semibold">{stepTitles[step].title}</h4>
+                                        <p className="mb-4 text-muted">{stepTitles[step].subtitle}</p>
                                     </div>
 
-                                    {/* 🔹 Alerta para mostrar mensajes de éxito o error */}
                                     {apiMessage && (
-                                        <Alert variant={apiError ? 'danger' : 'success'}>
+                                        <Alert variant={apiError ? "danger" : "success"}>
                                             {apiMessage}
                                         </Alert>
                                     )}
 
-                                    <Form onSubmit={handleSubmit(onSubmit)}>
-                                        <Row className="row gy-3">
-                                            <Col xl={12}>
-                                                <label htmlFor="forgot-email" className="form-label text-default">Email</label>
-                                                <div className="position-relative">
+                                    {step === "email" && (
+                                        <Form onSubmit={handleRequestCode}>
+                                            <Row className="gy-3">
+                                                <Col xl={12}>
+                                                    <Form.Label htmlFor="forgot-email" className="text-default">Email</Form.Label>
                                                     <Form.Control
                                                         type="email"
                                                         id="forgot-email"
                                                         placeholder="Ingresa tu email"
-                                                        className="form-control form-control"
-                                                        {...register('email', { // 🔹 Registra 'email'
-                                                            required: 'Se requiere un email',
-                                                            pattern: {
-                                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                                                message: "Dirección de email inválida"
-                                                            }
-                                                        })}
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
                                                         disabled={isLoading}
                                                     />
-                                                </div>
-                                                {errors.email && <p className="text-danger text-sm">{errors.email.message}</p>}
-                                            </Col>
-                                        </Row>
-                                        <div className="d-grid mt-3">
-                                            <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
-                                                {isLoading ? (
-                                                    <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" className="me-2" />
-                                                ) : (
-                                                    'Enviar enlace'
-                                                )}
-                                            </SpkButton>
-                                        </div>
-                                    </Form>
+                                                    {fieldError && <p className="text-danger text-sm mt-1">{fieldError}</p>}
+                                                </Col>
+                                            </Row>
+                                            <div className="d-grid mt-3">
+                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
+                                                    {isLoading ? <Spinner as="span" animation="border" size="sm" className="me-2" /> : null}
+                                                    {isLoading ? "Enviando..." : "Enviar código"}
+                                                </SpkButton>
+                                            </div>
+                                        </Form>
+                                    )}
 
-                                    {/* ... (Sección "O" eliminada, no aplica aquí) ... */}
+                                    {step === "code" && (
+                                        <Form onSubmit={handleVerifyCode}>
+                                            <Row className="gy-3">
+                                                <Col xl={12}>
+                                                    <Form.Label htmlFor="forgot-code" className="text-default">Código de verificación</Form.Label>
+                                                    <Form.Control
+                                                        type="text"
+                                                        id="forgot-code"
+                                                        placeholder="Ingresa el código recibido"
+                                                        value={code}
+                                                        onChange={(e) => setCode(e.target.value)}
+                                                        disabled={isLoading}
+                                                    />
+                                                    {fieldError && <p className="text-danger text-sm mt-1">{fieldError}</p>}
+                                                </Col>
+                                            </Row>
+                                            <div className="d-grid mt-3">
+                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
+                                                    {isLoading ? <Spinner as="span" animation="border" size="sm" className="me-2" /> : null}
+                                                    {isLoading ? "Verificando..." : "Verificar código"}
+                                                </SpkButton>
+                                            </div>
+                                            <div className="text-center mt-3">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-link p-0 fs-13"
+                                                    onClick={() => { setStep("email"); setApiMessage(null); setFieldError(null); }}
+                                                >
+                                                    Volver a ingresar el email
+                                                </button>
+                                            </div>
+                                        </Form>
+                                    )}
+
+                                    {step === "password" && (
+                                        <Form onSubmit={handleResetPassword}>
+                                            <Row className="gy-3">
+                                                <Col xl={12}>
+                                                    <Form.Label htmlFor="new-password" className="text-default">Nueva contraseña</Form.Label>
+                                                    <div className="position-relative">
+                                                        <Form.Control
+                                                            type={showPassword ? "text" : "password"}
+                                                            id="new-password"
+                                                            placeholder="Nueva contraseña"
+                                                            value={newPassword}
+                                                            onChange={(e) => setNewPassword(e.target.value)}
+                                                            disabled={isLoading}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            className="show-password-button text-muted border-0 bg-transparent"
+                                                            onClick={() => setShowPassword((v) => !v)}
+                                                        >
+                                                            <i className={`align-middle ${showPassword ? "ri-eye-line" : "ri-eye-off-line"}`}></i>
+                                                        </button>
+                                                    </div>
+                                                </Col>
+                                                <Col xl={12}>
+                                                    <Form.Label htmlFor="confirm-password" className="text-default">Confirmar contraseña</Form.Label>
+                                                    <Form.Control
+                                                        type={showPassword ? "text" : "password"}
+                                                        id="confirm-password"
+                                                        placeholder="Confirma la nueva contraseña"
+                                                        value={confirmPassword}
+                                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                                        disabled={isLoading}
+                                                    />
+                                                    {fieldError && <p className="text-danger text-sm mt-1">{fieldError}</p>}
+                                                </Col>
+                                            </Row>
+                                            <div className="d-grid mt-3">
+                                                <SpkButton Buttontype="submit" Customclass="btn btn-primary" Disabled={isLoading}>
+                                                    {isLoading ? <Spinner as="span" animation="border" size="sm" className="me-2" /> : null}
+                                                    {isLoading ? "Guardando..." : "Restablecer contraseña"}
+                                                </SpkButton>
+                                            </div>
+                                        </Form>
+                                    )}
 
                                     <div className="text-center mt-3 fw-medium">
                                         ¿Recordaste tu contraseña? <Link scroll={false} href="/authentication/sign-in/cover/" className="text-primary animated-underline">Iniciar Sesión</Link>
@@ -133,10 +235,8 @@ const Cover: React.FC<CoverProps> = () => {
                 </Row>
                 <ToastContainer />
             </motion.div>
-
-
         </Fragment>
-    )
+    );
 };
 
 export default Cover;
