@@ -628,13 +628,13 @@ const Header = () => {
                                     <li>
                                         <ul className="list-unstyled mb-0 sub-list">
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-lifebuoy me-2 fs-18"></i>Soporte</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/contacto"><i className="ti ti-lifebuoy me-2 fs-18"></i>Soporte</Link>
                                             </li>
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-bolt me-2 fs-18"></i>Registros</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/core/trazabilidad"><i className="ti ti-bolt me-2 fs-18"></i>Registros</Link>
                                             </li>
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="#!"><i className="ti ti-calendar me-2 fs-18"></i>Eventos</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/core/blockchain"><i className="ti ti-calendar me-2 fs-18"></i>Eventos</Link>
                                             </li>
                                         </ul>
                                     </li>
