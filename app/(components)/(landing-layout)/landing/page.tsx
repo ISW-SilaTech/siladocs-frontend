@@ -515,13 +515,13 @@ const Landing = () => {
                                             style={{ display: expande ? 'block' : 'none' }}
                                         >
                                             <li className="slide">
-                                                <Link scroll={false} href="#!" className="side-menu__item">Sobre Nosotros</Link>
+                                                <Link scroll={false} href="/sobre-nosotros" className="side-menu__item">Sobre Nosotros</Link>
                                             </li>
                                             <li className="slide">
-                                                <Link scroll={false} href="#!" className="side-menu__item">Términos y Condiciones</Link>
+                                                <Link scroll={false} href="/terminos-condiciones" className="side-menu__item">Términos y Condiciones</Link>
                                             </li>
                                             <li className="slide">
-                                                <Link scroll={false} href="#!" className="side-menu__item">Políticas de Privacidad</Link>
+                                                <Link scroll={false} href="/politicas-privacidad" className="side-menu__item">Políticas de Privacidad</Link>
                                             </li>
                                         </ul>
                                     </li>
@@ -1239,7 +1239,7 @@ const Landing = () => {
                                 <h6 className="fw-semibold mb-3 text-fixed-white">Soporte</h6>
                                 <ul className="list-unstyled fw-normal landing-footer-list mb-0">
                                     <li>
-                                        <Link scroll={false} href="#!" className="text-fixed-white op-6">Contáctanos</Link>
+                                        <Link scroll={false} href="/contacto" className="text-fixed-white op-6">Contáctanos</Link>
                                     </li>
                                     <li>
                                         <Link scroll={false} href="#!" className="text-fixed-white op-6">Soporte técnico</Link>
@@ -1270,7 +1270,7 @@ const Landing = () => {
                                         <Link scroll={false} href="/pages/blog/blog" className="text-fixed-white op-6">Blog</Link>
                                     </li>
                                     <li>
-                                        <Link scroll={false} href="#!" className="text-fixed-white op-6">Nosotros</Link>
+                                        <Link scroll={false} href="/sobre-nosotros" className="text-fixed-white op-6">Nosotros</Link>
                                     </li>
                                     <li>
                                         <Link scroll={false} href="#!" className="text-fixed-white op-6">Clientes</Link>
@@ -1331,16 +1331,16 @@ const Landing = () => {
                             <Col lg={8} className="text-lg-end text-center mt-lg-0 mt-1">
                                 <ul className="list-unstyled fw-normal landing-footer-list mb-0">
                                     <li>
-                                        <Link scroll={false} href="#!" className="text-fixed-white op-8">Términos y condiciones</Link>
+                                        <Link scroll={false} href="/terminos-condiciones" className="text-fixed-white op-8">Términos y condiciones</Link>
                                     </li>
                                     <li>
-                                        <Link scroll={false} href="#!" className="text-fixed-white op-8">Políticas de privacidad</Link>
+                                        <Link scroll={false} href="/politicas-privacidad" className="text-fixed-white op-8">Políticas de privacidad</Link>
                                     </li>
                                     <li>
                                         <Link scroll={false} href="#!" className="text-fixed-white op-8">Legal</Link>
                                     </li>
                                     <li>
-                                        <Link scroll={false} href="#!" className="text-fixed-white op-8">Contáctanos</Link>
+                                        <Link scroll={false} href="/contacto" className="text-fixed-white op-8">Contáctanos</Link>
                                     </li>
                                     <li>
                                         <Link scroll={false} href="#!" className="text-fixed-white op-8">Blog</Link>
