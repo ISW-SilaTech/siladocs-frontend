@@ -212,7 +212,7 @@ const ProfileSettings: React.FC = () => {
                                             <i className="ri-upload-2-line me-1"></i>Cambiar Foto
                                         </button>
                                         {avatarPreview && (
-                                            <button className="btn btn-sm btn-light btn-wave" onClick={() => setAvatarPreview(null)} title="Cancelar cambio de foto">
+                                            <button className="btn btn-sm btn-light btn-wave" onClick={() => setAvatarPreview(null)} title="Cancelar cambio de foto" aria-label="Cancelar cambio de foto">
                                                 <i className="ri-delete-bin-line"></i>
                                             </button>
                                         )}
@@ -264,7 +264,7 @@ const ProfileSettings: React.FC = () => {
                                     <p className="fs-14 mb-1 fw-semibold text-dark">Sesiones activas</p>
                                     <p className="fs-12 mb-0 text-muted">Administra los dispositivos conectados.</p>
                                 </div>
-                                <Link href="#!" className="btn btn-sm btn-light btn-wave" title="Ver sesiones activas">Ver</Link>
+                                <button type="button" className="btn btn-sm btn-light btn-wave" title="Ver sesiones activas" aria-label="Ver sesiones activas" onClick={() => toast.info("Gestión de sesiones disponible próximamente.")}>Ver</button>
                             </div>
                         </Card.Body>
                     </Card>
@@ -396,7 +396,7 @@ const ProfileSettings: React.FC = () => {
                                                 {...register('currentPassword', { required: 'Requerido' })}
                                                 disabled={isSavingPassword}
                                             />
-                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('current')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar">
+                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('current')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar" aria-label={passwordVisibility.current ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}>
                                                 <i className={passwordVisibility.current ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
@@ -415,7 +415,7 @@ const ProfileSettings: React.FC = () => {
                                                 })}
                                                 disabled={isSavingPassword}
                                             />
-                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('new')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar">
+                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('new')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar" aria-label={passwordVisibility.new ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}>
                                                 <i className={passwordVisibility.new ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
@@ -434,7 +434,7 @@ const ProfileSettings: React.FC = () => {
                                                 })}
                                                 disabled={isSavingPassword}
                                             />
-                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('confirm')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar">
+                                            <button type="button" className="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted pe-3" onClick={() => togglePasswordVisibility('confirm')} style={{ border: 'none', background: 'none' }} title="Mostrar/ocultar" aria-label={passwordVisibility.confirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}>
                                                 <i className={passwordVisibility.confirm ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
