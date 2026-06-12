@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { safeStorage } from '@/shared/utils/safeStorage';
+import { API_BASE_URL } from '@/shared/config/api';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },

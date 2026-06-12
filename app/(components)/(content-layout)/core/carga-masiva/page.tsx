@@ -8,6 +8,7 @@ import ExcelJS from "exceljs"
 import axios from 'axios'
 import { CoursesService, Course } from "@/shared/services/courses.service"
 import { SyllabiService } from "@/shared/services/syllabi.service"
+import { API_BASE_URL } from "@/shared/config/api"
 
 // ─── Phase 1 types ────────────────────────────────────────────────────────────
 interface Step {
@@ -349,8 +350,7 @@ const BulkUploadPage: React.FC = () => {
 
     setIsSubmitting(true); setBackendResult(null)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api"
-      const res = await axios.post<BulkUploadResult>(`${apiUrl}/bulk-upload/courses`, payload, getAuthHeaders())
+      const res = await axios.post<BulkUploadResult>(`${API_BASE_URL}/bulk-upload/courses`, payload, getAuthHeaders())
       setBackendResult(res.data)
     } catch (err: any) {
       let msg = "No se pudieron enviar los datos al servidor."

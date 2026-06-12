@@ -225,19 +225,18 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
                                         isInvalid={!!errors.password}
                                         disabled={!tokenValidated}
                                     />
-                                    <Link
-                                        scroll={false}
-                                        href="#!"
+                                    <button
+                                        type="button"
                                         className="show-password-button text-muted"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }));
-                                        }}
+                                        style={{ border: 'none', background: 'none', padding: 0 }}
+                                        aria-label={values.showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                        title={values.showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                        onClick={() => setValues((prev) => ({ ...prev, showPassword: !prev.showPassword }))}
                                     >
                                         {values.showPassword
                                             ? <i className="ri-eye-line align-middle"></i>
                                             : <i className="ri-eye-off-line align-middle"></i>}
-                                    </Link>
+                                    </button>
                                     <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
                                 </div>
                             </Col>

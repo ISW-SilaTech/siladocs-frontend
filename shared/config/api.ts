@@ -2,8 +2,12 @@
  * Configuración de la API para el backend de SilaDocs
  */
 
-// URL base del backend
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api"
+// Fallback usado solo cuando NEXT_PUBLIC_API_URL no está definido (p. ej. en desarrollo local).
+// En producción se recomienda configurar siempre NEXT_PUBLIC_API_URL en las variables de entorno.
+const DEFAULT_API_URL = "https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api"
+
+// URL base del backend — fuente única de verdad para toda la app.
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL
 
 // Endpoints específicos
 export const API_ENDPOINTS = {

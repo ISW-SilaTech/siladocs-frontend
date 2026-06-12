@@ -11,7 +11,7 @@
  *   client.close();
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api';
+import { API_BASE_URL as API_BASE } from '@/shared/config/api';
 
 export type BlockchainEventType =
   | 'file_received'
