@@ -37,7 +37,7 @@ export interface AuthResponse {
 export const AuthService = {
   validateCode: async (code: string): Promise<ValidateCodeResponse> => {
     try {
-      const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${code}`);
+      const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${encodeURIComponent(code)}`);
       return response.data;
     } catch (error: any) {
       // Re-throw with enhanced error context

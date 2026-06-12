@@ -32,6 +32,10 @@ interface AuthContextType {
 
 const AUTH_DATA_KEY = "authUserData";
 
+// Tiempo de espera antes de redirigir tras autenticarse, para que el toast de
+// éxito de la página sea visible. Debe ser menor que el autoClose del toast (1500 ms).
+const POST_AUTH_REDIRECT_DELAY_MS = 1200;
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -68,7 +72,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     safeStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: data.user, institution: data.institution }));
     setUser(data.user);
     setInstitution(data.institution);
-    router.push("/dashboards/general");
+    // Diferimos la redirección para que el toast de éxito ("Inicio de sesión exitoso")
+    // mostrado por la página de login alcance a renderizarse antes de desmontar su
+    // ToastContainer. No existe un ToastContainer global, por lo que un router.push
+    // inmediato hacía que el toast nunca fuera visible.
+    setTimeout(() => router.push("/dashboards/general"), POST_AUTH_REDIRECT_DELAY_MS);
   };
 
   const register = async (data: RegisterRequest) => {
@@ -77,7 +85,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     safeStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: response.user, institution: response.institution }));
     setUser(response.user);
     setInstitution(response.institution);
-    router.push("/dashboards/general");
+    // Mismo motivo que en login: dejamos visible el toast "Cuenta creada correctamente"
+    // antes de redirigir al dashboard.
+    setTimeout(() => router.push("/dashboards/general"), POST_AUTH_REDIRECT_DELAY_MS);
   };
 
   const logout = () => {
