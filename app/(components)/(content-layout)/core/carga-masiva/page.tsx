@@ -4,7 +4,6 @@ import React, { Fragment, useState, useCallback, useRef, useEffect } from "react
 import { Card, Row, Col, Table, Badge, Alert, Modal, ProgressBar, Spinner, Form } from "react-bootstrap"
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons"
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader"
-import ExcelJS from "exceljs"
 import axios from 'axios'
 import { CoursesService, Course } from "@/shared/services/courses.service"
 import { SyllabiService } from "@/shared/services/syllabi.service"
@@ -148,6 +147,7 @@ const BulkUploadPage: React.FC = () => {
   // ─── Phase 1: Excel import ─────────────────────────────────────────────────
   const handleDownloadTemplate = async () => {
     try {
+      const ExcelJS = (await import("exceljs")).default
       const workbook = new ExcelJS.Workbook()
       const sheet = workbook.addWorksheet("ModeloCargaCompleta")
       sheet.columns = [
@@ -251,6 +251,7 @@ const BulkUploadPage: React.FC = () => {
 
     try {
       cs[0] = { ...cs[0], status: "loading" }; setSteps([...cs]); setProgress(25)
+      const ExcelJS = (await import("exceljs")).default
       const wb = new ExcelJS.Workbook()
       await wb.xlsx.load(await file.arrayBuffer())
       cs[0] = { ...cs[0], status: "success" }; setSteps([...cs])
