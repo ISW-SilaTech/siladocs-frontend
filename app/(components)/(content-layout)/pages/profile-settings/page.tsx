@@ -13,6 +13,12 @@ import { useAuth } from "@/shared/contextapi"
 import { ProfileService, UserProfile } from "@/shared/services/profile.service"
 import Link from "next/link"
 
+interface PasswordFormValues {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+}
+
 const ProfileSettings: React.FC = () => {
     const { user, institution, loading: authLoading } = useAuth();
 
@@ -35,7 +41,7 @@ const ProfileSettings: React.FC = () => {
         watch,
         reset: resetPasswordForm,
         formState: { errors },
-    } = useForm();
+    } = useForm<PasswordFormValues>();
 
     const [passwordVisibility, setPasswordVisibility] = useState({ current: false, new: false, confirm: false });
     const [isSavingPassword, setIsSavingPassword] = useState(false);
@@ -110,7 +116,7 @@ const ProfileSettings: React.FC = () => {
         }
     };
 
-    const onSubmitPassword = async (data: any) => {
+    const onSubmitPassword = async (data: PasswordFormValues) => {
         setIsSavingPassword(true);
         setPasswordError(null);
         try {
@@ -400,7 +406,7 @@ const ProfileSettings: React.FC = () => {
                                                 <i className={passwordVisibility.current ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
-                                        {errors.currentPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{String((errors.currentPassword as any)?.message)}</Form.Text>}
+                                        {errors.currentPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{errors.currentPassword.message}</Form.Text>}
                                     </Col>
                                     <Col sm={6}>
                                         <Form.Label className="fw-semibold">Nueva Contraseña</Form.Label>
@@ -419,7 +425,7 @@ const ProfileSettings: React.FC = () => {
                                                 <i className={passwordVisibility.new ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
-                                        {errors.newPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{String(errors.newPassword?.message)}</Form.Text>}
+                                        {errors.newPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{errors.newPassword.message}</Form.Text>}
                                     </Col>
                                     <Col sm={6}>
                                         <Form.Label className="fw-semibold">Confirmar Contraseña</Form.Label>
@@ -438,7 +444,7 @@ const ProfileSettings: React.FC = () => {
                                                 <i className={passwordVisibility.confirm ? 'ri-eye-line' : 'ri-eye-off-line'} />
                                             </button>
                                         </div>
-                                        {errors.confirmPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{String(errors.confirmPassword?.message)}</Form.Text>}
+                                        {errors.confirmPassword && <Form.Text className="text-danger fs-12"><i className="ri-error-warning-line me-1"></i>{errors.confirmPassword.message}</Form.Text>}
                                     </Col>
                                 </Row>
                                 <div className="mt-3 d-flex justify-content-end gap-2">

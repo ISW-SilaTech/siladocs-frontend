@@ -408,7 +408,7 @@ const VerificadorSilabus: React.FC = () => {
 
                                     return (
                                       <div
-                                        key={index}
+                                        key={version.versionNumber ?? index}
                                         className="d-flex mb-4 position-relative"
                                         style={isHighlighted ? {
                                           backgroundColor: "#fff3cd",
