@@ -61,31 +61,30 @@ const Cover: React.FC = () => {
         } catch (err: any) {
             setTokenValidated(false);
             const statusCode = err?.response?.status;
-            const backendMsg = err?.response?.data?.message;
+            const backendMsg: string = err?.response?.data?.message || '';
+            const lower = backendMsg.toLowerCase();
 
-            // Determinar mensaje basado en código HTTP y mensaje del backend
-            let msg = 'Error al validar el código';
+            // Nunca mostramos err.message (texto técnico de axios) al usuario.
+            let msg = 'No se pudo validar el código. Inténtalo nuevamente.';
 
-            if (statusCode === 400) {
-                // Detectar si el código ya fue utilizado basándose en el mensaje del backend
-                if (backendMsg?.toLowerCase().includes('utilizado') ||
-                    backendMsg?.toLowerCase().includes('used') ||
-                    backendMsg?.toLowerCase().includes('already')) {
-                    msg = '❌ Este código de acceso ya ha sido utilizado. Solicita uno nuevo a tu institución.';
-                } else if (backendMsg?.toLowerCase().includes('expirado') ||
-                           backendMsg?.toLowerCase().includes('expired')) {
-                    msg = '⏰ El código de acceso ha expirado. Por favor, solicita uno nuevo.';
-                } else if (backendMsg?.toLowerCase().includes('inválido') ||
-                           backendMsg?.toLowerCase().includes('invalid') ||
-                           backendMsg?.toLowerCase().includes('not found')) {
-                    msg = '🔍 El código de acceso no es válido. Verifica que esté escrito correctamente.';
+            if (statusCode === 400 || statusCode === 404 || statusCode === 410) {
+                // Si el backend indica el motivo específico, lo aprovechamos.
+                if (lower.includes('utilizado') || lower.includes('used') || lower.includes('already')) {
+                    msg = 'Este código de acceso ya fue utilizado. Solicita uno nuevo a tu institución.';
+                } else if (lower.includes('expirado') || lower.includes('expired')) {
+                    msg = 'El código de acceso ha expirado. Solicita uno nuevo a tu institución.';
+                } else if (lower.includes('inválido') || lower.includes('invalid') ||
+                           lower.includes('not found') || lower.includes('no existe')) {
+                    msg = 'El código de acceso no es válido. Verifica que esté escrito correctamente.';
                 } else {
-                    msg = backendMsg || '❌ Código inválido, expirado o ya utilizado.';
+                    // El backend no especifica el motivo: informamos las causas
+                    // posibles junto con la acción a tomar.
+                    msg = 'El código de acceso no es válido, ya fue utilizado o ha expirado. Verifícalo o solicita uno nuevo a tu institución.';
                 }
-            } else if (statusCode === 404) {
-                msg = '🔍 El código de acceso no existe. Verifica que esté escrito correctamente.';
-            } else {
-                msg = backendMsg || err?.message || 'Error al validar el código. Intenta nuevamente.';
+            } else if (typeof statusCode === 'number' && statusCode >= 500) {
+                msg = 'El servidor no está disponible en este momento. Inténtalo más tarde.';
+            } else if (statusCode === undefined) {
+                msg = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
             }
 
             toast.error(msg);

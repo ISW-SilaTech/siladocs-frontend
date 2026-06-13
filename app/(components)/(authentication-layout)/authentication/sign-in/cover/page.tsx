@@ -45,7 +45,26 @@ const Cover: React.FC = () => {
             await login(values.email, values.password);
             toast.success("Inicio de sesión exitoso", { position: "top-right", autoClose: 1500 });
         } catch (err: any) {
-            const msg = err?.response?.data?.message || err?.message || "Credenciales inválidas";
+            const status = err?.response?.status;
+            const backendMsg = err?.response?.data?.message;
+            // Nunca mostramos err.message (texto técnico de axios, p. ej.
+            // "Request failed with status code 401") al usuario.
+            let msg: string;
+            if (status === 401) {
+                msg = "Correo o contraseña incorrectos.";
+            } else if (status === 400) {
+                msg = backendMsg || "Correo o contraseña incorrectos.";
+            } else if (status === 403) {
+                msg = "Tu cuenta no tiene acceso al sistema. Contacta a tu institución.";
+            } else if (status === 429) {
+                msg = "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.";
+            } else if (typeof status === "number" && status >= 500) {
+                msg = "El servidor no está disponible en este momento. Inténtalo más tarde.";
+            } else if (status === undefined) {
+                msg = "No se pudo conectar con el servidor. Verifica tu conexión a internet.";
+            } else {
+                msg = backendMsg || "No se pudo iniciar sesión. Inténtalo nuevamente.";
+            }
             toast.error(msg);
         } finally {
             setIsSubmitting(false);

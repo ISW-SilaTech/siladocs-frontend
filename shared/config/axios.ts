@@ -23,10 +23,17 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    const status = error.response?.status;
+    const requestUrl: string = error.config?.url || '';
+    // Un 401/403 en los propios endpoints de autenticación (login, registro,
+    // validación de código, recuperación) es un error de dominio —credenciales
+    // o código inválidos—, NO una sesión expirada. No debe disparar el cierre
+    // de sesión ni la redirección (que recargaba la página de login).
+    const isAuthEndpoint = requestUrl.includes('/auth/');
+    if ((status === 401 || status === 403) && !isAuthEndpoint) {
       if (typeof window !== 'undefined') {
-        // Las rutas públicas (verificación, landing) no deben redirigir a login
-        const publicPaths = ['/public', '/verificador-silabos', '/landing', '/terminos-condiciones', '/contacto'];
+        // Las rutas públicas y de autenticación no deben redirigir a login
+        const publicPaths = ['/public', '/verificador-silabos', '/landing', '/terminos-condiciones', '/contacto', '/authentication'];
         const isPublicPath = publicPaths.some((p) => window.location.pathname.startsWith(p));
         if (!isPublicPath) {
           safeStorage.removeItem('accessToken');
