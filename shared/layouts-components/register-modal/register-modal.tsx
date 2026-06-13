@@ -104,6 +104,14 @@ const RegisterModal: React.FC<RegisterModalProps> = ({ show, onHide }) => {
 
         setIsSubmitting(true);
         try {
+            // Verificar reCAPTCHA antes de enviar
+            const recaptchaToken = await getToken('register');
+            if (!recaptchaToken) {
+                toast.warn("No se pudo verificar reCAPTCHA. Intenta nuevamente.");
+                setIsSubmitting(false);
+                return;
+            }
+
             await register({
                 accessCode: values.token,
                 fullName: values.name,

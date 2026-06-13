@@ -14,6 +14,7 @@ import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Card, Col, Form, Nav, Row, Tab, Modal } from 'react-bootstrap'
 import axios from 'axios'
 import RegisterModal from '@/shared/layouts-components/register-modal/register-modal'
+import RegistrationRequestModal from '@/shared/layouts-components/registration-request-modal/registration-request-modal'
 
 
 //Efectos
@@ -324,12 +325,20 @@ const Landing = () => {
         setShowDemoModal(true);
     };
 
-    // Modal de registro de administrador
+    // Modal de registro de administrador (con código de acceso)
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const handleCloseRegisterModal = () => setShowRegisterModal(false);
     const handleShowRegisterModal = (e?: React.MouseEvent) => {
         if (e) e.preventDefault();
         setShowRegisterModal(true);
+    };
+
+    // Modal de solicitud de acceso (primer paso del flujo HU-A02)
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const handleCloseRequestModal = () => setShowRequestModal(false);
+    const handleShowRequestModal = (e?: React.MouseEvent) => {
+        if (e) e.preventDefault();
+        setShowRequestModal(true);
     };
 
     const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -421,13 +430,20 @@ const Landing = () => {
 
                                 {/* <!-- Start::header-link|switcher-icon --> */}
 
-                                <div className="btn-list d-lg-none d-flex">
+                                <div className="btn-list d-lg-none d-flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleShowRequestModal}
+                                        className="btn btn-outline-primary"
+                                    >
+                                        Solicitar acceso
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={handleShowRegisterModal}
                                         className="btn btn-primary-light"
                                     >
-                                        Regístrate
+                                        Tengo un código
                                     </button>
                                 </div>
 
@@ -555,10 +571,17 @@ const Landing = () => {
                                     <div className="btn-list d-xl-flex d-none gap-2">
                                         <button
                                             type="button"
+                                            onClick={handleShowRequestModal}
+                                            className="btn btn-wave btn-outline-primary border"
+                                        >
+                                            <i className="ri-send-plane-line me-1"></i>Solicitar acceso
+                                        </button>
+                                        <button
+                                            type="button"
                                             onClick={handleShowRegisterModal}
                                             className="btn btn-wave btn-primary-light border"
                                         >
-                                            Regístrate
+                                            Tengo un código
                                         </button>
                                         <Link scroll={false} href="/authentication/sign-in/cover/" className="btn btn-wave btn-primary border">
                                             Ingresar
@@ -613,7 +636,13 @@ const Landing = () => {
     </Modal.Footer> */}
                 </Modal>
 
-                {/* Modal de registro de administrador */}
+                {/* Modal de solicitud de acceso (HU-A02: evaluación previa por el equipo Siladocs) */}
+                <RegistrationRequestModal
+                    show={showRequestModal}
+                    onHide={handleCloseRequestModal}
+                />
+
+                {/* Modal de registro de administrador (para usuarios con código de acceso aprobado) */}
                 <RegisterModal
                     show={showRegisterModal}
                     onHide={handleCloseRegisterModal}

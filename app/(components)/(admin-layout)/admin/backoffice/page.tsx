@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Fragment } from "react";
 import {
   Row, Col, Card, Button, Form, Modal,
-  Badge, Spinner,
+  Badge, Spinner, Nav, Tab,
 } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import {
@@ -11,6 +11,10 @@ import {
   type AccessCode,
   type InstitutionRequest,
 } from "@/shared/services/onboarding.service";
+import {
+  RegistrationRequestsService,
+  type RegistrationRequest,
+} from "@/shared/services/registration-requests.service";
 import { extractErrorMessage } from "@/shared/utils/errors";
 import adminApi from "@/shared/config/axios-admin";
 import { useRouter } from "next/navigation";
@@ -52,6 +56,13 @@ export default function AdminBackofficePage() {
   const [showResult, setShowResult] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Solicitudes de registro
+  const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
+  const [reviewingId, setReviewingId] = useState<number | null>(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState<RegistrationRequest | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
+
   useEffect(() => {
     loadData();
   }, []);
@@ -59,11 +70,13 @@ export default function AdminBackofficePage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [instRes, codesRes] = await Promise.all([
+      const [instRes, codesRes, reqRes] = await Promise.all([
         adminApi.get<Institution[]>('/institutions'),
         adminApi.get<AccessCode[]>('/access-codes'),
+        RegistrationRequestsService.list().catch(() => [] as RegistrationRequest[]),
       ]);
       setInstitutions(instRes.data);
+      setRegistrationRequests(reqRes);
       setAccessCodes(codesRes.data);
     } catch (err) {
       toast.error('Error al cargar los datos. Verifica la conexión con el servidor.');
@@ -75,6 +88,45 @@ export default function AdminBackofficePage() {
   const handleChange = (e: React.ChangeEvent<any>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleApproveRequest = async (req: RegistrationRequest) => {
+    setReviewingId(req.id);
+    try {
+      const updated = await RegistrationRequestsService.approve(req.id);
+      setRegistrationRequests((prev) =>
+        prev.map((r) => (r.id === updated.id ? updated : r))
+      );
+      toast.success(`Solicitud de "${req.fullName}" aprobada. Se enviará el código de acceso al correo.`);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Error al aprobar la solicitud"));
+    } finally {
+      setReviewingId(null);
+    }
+  };
+
+  const openRejectModal = (req: RegistrationRequest) => {
+    setRejectTarget(req);
+    setRejectNote("");
+    setShowRejectModal(true);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    setReviewingId(rejectTarget.id);
+    try {
+      const updated = await RegistrationRequestsService.reject(rejectTarget.id, { reviewNote: rejectNote });
+      setRegistrationRequests((prev) =>
+        prev.map((r) => (r.id === updated.id ? updated : r))
+      );
+      toast.success(`Solicitud de "${rejectTarget.fullName}" rechazada.`);
+      setShowRejectModal(false);
+      setRejectTarget(null);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Error al rechazar la solicitud"));
+    } finally {
+      setReviewingId(null);
+    }
   };
 
   const handleCreateInstitution = async (e: React.FormEvent) => {
@@ -208,6 +260,8 @@ export default function AdminBackofficePage() {
 
   const availableCodes = accessCodes.filter((c) => !c.used);
   const usedCodes = accessCodes.filter((c) => c.used);
+  const pendingRequests = registrationRequests.filter((r) => r.status === 'pending');
+  const reviewedRequests = registrationRequests.filter((r) => r.status !== 'pending');
 
   return (
     <Fragment>
@@ -284,10 +338,11 @@ export default function AdminBackofficePage() {
           <Row className="g-3 mb-4">
             {[
               { label: "Instituciones", value: institutions.length, icon: "ri-building-line", color: "#4767ed" },
+              { label: "Solicitudes Pendientes", value: pendingRequests.length, icon: "ri-time-line", color: "#f59e0b" },
               { label: "Códigos Disponibles", value: availableCodes.length, icon: "ri-key-line", color: "#10b981" },
               { label: "Códigos Utilizados", value: usedCodes.length, icon: "ri-checkbox-circle-line", color: "#6b7280" },
             ].map((stat) => (
-              <Col xl={4} md={4} key={stat.label}>
+              <Col xl={3} md={6} key={stat.label}>
                 <Card className="border-0 shadow-sm h-100">
                   <Card.Body className="d-flex align-items-center gap-3 p-3">
                     <div style={{ width: 48, height: 48, borderRadius: 12, background: `${stat.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -416,8 +471,136 @@ export default function AdminBackofficePage() {
               )}
             </Card.Body>
           </Card>
+
+          {/* ===== Solicitudes de Registro (HU-A02) ===== */}
+          <Card className="border-0 shadow-sm mb-4">
+            <Card.Header className="bg-white border-0 pb-0 pt-3 px-4 d-flex align-items-center justify-content-between">
+              <h6 className="fw-semibold mb-0 d-flex align-items-center gap-2">
+                <i className="ri-user-received-line text-warning"></i> Solicitudes de Registro
+                {pendingRequests.length > 0 && (
+                  <Badge bg="warning" text="dark" pill style={{ fontSize: "0.7rem" }}>
+                    {pendingRequests.length} pendiente{pendingRequests.length > 1 ? "s" : ""}
+                  </Badge>
+                )}
+              </h6>
+            </Card.Header>
+            <Card.Body className="px-4">
+              {loading ? (
+                <div className="text-center py-4"><Spinner size="sm" /> Cargando...</div>
+              ) : registrationRequests.length === 0 ? (
+                <div className="text-center py-5 text-muted">
+                  <i className="ri-inbox-line fs-1 d-block mb-2 opacity-25"></i>
+                  No hay solicitudes de registro aún.
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle mb-0">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Solicitante</th>
+                        <th>Correo</th>
+                        <th>Institución</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th className="text-end">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {registrationRequests.map((req) => (
+                        <tr key={req.id}>
+                          <td className="fw-semibold">{req.fullName}</td>
+                          <td className="text-muted" style={{ fontSize: "0.88rem" }}>{req.email}</td>
+                          <td>{req.institutionName}</td>
+                          <td className="text-muted" style={{ fontSize: "0.83rem" }}>
+                            {new Date(req.createdAt).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" })}
+                          </td>
+                          <td>
+                            {req.status === 'pending' && (
+                              <Badge bg="warning" text="dark" style={{ fontSize: "0.75rem" }}>Pendiente</Badge>
+                            )}
+                            {req.status === 'approved' && (
+                              <Badge bg="success" style={{ fontSize: "0.75rem" }}>Aprobada</Badge>
+                            )}
+                            {req.status === 'rejected' && (
+                              <Badge bg="danger" style={{ fontSize: "0.75rem" }}>Rechazada</Badge>
+                            )}
+                          </td>
+                          <td className="text-end">
+                            {req.status === 'pending' ? (
+                              <div className="d-flex gap-2 justify-content-end">
+                                <Button
+                                  variant="outline-success"
+                                  size="sm"
+                                  className="d-inline-flex align-items-center gap-1"
+                                  disabled={reviewingId === req.id}
+                                  onClick={() => handleApproveRequest(req)}
+                                >
+                                  {reviewingId === req.id
+                                    ? <Spinner size="sm" />
+                                    : <><i className="ri-check-line"></i> Aprobar</>
+                                  }
+                                </Button>
+                                <Button
+                                  variant="outline-danger"
+                                  size="sm"
+                                  className="d-inline-flex align-items-center gap-1"
+                                  disabled={reviewingId === req.id}
+                                  onClick={() => openRejectModal(req)}
+                                >
+                                  <i className="ri-close-line"></i> Rechazar
+                                </Button>
+                              </div>
+                            ) : (
+                              <span className="text-muted" style={{ fontSize: "0.82rem" }}>
+                                {req.reviewNote ? `"${req.reviewNote}"` : "—"}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card.Body>
+          </Card>
+
         </div>
       </main>
+
+      {/* ===== MODAL: Rechazar solicitud ===== */}
+      <Modal show={showRejectModal} onHide={() => { if (reviewingId) return; setShowRejectModal(false); }} centered>
+        <Modal.Header closeButton>
+          <Modal.Title className="fw-semibold fs-6">
+            <i className="ri-close-circle-line text-danger me-2"></i>
+            Rechazar solicitud
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted mb-3">
+            Estás rechazando la solicitud de <strong>{rejectTarget?.fullName}</strong> ({rejectTarget?.email}).
+          </p>
+          <Form.Group>
+            <Form.Label className="fw-medium">Motivo del rechazo (opcional)</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Ej. La institución no cumple con los requisitos..."
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              disabled={reviewingId !== null}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowRejectModal(false)} disabled={reviewingId !== null}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={handleConfirmReject} disabled={reviewingId !== null}>
+            {reviewingId !== null ? <><Spinner size="sm" className="me-2" />Rechazando...</> : "Confirmar rechazo"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* ===== MODAL: Nueva institución + código ===== */}
       <Modal show={showModal} onHide={handleCloseModal} centered backdrop={saving ? "static" : true}>
