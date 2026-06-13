@@ -873,9 +873,8 @@ const Landing = () => {
                                     <span className="d-block fs-16 op-8">Desbloquea todo el potencial de nuestra plataforma con blockchain  <br /> y lleva la trazabilidad de tus sílabos al siguiente nivel.</span>
                                 </div>
                                 <div className="btn-list">
-                                    <button className="btn btn-danger btn-lg btn-w-md d-inline-flex align-items-center" style={{ cursor: 'not-allowed', opacity: 0.6 }} disabled>Ver Demo<i className="ti ti-arrow-narrow-right ms-2"></i></button>
                                     <Link
-                                        scroll={false} href="#contactus" className="side-menu__item btn btn-success btn-lg btn-w-md d-inline-flex align-items-center">
+                                        scroll={false} href="#contactus" className="side-menu__item btn btn-white btn-lg btn-w-md d-inline-flex align-items-center" style={{ color: "#4767ed", fontWeight: 600 }}>
                                         <span className="side-menu__label">Contáctanos</span>
                                         <i className="ti ti-user-plus ms-2"></i>
                                     </Link>
@@ -1301,9 +1300,10 @@ const Landing = () => {
                                     <h4 className="fw-semibold text-fixed-white">Cree y administre con facilidad</h4>
                                     <span className="d-block fs-16 op-8">Cree, administre y optimice sílabos digitales sin esfuerzo con nuestra plataforma académica basada en blockchain.</span>
                                 </div>
-                                <SpkButton Buttonvariant='secondary' Customclass="btn btn-lg btn-w-md d-inline-flex align-items-center">
-                                    Agendemos una sesión <i className="ti ti-calendar ms-2"></i>
-                                </SpkButton>
+                                <Link scroll={false} href="#contactus" className="side-menu__item btn btn-white btn-lg btn-w-md d-inline-flex align-items-center" style={{ color: "#4767ed", fontWeight: 600 }}>
+                                    <span className="side-menu__label">Agendemos una sesión</span>
+                                    <i className="ti ti-calendar ms-2"></i>
+                                </Link>
                             </div>
                         </div>
                     </section>
