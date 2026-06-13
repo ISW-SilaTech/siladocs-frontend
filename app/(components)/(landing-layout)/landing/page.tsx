@@ -13,7 +13,6 @@ import Link from 'next/link'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Card, Col, Form, Nav, Row, Tab, Modal } from 'react-bootstrap'
 import axios from 'axios'
-import RegisterModal from '@/shared/layouts-components/register-modal/register-modal'
 import RegistrationRequestModal from '@/shared/layouts-components/registration-request-modal/registration-request-modal'
 
 
@@ -325,14 +324,6 @@ const Landing = () => {
         setShowDemoModal(true);
     };
 
-    // Modal de registro de administrador (con código de acceso)
-    const [showRegisterModal, setShowRegisterModal] = useState(false);
-    const handleCloseRegisterModal = () => setShowRegisterModal(false);
-    const handleShowRegisterModal = (e?: React.MouseEvent) => {
-        if (e) e.preventDefault();
-        setShowRegisterModal(true);
-    };
-
     // Modal de solicitud de acceso (primer paso del flujo HU-A02)
     const [showRequestModal, setShowRequestModal] = useState(false);
     const handleCloseRequestModal = () => setShowRequestModal(false);
@@ -438,13 +429,13 @@ const Landing = () => {
                                     >
                                         Solicitar acceso
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleShowRegisterModal}
+                                    <Link
+                                        scroll={false}
+                                        href="https://siladocs-frontend.vercel.app/authentication/sign-up/cover/"
                                         className="btn btn-primary-light"
                                     >
-                                        Tengo un código
-                                    </button>
+                                        Regístrate
+                                    </Link>
                                 </div>
 
                                 {/* <!-- End::header-link|switcher-icon --> */}
@@ -576,13 +567,13 @@ const Landing = () => {
                                         >
                                             <i className="ri-send-plane-line me-1"></i>Solicitar acceso
                                         </button>
-                                        <button
-                                            type="button"
-                                            onClick={handleShowRegisterModal}
+                                        <Link
+                                            scroll={false}
+                                            href="https://siladocs-frontend.vercel.app/authentication/sign-up/cover/"
                                             className="btn btn-wave btn-primary-light border"
                                         >
-                                            Tengo un código
-                                        </button>
+                                            Regístrate
+                                        </Link>
                                         <Link scroll={false} href="/authentication/sign-in/cover/" className="btn btn-wave btn-primary border">
                                             Ingresar
                                         </Link>
@@ -640,12 +631,6 @@ const Landing = () => {
                 <RegistrationRequestModal
                     show={showRequestModal}
                     onHide={handleCloseRequestModal}
-                />
-
-                {/* Modal de registro de administrador (para usuarios con código de acceso aprobado) */}
-                <RegisterModal
-                    show={showRegisterModal}
-                    onHide={handleCloseRegisterModal}
                 />
 
                 {/* Agrega este estilo CSS a tu archivo CSS global o específico del componente */}
