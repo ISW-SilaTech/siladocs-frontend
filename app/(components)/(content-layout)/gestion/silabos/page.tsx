@@ -401,7 +401,7 @@ const SilabosPage: React.FC = () => {
                                     <div id="coach-syllabus-table">
                                     <SpkTables tableClass="text-nowrap" header={[
                                         { title: "Archivo" }, { title: "Curso" }, { title: "Hash SHA-256" },
-                                        { title: "Tx Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "Acciones" },
+                                        { title: "Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "Acciones" },
                                     ]}>
                                         {syllabi.map((s) => (
                                             <tr key={s.id}>
@@ -420,10 +420,16 @@ const SilabosPage: React.FC = () => {
                                                 </td>
                                                 <td><code className="text-muted fs-11">{s.hash ? `${s.hash.substring(0, 16)}...` : "—"}</code></td>
                                                 <td>
-                                                    {s.fabricTxId
-                                                        ? <code className="text-primary fs-11">{s.fabricTxId.substring(0, 16)}...</code>
-                                                        : <span className="text-warning fs-12">Sin confirmar</span>
-                                                    }
+                                                    {!s.hash ? (
+                                                        <span className="badge bg-danger-transparent text-danger">⚠️ Sin registrar</span>
+                                                    ) : s.fabricTxId ? (
+                                                        <div>
+                                                            <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
+                                                            <code className="text-primary fs-11">{s.fabricTxId.substring(0, 12)}...</code>
+                                                        </div>
+                                                    ) : (
+                                                        <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
+                                                    )}
                                                 </td>
                                                 <td className="fs-13">{formatDate(s.uploadedAt)}</td>
                                                 <td>
