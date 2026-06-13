@@ -5,7 +5,8 @@ import {
   Row, Col, Card, Button, Form, Modal,
   Badge, Spinner, InputGroup,
 } from "react-bootstrap";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Seo from "@/shared/layouts-components/seo/seo";
 import {
   OnboardingService,
@@ -70,7 +71,7 @@ export default function SolicitudesPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
@@ -132,6 +133,11 @@ export default function SolicitudesPage() {
 
   const handleCloseModal = () => {
     if (saving) return;
+    if (step === "code" && createdInstitution) {
+      if (!window.confirm("¿Desea cerrar? La institución ya fue creada pero aún no tiene código de acceso. Podrá generarlo desde la tabla.")) {
+        return;
+      }
+    }
     setShowModal(false);
     setStep("institution");
     setForm(EMPTY_FORM);
@@ -145,11 +151,18 @@ export default function SolicitudesPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const availableCodes = accessCodes.filter((c) => !c.used);
+  const isCodeExpired = (expiresAt?: string) => {
+    if (!expiresAt) return false;
+    return new Date(expiresAt) < new Date();
+  };
+
+  const availableCodes = accessCodes.filter((c) => !c.used && !isCodeExpired(c.expiresAt));
   const usedCodes = accessCodes.filter((c) => c.used);
+  const expiredCodes = accessCodes.filter((c) => !c.used && isCodeExpired(c.expiresAt));
 
   return (
     <Fragment>
+      <ToastContainer />
       <Seo title="Solicitudes de Registro - Siladocs" />
 
       <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
@@ -263,6 +276,7 @@ export default function SolicitudesPage() {
                     <th>Código</th>
                     <th>Estado</th>
                     <th>Creado</th>
+                    <th>Expira</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -278,12 +292,15 @@ export default function SolicitudesPage() {
                           </code>
                         </td>
                         <td>
-                          <Badge bg={ac.used ? "secondary" : "success"} className="fw-normal">
-                            {ac.used ? "Utilizado" : "Disponible"}
-                          </Badge>
+                          {ac.used && <Badge bg="secondary" className="fw-normal">Utilizado</Badge>}
+                          {!ac.used && isCodeExpired(ac.expiresAt) && <Badge bg="danger" className="fw-normal">Expirado</Badge>}
+                          {!ac.used && !isCodeExpired(ac.expiresAt) && <Badge bg="success" className="fw-normal">Disponible</Badge>}
                         </td>
                         <td className="text-muted" style={{ fontSize: "0.85rem" }}>
                           {new Date(ac.createdAt).toLocaleDateString("es-PE")}
+                        </td>
+                        <td className="text-muted" style={{ fontSize: "0.85rem" }}>
+                          {ac.expiresAt ? new Date(ac.expiresAt).toLocaleDateString("es-PE") : "—"}
                         </td>
                         <td>
                           {!ac.used && (
@@ -340,7 +357,7 @@ export default function SolicitudesPage() {
                 </Col>
                 <Col xs={12}>
                   <Form.Label className="fw-medium">Estado</Form.Label>
-                  <Form.Select name="status" value={form.status} onChange={handleChange as any}>
+                  <Form.Select name="status" value={form.status} onChange={handleChange}>
                     <option value="active">Activo</option>
                     <option value="inactive">Inactivo</option>
                     <option value="pending">Pendiente</option>

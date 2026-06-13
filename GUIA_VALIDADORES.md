@@ -1217,6 +1217,7 @@ Se inyectó sesión para los 4 roles y se observó el render del dashboard:
 
 ---
 
+
 **¡Gracias por validar SilaDocs!**  
 Su trabajo asegura que las instituciones educativas pueden confiar en la integridad de sus documentos académicos.
 
