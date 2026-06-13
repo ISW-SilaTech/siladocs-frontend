@@ -2,13 +2,12 @@
 
 import SpkBadge from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-badge";
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons";
-import SpkDropdown from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-dropdown";
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Link from "next/link";
 import React, { Fragment, useState, useEffect } from "react";
-import { Card, Col, Dropdown, Form, Modal, Pagination, Row, Spinner, Alert } from "react-bootstrap";
+import { Card, Col, Form, Modal, Row, Spinner, Alert } from "react-bootstrap";
 import { CoursesService, Course, CourseRequest } from "@/shared/services/courses.service";
 import { CareersService } from "@/shared/services/careers.service";
 import { CurriculumsService } from "@/shared/services/curriculums.service";
@@ -26,56 +25,83 @@ interface CurriculumOption {
     careerId: number;
 }
 
+// Maps English backend status values to Spanish display labels
+const STATUS_LABEL: { [key: string]: string } = {
+    Active: 'Activo',
+    Closed: 'Cerrado',
+    Pending: 'Pendiente',
+    Archived: 'Archivado',
+};
 
-const CursosList: React.FC = () => { // Renamed component for clarity
+const CursosList: React.FC = () => {
 
-    // 🔹 State Management
     const [courses, setCourses] = useState<Course[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [careers, setCareers] = useState<CareerOption[]>([]); // For modal dropdown
-    const [allCurriculums, setAllCurriculums] = useState<CurriculumOption[]>([]); // All curriculums for filtering
-    const [filteredCurriculums, setFilteredCurriculums] = useState<CurriculumOption[]>([]); // Curriculums filtered by selected career
+    const [careers, setCareers] = useState<CareerOption[]>([]);
+    const [allCurriculums, setAllCurriculums] = useState<CurriculumOption[]>([]);
+    const [filteredCurriculums, setFilteredCurriculums] = useState<CurriculumOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Modal State
     const [showModal, setShowModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentCourseId, setCurrentCourseId] = useState<number | null>(null);
     const [courseData, setCourseData] = useState({
-        careerId: "", // Selected Career ID (string for select)
-        curriculumId: "", // Selected Curriculum ID (string for select)
+        careerId: "",
+        curriculumId: "",
         code: "",
         name: "",
-        faculty: "", // Can be auto-filled based on Career?
-        // syllabusCount: "0", // Usually managed by backend
+        faculty: "",
         year: "",
         status: "Active",
-        publicationDate: "", // Date input or string
+        publicationDate: "",
     });
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
-    // --- Data Fetching ---
-    const fetchCareers = async () => {
-        try {
-            const data = await CareersService.getAll();
-            setCareers(data.map(c => ({ id: c.id, name: c.name })));
-        } catch (err) {
-            console.error("Error fetching careers:", err);
-            setError("Error al cargar carreras.");
-        }
-    };
+    useEffect(() => {
+        let cancelled = false;
 
-    const fetchCurriculums = async () => {
-        try {
-            const data = await CurriculumsService.getAll();
-            setAllCurriculums(data.map(m => ({ id: m.id, name: m.name, careerId: m.careerId })));
-        } catch (err) {
-            console.error("Error fetching curriculums:", err);
-            setError("Error al cargar mallas.");
+        const load = async () => {
+            try {
+                const [careersData, curriculumsData, coursesData] = await Promise.all([
+                    CareersService.getAll(),
+                    CurriculumsService.getAll(),
+                    CoursesService.getAll(),
+                ]);
+                if (cancelled) return;
+                setCareers(careersData.map(c => ({ id: c.id, name: c.name })));
+                setAllCurriculums(curriculumsData.map(m => ({ id: m.id, name: m.name, careerId: m.careerId })));
+                setCourses(coursesData);
+            } catch {
+                if (!cancelled) setError("Error al cargar los datos. Intente de nuevo más tarde.");
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        };
+
+        setIsLoading(true);
+        load();
+        return () => { cancelled = true; };
+    }, []);
+
+    // Filter the curriculum dropdown when the selected career changes.
+    // Guard against allCurriculums being empty (initial load race) to avoid
+    // incorrectly resetting a valid curriculumId before data arrives.
+    useEffect(() => {
+        if (!courseData.careerId) {
+            setFilteredCurriculums([]);
+            return;
         }
-    };
+        if (allCurriculums.length === 0) return;
+        const selectedCareerIdNum = Number(courseData.careerId);
+        const filtered = allCurriculums.filter(m => m.careerId === selectedCareerIdNum);
+        setFilteredCurriculums(filtered);
+        const currentIsValid = filtered.some(m => m.id === Number(courseData.curriculumId));
+        if (!currentIsValid) {
+            setCourseData(prev => ({ ...prev, curriculumId: "" }));
+        }
+    }, [courseData.careerId, allCurriculums]);
 
     const fetchCourses = async () => {
         setIsLoading(true);
@@ -83,56 +109,28 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         try {
             const data = await CoursesService.getAll();
             setCourses(data);
-        } catch (err) {
-            console.error("Error fetching courses:", err);
+        } catch {
             setError("Error al cargar los cursos. Intente de nuevo más tarde.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // 🔹 Fetch all necessary data on mount
-    useEffect(() => {
-        const loadData = async () => {
-            await fetchCareers();
-            await fetchCurriculums();
-            await fetchCourses();
-        };
-        loadData();
-    }, []);
-
-    // 🔹 Effect to filter curriculums when selected career changes in the modal
-    useEffect(() => {
-        if (courseData.careerId) {
-            const selectedCareerIdNum = Number(courseData.careerId);
-            setFilteredCurriculums(allCurriculums.filter(m => m.careerId === selectedCareerIdNum));
-             const currentCurriculumIsValid = allCurriculums.some(m => m.id === Number(courseData.curriculumId) && m.careerId === selectedCareerIdNum);
-             if (!currentCurriculumIsValid) {
-                 setCourseData(prev => ({ ...prev, curriculumId: "" })); 
-             }
-        } else {
-            setFilteredCurriculums([]); 
-            setCourseData(prev => ({ ...prev, curriculumId: "" })); 
-        }
-    }, [courseData.careerId, allCurriculums]); 
-
-    // --- Modal Handling ---
     const handleOpenCreateModal = () => {
         setIsEditMode(false);
         const defaultCareerId = careers.length > 0 ? String(careers[0].id) : "";
-        setCourseData({ 
+        setCourseData({
             careerId: defaultCareerId,
-            curriculumId: "", 
-            code: "", name: "", faculty: "", 
-            year: String(new Date().getFullYear()), 
-            status: "Active", publicationDate: ""
+            curriculumId: "",
+            code: "", name: "", faculty: "",
+            year: String(new Date().getFullYear()),
+            status: "Active", publicationDate: "",
         });
-         if (defaultCareerId) {
+        if (defaultCareerId) {
             setFilteredCurriculums(allCurriculums.filter(m => m.careerId === Number(defaultCareerId)));
-         } else {
-             setFilteredCurriculums([]);
-         }
-
+        } else {
+            setFilteredCurriculums([]);
+        }
         setCurrentCourseId(null);
         setFormError(null);
         setShowModal(true);
@@ -141,7 +139,7 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     const handleOpenEditModal = (course: Course) => {
         setIsEditMode(true);
         const careerIdStr = String(course.careerId);
-        setCourseData({ 
+        setCourseData({
             careerId: careerIdStr,
             curriculumId: String(course.curriculumId),
             code: course.code,
@@ -149,9 +147,9 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             faculty: course.faculty,
             year: String(course.year),
             status: course.status,
-            publicationDate: course.publicationDate ? new Date(course.publicationDate).toISOString().split('T')[0] : "", 
+            publicationDate: course.publicationDate ? new Date(course.publicationDate).toISOString().split('T')[0] : "",
         });
-         setFilteredCurriculums(allCurriculums.filter(m => m.careerId === course.careerId));
+        setFilteredCurriculums(allCurriculums.filter(m => m.careerId === course.careerId));
         setCurrentCourseId(course.id);
         setFormError(null);
         setShowModal(true);
@@ -169,16 +167,9 @@ const CursosList: React.FC = () => { // Renamed component for clarity
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setCourseData(prev => {
-            const newState = { ...prev, [name]: value };
-             if (name === 'careerId' && value) {
-                 // Lógica opcional para auto-llenar facultad
-             }
-             return newState;
-        });
+        setCourseData(prev => ({ ...prev, [name]: value }));
         setFormError(null);
     };
-
 
     const handleSave = async () => {
         setFormError(null);
@@ -201,11 +192,11 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         const payload = {
             careerId: careerIdNum,
             curriculumId: curriculumIdNum,
-            code: code,
-            name: name,
-            faculty: faculty, 
+            code,
+            name,
+            faculty,
             year: yearNum,
-            status: status,
+            status,
             publicationDate: publicationDate || null,
         };
 
@@ -218,7 +209,6 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                 toast.success("Curso creado correctamente", { position: "top-right", autoClose: 3000 });
             }
             await fetchCourses();
-            // Close directly — handleCloseModal checks isSaving which is still true here
             setShowModal(false);
             setCourseData({ careerId: "", curriculumId: "", code: "", name: "", faculty: "", year: "", status: "Active", publicationDate: "" });
             setIsEditMode(false);
@@ -226,7 +216,6 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             setFormError(null);
             setFilteredCurriculums([]);
         } catch (err: any) {
-            console.error("Error saving course:", err);
             if (err.response?.status === 400 || err.response?.status === 409) {
                 const errorMsg = err.response.data?.message || "Error de validación (verifique relaciones o código duplicado).";
                 setFormError(errorMsg);
@@ -241,15 +230,13 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         }
     };
 
-    // --- Delete Handling ---
     const handleDelete = async (id: number) => {
         if (window.confirm("¿Está seguro de que desea eliminar este curso?")) {
             try {
                 await CoursesService.delete(id);
                 await fetchCourses();
                 toast.success("Curso eliminado correctamente", { position: "top-right", autoClose: 3000 });
-            } catch (err) {
-                console.error("Error deleting course:", err);
+            } catch {
                 const errorMsg = "Error al eliminar el curso.";
                 setError(errorMsg);
                 toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
@@ -257,9 +244,8 @@ const CursosList: React.FC = () => { // Renamed component for clarity
         }
     };
 
-    // --- Badge Mapping (Combined Status) ---
-    const getStatusBadge = (courseStatus: string) => {
-        switch (courseStatus?.toLowerCase()) {
+    const getStatusBadge = (status: string) => {
+        switch (status?.toLowerCase()) {
             case 'active': return 'bg-success-transparent';
             case 'closed': return 'bg-danger-transparent';
             case 'pending': return 'bg-warning-transparent';
@@ -267,16 +253,22 @@ const CursosList: React.FC = () => { // Renamed component for clarity
             default: return 'bg-secondary-transparent';
         }
     };
-     const getMallaStatusBadge = (mallaStatus: string | undefined) => {
-         switch (mallaStatus?.toLowerCase()) {
-             case 'activo': return 'bg-success-transparent';
-             case 'inactivo': return 'bg-secondary-transparent';
-             case 'suspendido': return 'bg-warning-transparent';
-             case 'en revisión': return 'bg-info-transparent';
-             default: return 'bg-secondary-transparent';
-         }
-     };
 
+    const getMallaStatusBadge = (mallaStatus: string | undefined) => {
+        switch (mallaStatus?.toLowerCase()) {
+            case 'activo': return 'bg-success-transparent';
+            case 'inactivo': return 'bg-secondary-transparent';
+            case 'suspendido': return 'bg-warning-transparent';
+            case 'en revisión': return 'bg-info-transparent';
+            default: return 'bg-secondary-transparent';
+        }
+    };
+
+    const filteredCourses = courses.filter((course) => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return true;
+        return course.name?.toLowerCase().includes(q) || course.code?.toLowerCase().includes(q);
+    });
 
     return (
         <Fragment>
@@ -289,22 +281,18 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                     <Card className="custom-card overflow-hidden">
                         <Card.Header className="justify-content-between">
                             <div className="card-title">Lista de Cursos</div>
-                            <div className="d-flex flex-wrap gap-2">
+                            <div className="d-flex flex-wrap gap-2 align-items-center">
                                 <SpkButton Customclass="btn btn-primary btn-wave" onClick={handleOpenCreateModal}>
                                     <i className="ri-add-line me-1 align-middle"></i>Crear Curso
                                 </SpkButton>
-                                {/* Search and Sort controls */}
-                                <div>
-                                    <Form.Control
-                                        type="text"
-                                        placeholder="Buscar Curso"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </div>
-                                <SpkDropdown Customtoggleclass="btn btn-primary btn-wave no-caret" Toggletext="Ordenar por" Arrowicon={true}>
-                                    {/* ... Dropdown items ... */}
-                                </SpkDropdown>
+                                <Form.Control
+                                    style={{ maxWidth: "240px" }}
+                                    type="search"
+                                    placeholder="Buscar por nombre o código"
+                                    aria-label="Buscar curso"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
                             </div>
                         </Card.Header>
                         <Card.Body className="p-0">
@@ -313,18 +301,18 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                     <div className="text-center p-5"><Spinner animation="border" /></div>
                                 ) : error ? (
                                     <Alert variant="danger" className="m-3">{error}</Alert>
+                                ) : filteredCourses.length === 0 ? (
+                                    <div className="text-center p-5 text-muted">
+                                        {searchTerm.trim()
+                                            ? <p>Sin coincidencias para &ldquo;<strong>{searchTerm.trim()}</strong>&rdquo;.</p>
+                                            : <p>No se encontraron cursos.</p>}
+                                    </div>
                                 ) : (
                                     <SpkTables tableClass="table-hover text-nowrap" Customcheckclass="ps-4" header={[{ title: 'Curso' }, { title: 'Carrera' }, { title: 'Facultad' }, { title: 'Nº Sílabos' }, { title: 'Año' }, { title: 'Estado' }, { title: 'Malla' }, { title: 'Publicación' }, { title: 'Acción' }]}>
-                                        {courses.filter((course) => {
-                                            const q = searchTerm.trim().toLowerCase();
-                                            if (!q) return true;
-                                            return course.name?.toLowerCase().includes(q) || course.code?.toLowerCase().includes(q);
-                                        }).map((course) => (
+                                        {filteredCourses.map((course) => (
                                             <tr key={course.id}>
                                                 <td>
                                                     <div className="d-flex align-items-center">
-                                                        {/* Icon can be dynamic if needed */}
-                                                        {/* <div className="lh-1"><span className={`avatar avatar-md avatar-rounded bg-primary-transparent svg-primary`}>...</span></div> */}
                                                         <div className="ms-2">
                                                             <p className="fw-medium mb-0 d-flex align-items-center">
                                                                 <Link scroll={false} href="#">{course.name}</Link>
@@ -339,17 +327,16 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                                 <td>{course.year}</td>
                                                 <td>
                                                     <SpkBadge variant="" Customclass={`rounded-pill ${getStatusBadge(course.status)}`}>
-                                                        {course.status}
+                                                        {STATUS_LABEL[course.status] ?? course.status}
                                                     </SpkBadge>
                                                 </td>
-                                                 <td> {/* Malla Status */}
-                                                     <SpkBadge variant="" Customclass={`rounded-pill ${getMallaStatusBadge(course.mallaStatus)}`}>
-                                                         {course.mallaStatus ?? 'N/A'}
-                                                     </SpkBadge>
-                                                 </td>
-                                                <td>{course.publicationDate ? new Date(course.publicationDate).toLocaleDateString() : 'N/A'}</td>
                                                 <td>
-                                                    {/* Action Buttons */}
+                                                    <SpkBadge variant="" Customclass={`rounded-pill ${getMallaStatusBadge(course.mallaStatus)}`}>
+                                                        {course.mallaStatus ?? 'N/A'}
+                                                    </SpkBadge>
+                                                </td>
+                                                <td>{course.publicationDate ? new Date(course.publicationDate).toLocaleDateString('es-PE') : 'N/A'}</td>
+                                                <td>
                                                     <SpkButton onClick={() => handleOpenEditModal(course)} Buttonvariant="info-light" Size="sm" Customclass="btn-icon me-1">
                                                         <i className="ri-edit-line"></i>
                                                     </SpkButton>
@@ -363,20 +350,10 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                 )}
                             </div>
                         </Card.Body>
-                         {/* Footer and Pagination */}
-                        {!isLoading && !error && courses.length > 0 && (
-                             <Card.Footer className="border-top-0">
-                                {/* ... Pagination logic ... */}
-                             </Card.Footer>
-                         )}
-                         {!isLoading && !error && courses.length === 0 && (
-                              <Card.Body className="text-center"><p>No se encontraron cursos.</p></Card.Body>
-                         )}
                     </Card>
                 </Col>
             </Row>
 
-            {/* Modal para crear/editar curso */}
             <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" keyboard={false} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>{isEditMode ? 'Editar Curso' : 'Crear Nuevo Curso'}</Modal.Title>
@@ -387,8 +364,9 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                         <Row>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Carrera <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-careerId">Carrera <span className="text-danger">*</span></Form.Label>
                                     <Form.Select
+                                        id="curso-careerId"
                                         name="careerId"
                                         value={courseData.careerId}
                                         onChange={handleFormChange}
@@ -404,72 +382,81 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                             </Col>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Malla Curricular <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-curriculumId">Malla Curricular <span className="text-danger">*</span></Form.Label>
                                     <Form.Select
+                                        id="curso-curriculumId"
                                         name="curriculumId"
                                         value={courseData.curriculumId}
                                         onChange={handleFormChange}
                                         required
-                                        disabled={isSaving || !courseData.careerId || filteredCurriculums.length === 0} // Disable if no career selected or no matching curriculums
+                                        disabled={isSaving || !courseData.careerId || filteredCurriculums.length === 0}
                                     >
                                         <option value="" disabled>
                                             {!courseData.careerId ? "Seleccione una carrera primero" : "Seleccione una malla..."}
-                                         </option>
+                                        </option>
                                         {filteredCurriculums.map(malla => (
                                             <option key={malla.id} value={malla.id}>{malla.name}</option>
                                         ))}
                                     </Form.Select>
-                                     {!courseData.careerId && <small className="text-muted">Debe seleccionar una carrera para ver las mallas.</small>}
-                                     {courseData.careerId && filteredCurriculums.length === 0 && <small className="text-muted">No hay mallas para la carrera seleccionada.</small>}
+                                    {courseData.careerId && filteredCurriculums.length === 0 && (
+                                        <small className="text-muted">No hay mallas para la carrera seleccionada.</small>
+                                    )}
                                 </Form.Group>
                             </Col>
                         </Row>
                         <Row>
-                             <Col md={6}>
+                            <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Código del Curso <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-code">Código del Curso <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
+                                        id="curso-code"
                                         type="text"
                                         name="code"
                                         value={courseData.code}
                                         onChange={handleFormChange}
                                         placeholder="Ej: MAT101"
                                         required
-                                        disabled={isSaving} />
+                                        disabled={isSaving}
+                                    />
                                 </Form.Group>
                             </Col>
-                             <Col md={6}>
+                            <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Nombre del Curso <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-name">Nombre del Curso <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
+                                        id="curso-name"
                                         type="text"
                                         name="name"
                                         value={courseData.name}
                                         onChange={handleFormChange}
                                         placeholder="Ej: Matemática Básica"
                                         required
-                                        disabled={isSaving} />
+                                        disabled={isSaving}
+                                    />
                                 </Form.Group>
                             </Col>
                         </Row>
-                         <Row>
-                             <Col md={6}>
+                        <Row>
+                            <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Facultad <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-faculty">Facultad <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
+                                        id="curso-faculty"
                                         type="text"
                                         name="faculty"
                                         value={courseData.faculty}
                                         onChange={handleFormChange}
-                                        placeholder="Ingrese la facultad (o se auto-llenará)"
+                                        placeholder="Ingrese la facultad"
                                         required
-                                        disabled={isSaving} />
+                                        disabled={isSaving}
+                                    />
                                 </Form.Group>
-                             </Col>
-                             <Col md={6}>
+                            </Col>
+                            <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Año <span className="text-danger">*</span></Form.Label>
+                                    <Form.Label htmlFor="curso-year">Año <span className="text-danger">*</span></Form.Label>
                                     <Form.Control
+                                        id="curso-year"
                                         type="number"
                                         name="year"
                                         value={courseData.year}
@@ -477,15 +464,17 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                         placeholder="Ej: 2024"
                                         min="1900"
                                         required
-                                        disabled={isSaving} />
+                                        disabled={isSaving}
+                                    />
                                 </Form.Group>
-                             </Col>
-                         </Row>
+                            </Col>
+                        </Row>
                         <Row>
-                             <Col md={6}>
+                            <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Estado</Form.Label>
+                                    <Form.Label htmlFor="curso-status">Estado</Form.Label>
                                     <Form.Select
+                                        id="curso-status"
                                         name="status"
                                         value={courseData.status}
                                         onChange={handleFormChange}
@@ -493,24 +482,23 @@ const CursosList: React.FC = () => { // Renamed component for clarity
                                     >
                                         <option value="Active">Activo</option>
                                         <option value="Closed">Cerrado</option>
-                                        {/* Add other relevant statuses */}
                                     </Form.Select>
                                 </Form.Group>
-                             </Col>
+                            </Col>
                             <Col md={6}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Fecha de Publicación (Opcional)</Form.Label>
+                                    <Form.Label htmlFor="curso-publicationDate">Fecha de Publicación (Opcional)</Form.Label>
                                     <Form.Control
+                                        id="curso-publicationDate"
                                         type="date"
                                         name="publicationDate"
                                         value={courseData.publicationDate}
                                         onChange={handleFormChange}
-                                        disabled={isSaving} />
+                                        disabled={isSaving}
+                                    />
                                 </Form.Group>
                             </Col>
                         </Row>
-                         {/* Removed Silabos Count and Description from modal as they are less common to edit directly */}
-
                     </Form>
                 </Modal.Body>
                 <Modal.Footer>
@@ -524,4 +512,4 @@ const CursosList: React.FC = () => { // Renamed component for clarity
     );
 };
 
-export default CursosList; // Renamed component export
+export default CursosList;

@@ -3,18 +3,12 @@
 import SpkBadge from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-badge";
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons";
 import SpkDropdown from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-dropdown";
-import SpkSelect from "@/shared/@spk-reusable-components/reusable-plugins/spk-reactselect";
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
-// Remove mallaData if fetching from API
-// import { mallaData, Projectselectdata, AvatarImages } from "@/shared/data/dashboards/projects/mallalistdata";
-import { Projectselectdata } from "@/shared/data/dashboards/projects/mallalistdata";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
-import Image from "next/image";
-import Link from "next/link";
 import React, { Fragment, useState, useEffect } from "react";
 import { Modal } from "react-bootstrap";
-import { Card, Col, Dropdown, Form, Pagination, Row, Spinner, Alert } from "react-bootstrap";
+import { Card, Col, Dropdown, Form, Row, Spinner, Alert } from "react-bootstrap";
 import { CurriculumsService, Curriculum, CurriculumRequest } from "@/shared/services/curriculums.service";
 import { CareersService } from "@/shared/services/careers.service";
 import { toast, ToastContainer } from "react-toastify";
@@ -25,21 +19,19 @@ interface CareerOption {
     name: string;
 }
 
-const ProjectsList: React.FC = () => { // Removed unused interface prop
+const MallasList: React.FC = () => {
 
-    // 🔹 State for curriculums, careers, loading, and errors
     const [curriculums, setCurriculums] = useState<Curriculum[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [careers, setCareers] = useState<CareerOption[]>([]); // For dropdown
+    const [careers, setCareers] = useState<CareerOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // 🔹 State for the modal and its form fields (matching CurriculumRequest DTO)
     const [showModal, setShowModal] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentCurriculumId, setCurrentCurriculumId] = useState<number | null>(null);
     const [curriculumData, setCurriculumData] = useState({
-        careerId: "", // ID of the selected career
+        careerId: "",
         name: "",
         year: "",
         courseCount: "",
@@ -50,16 +42,29 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     const [formError, setFormError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
 
-    // --- Fetching Data ---
-    const fetchCareers = async () => {
-        try {
-            const data = await CareersService.getAll();
-            setCareers(data.map(c => ({ id: c.id, name: c.name })));
-        } catch (err) {
-            console.error("Error fetching careers for dropdown:", err);
-            setError("Error al cargar las carreras disponibles.");
-        }
-    };
+    useEffect(() => {
+        let cancelled = false;
+
+        const load = async () => {
+            try {
+                const [careersData, curriculumsData] = await Promise.all([
+                    CareersService.getAll(),
+                    CurriculumsService.getAll(),
+                ]);
+                if (cancelled) return;
+                setCareers(careersData.map(c => ({ id: c.id, name: c.name })));
+                setCurriculums(curriculumsData);
+            } catch {
+                if (!cancelled) setError("Error al cargar los datos. Intente de nuevo más tarde.");
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        };
+
+        setIsLoading(true);
+        load();
+        return () => { cancelled = true; };
+    }, []);
 
     const fetchCurriculums = async () => {
         setIsLoading(true);
@@ -67,25 +72,17 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         try {
             const data = await CurriculumsService.getAll();
             setCurriculums(data);
-        } catch (err) {
-            console.error("Error fetching curriculums:", err);
+        } catch {
             setError("Error al cargar las mallas. Intente de nuevo más tarde.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    // 🔹 Fetch both careers (for modal) and curriculums (for table) on mount
-    useEffect(() => {
-        fetchCareers();
-        fetchCurriculums();
-    }, []);
-
-    // --- Modal Handling ---
     const handleOpenCreateModal = () => {
         setIsEditMode(false);
         setCurriculumData({
-            careerId: careers.length > 0 ? String(careers[0].id) : "",
+            careerId: "",
             name: "", year: "", courseCount: "", totalCredits: "",
             status: "Activo", description: "",
         });
@@ -94,7 +91,7 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setShowModal(true);
     };
 
-     const handleOpenEditModal = (curriculum: Curriculum) => {
+    const handleOpenEditModal = (curriculum: Curriculum) => {
         setIsEditMode(true);
         setCurriculumData({
             careerId: String(curriculum.careerId),
@@ -119,21 +116,16 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         setFormError(null);
     };
 
-    // 🔹 Handle input changes in the modal form
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setCurriculumData(prev => ({ ...prev, [name]: value }));
-        if (name === 'year' || name === 'courseCount' || name === 'totalCredits') {
-            setFormError(null);
-        }
+        setFormError(null);
     };
 
-    // 🔹 Handle saving (Create or Update)
     const handleSave = async () => {
         setFormError(null);
         setIsSaving(true);
 
-        // Basic Validation
         const { careerId, name, year, courseCount, totalCredits, status, description } = curriculumData;
         if (!careerId || !name || !year || !courseCount || !totalCredits) {
             setFormError("Carrera, Nombre, Año, Nº Cursos y Créditos son obligatorios.");
@@ -152,12 +144,12 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
 
         const payload = {
             careerId: careerIdNum,
-            name: name,
+            name,
             year: yearNum,
             courseCount: courseCountNum,
             totalCredits: totalCreditsNum,
-            status: status,
-            description: description,
+            status,
+            description,
         };
 
         try {
@@ -169,14 +161,12 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                 toast.success("Malla creada correctamente", { position: "top-right", autoClose: 3000 });
             }
             await fetchCurriculums();
-            // Close directly — handleCloseModal checks isSaving which is still true here
             setShowModal(false);
             setCurriculumData({ careerId: "", name: "", year: "", courseCount: "", totalCredits: "", status: "Activo", description: "" });
             setIsEditMode(false);
             setCurrentCurriculumId(null);
             setFormError(null);
         } catch (err: any) {
-            console.error("Error saving curriculum:", err);
             if (err.response?.status === 409 || err.response?.status === 400) {
                 const errorMsg = err.response.data?.message || "Error de validación al guardar.";
                 setFormError(errorMsg);
@@ -191,15 +181,13 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         }
     };
 
-    // --- Delete Handling ---
     const handleDelete = async (id: number) => {
         if (window.confirm("¿Está seguro de que desea eliminar esta malla? (Esto podría afectar cursos asociados)")) {
             try {
                 await CurriculumsService.delete(id);
                 await fetchCurriculums();
                 toast.success("Malla eliminada correctamente", { position: "top-right", autoClose: 3000 });
-            } catch (err) {
-                console.error("Error deleting curriculum:", err);
+            } catch {
                 const errorMsg = "Error al eliminar la malla.";
                 setError(errorMsg);
                 toast.error(errorMsg, { position: "top-right", autoClose: 3000 });
@@ -207,13 +195,18 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
         }
     };
 
-    // --- Badge Mapping ---
-    const statusBadgeClass: { [key: string]: string } = { // More type-safe
+    const statusBadgeClass: { [key: string]: string } = {
         "En Revisión": "bg-info-transparent",
         "Activo": "bg-success-transparent",
         "Suspendido": "bg-warning-transparent",
-        "Inactivo": "bg-light text-default"
+        "Inactivo": "bg-light text-default",
     };
+
+    const filteredCurriculums = curriculums.filter((curriculum) => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return true;
+        return curriculum.name?.toLowerCase().includes(q) || curriculum.careerName?.toLowerCase().includes(q);
+    });
 
     return (
         <div className="min-vh-100 d-flex flex-column">
@@ -222,36 +215,28 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                 <Seo title="Mallas" />
                 <Pageheader title="Gestión Académica" subtitle="Mallas" currentpage="Lista de Mallas" activepage="Gestión de Mallas" />
 
-                {/* Search and Add Row */}
                 <Row>
                     <Col xl={12}>
                         <Card className="custom-card">
                             <Card.Body className="p-3">
                                 <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                                    <div className="d-flex flex-wrap gap-1 project-list-main">
-                                        <button type="button" className="btn btn-primary me-2" onClick={handleOpenCreateModal}>
-                                            <i className="ri-add-line me-1 fw-medium align-middle"></i>Nueva Malla
-                                        </button>
-                                        <SpkSelect name="colors" option={Projectselectdata} mainClass="projects-sort basic-multi-select" menuplacement='auto' classNameprefix="Select2" placeholder="Ordenar por" />
-                                    </div>
-                                    <div className="d-flex" role="search">
-                                        <Form.Control
-                                            className="me-2"
-                                            type="search"
-                                            placeholder="Buscar Malla"
-                                            aria-label="Search"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                        <SpkButton Buttonvariant="light" Customclass="btn" Buttontype="button">Buscar</SpkButton>
-                                    </div>
+                                    <button type="button" className="btn btn-primary" onClick={handleOpenCreateModal}>
+                                        <i className="ri-add-line me-1 fw-medium align-middle"></i>Nueva Malla
+                                    </button>
+                                    <Form.Control
+                                        style={{ maxWidth: "280px" }}
+                                        type="search"
+                                        placeholder="Buscar por nombre o carrera"
+                                        aria-label="Buscar malla"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
                                 </div>
                             </Card.Body>
                         </Card>
                     </Col>
                 </Row>
 
-                {/* Table Row */}
                 <Row>
                     <Col xl={12}>
                         <Card className="custom-card overflow-hidden">
@@ -261,14 +246,15 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                         <div className="text-center p-5"><Spinner animation="border" /></div>
                                     ) : error ? (
                                         <Alert variant="danger" className="m-3">{error}</Alert>
+                                    ) : filteredCurriculums.length === 0 ? (
+                                        <div className="text-center p-5 text-muted">
+                                            {searchTerm.trim()
+                                                ? <p>Sin coincidencias para &ldquo;<strong>{searchTerm.trim()}</strong>&rdquo;.</p>
+                                                : <p>No se encontraron mallas.</p>}
+                                        </div>
                                     ) : (
-                                        <SpkTables tableClass="text-nowrap" header={[{ title: 'Malla' }, { title: "Año" }, { title: 'Nº Cursos' }, { title: 'Créditos' }, { title: 'Estado' }, { title: 'Descripción' }, { title: 'Acciones' }]} >
-                                            {/* 🔹 Map over fetched curriculums data */}
-                                            {curriculums.filter((curriculum) => {
-                                                const q = searchTerm.trim().toLowerCase();
-                                                if (!q) return true;
-                                                return curriculum.name?.toLowerCase().includes(q);
-                                            }).map((curriculum) => (
+                                        <SpkTables tableClass="text-nowrap" header={[{ title: 'Malla' }, { title: "Año" }, { title: 'Nº Cursos' }, { title: 'Créditos' }, { title: 'Estado' }, { title: 'Descripción' }, { title: 'Acciones' }]}>
+                                            {filteredCurriculums.map((curriculum) => (
                                                 <tr key={curriculum.id}>
                                                     <td>{curriculum.name}</td>
                                                     <td>
@@ -286,8 +272,8 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                                     <td>{curriculum.description || "—"}</td>
                                                     <td>
                                                         <SpkDropdown toggleas="a" Icon={true} Navigate="#!" Customtoggleclass="btn btn-icon btn-sm btn-light no-caret" IconClass="fe fe-more-vertical">
-                                                            <Dropdown.Item href="#!" onClick={() => handleOpenEditModal(curriculum)}><i className="ti ti-edit me-1 d-inline-block"></i>Editar</Dropdown.Item>
-                                                            <Dropdown.Item href="#!" onClick={() => handleDelete(curriculum.id)}><i className="ti ti-trash me-1 d-inline-block"></i>Eliminar</Dropdown.Item>
+                                                            <Dropdown.Item as="button" onClick={() => handleOpenEditModal(curriculum)}><i className="ti ti-edit me-1 d-inline-block"></i>Editar</Dropdown.Item>
+                                                            <Dropdown.Item as="button" onClick={() => handleDelete(curriculum.id)}><i className="ti ti-trash me-1 d-inline-block"></i>Eliminar</Dropdown.Item>
                                                         </SpkDropdown>
                                                     </td>
                                                 </tr>
@@ -296,22 +282,10 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                     )}
                                 </div>
                             </Card.Body>
-                            {/* Footer logic (similar to Careers) */}
-                            {!isLoading && !error && curriculums.length > 0 && (
-                                <Card.Footer className="border-top-0">
-                                    {/* ... Pagination ... */}
-                                </Card.Footer>
-                            )}
-                             {!isLoading && !error && curriculums.length === 0 && (
-                                 <Card.Body className="text-center">
-                                     <p>No se encontraron mallas.</p>
-                                 </Card.Body>
-                             )}
                         </Card>
                     </Col>
                 </Row>
 
-                {/* Modal para crear/editar malla */}
                 <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" keyboard={false}>
                     <Modal.Header closeButton>
                         <Modal.Title>{isEditMode ? 'Editar Malla' : 'Crear Nueva Malla'}</Modal.Title>
@@ -319,40 +293,44 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                     <Modal.Body>
                         {formError && <Alert variant="danger">{formError}</Alert>}
                         <Form>
-                            {/* 🔹 Select para Carrera */}
                             <Form.Group className="mb-3">
-                                <Form.Label>Carrera <span className="text-danger">*</span></Form.Label>
+                                <Form.Label htmlFor="malla-careerId">Carrera <span className="text-danger">*</span></Form.Label>
                                 <Form.Select
+                                    id="malla-careerId"
                                     name="careerId"
                                     value={curriculumData.careerId}
                                     onChange={handleFormChange}
                                     required
-                                    disabled={isSaving || careers.length === 0} // Disable if no careers loaded
+                                    disabled={isSaving || careers.length === 0}
                                 >
-                                     {careers.length === 0 && <option value="" disabled>Cargando carreras...</option>}
-                                     {careers.map(career => (
-                                         <option key={career.id} value={career.id}>
-                                             {career.name}
-                                         </option>
-                                     ))}
+                                    <option value="">
+                                        {careers.length === 0 ? "Cargando carreras..." : "Seleccione una carrera..."}
+                                    </option>
+                                    {careers.map(career => (
+                                        <option key={career.id} value={career.id}>
+                                            {career.name}
+                                        </option>
+                                    ))}
                                 </Form.Select>
-                                {careers.length === 0 && !isLoading && <small className="text-muted">No hay carreras disponibles para seleccionar.</small>}
                             </Form.Group>
 
                             <Form.Group className="mb-3">
-                                <Form.Label>Nombre de la Malla <span className="text-danger">*</span></Form.Label>
+                                <Form.Label htmlFor="malla-name">Nombre de la Malla <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
+                                    id="malla-name"
                                     type="text"
                                     name="name"
                                     value={curriculumData.name}
                                     onChange={handleFormChange}
                                     placeholder="Ej: Ingeniería de Sistemas - Plan 2023"
                                     required
-                                    disabled={isSaving} />
+                                    disabled={isSaving}
+                                />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Año <span className="text-danger">*</span></Form.Label>
+                                <Form.Label htmlFor="malla-year">Año <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
+                                    id="malla-year"
                                     type="number"
                                     name="year"
                                     value={curriculumData.year}
@@ -360,11 +338,13 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                     placeholder="Ingrese el año (ej: 2023)"
                                     min="1900"
                                     required
-                                    disabled={isSaving} />
+                                    disabled={isSaving}
+                                />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Número Cursos <span className="text-danger">*</span></Form.Label>
+                                <Form.Label htmlFor="malla-courseCount">Número Cursos <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
+                                    id="malla-courseCount"
                                     type="number"
                                     name="courseCount"
                                     value={curriculumData.courseCount}
@@ -372,11 +352,13 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                     placeholder="Ingrese la cantidad de cursos"
                                     min="1"
                                     required
-                                    disabled={isSaving} />
+                                    disabled={isSaving}
+                                />
                             </Form.Group>
-                             <Form.Group className="mb-3">
-                                <Form.Label>Número Créditos <span className="text-danger">*</span></Form.Label>
+                            <Form.Group className="mb-3">
+                                <Form.Label htmlFor="malla-totalCredits">Número Créditos <span className="text-danger">*</span></Form.Label>
                                 <Form.Control
+                                    id="malla-totalCredits"
                                     type="number"
                                     name="totalCredits"
                                     value={curriculumData.totalCredits}
@@ -384,11 +366,13 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                     placeholder="Ingrese el total de créditos"
                                     min="1"
                                     required
-                                    disabled={isSaving} />
+                                    disabled={isSaving}
+                                />
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Estado</Form.Label>
+                                <Form.Label htmlFor="malla-status">Estado</Form.Label>
                                 <Form.Select
+                                    id="malla-status"
                                     name="status"
                                     value={curriculumData.status}
                                     onChange={handleFormChange}
@@ -401,15 +385,17 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
                                 </Form.Select>
                             </Form.Group>
                             <Form.Group className="mb-3">
-                                <Form.Label>Descripción (Opcional)</Form.Label>
+                                <Form.Label htmlFor="malla-description">Descripción (Opcional)</Form.Label>
                                 <Form.Control
+                                    id="malla-description"
                                     as="textarea"
                                     rows={3}
                                     name="description"
                                     value={curriculumData.description}
                                     onChange={handleFormChange}
                                     placeholder="Ingrese una descripción breve"
-                                    disabled={isSaving} />
+                                    disabled={isSaving}
+                                />
                             </Form.Group>
                         </Form>
                     </Modal.Body>
@@ -425,4 +411,4 @@ const ProjectsList: React.FC = () => { // Removed unused interface prop
     );
 };
 
-export default ProjectsList;
+export default MallasList;
