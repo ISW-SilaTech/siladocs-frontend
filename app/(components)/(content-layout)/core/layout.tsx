@@ -1,5 +1,4 @@
 "use client"
-import Backtotop from '@/shared/layouts-components/backtotop/backtotop'
 import Footer from '@/shared/layouts-components/footer/footer'
 import Header from '@/shared/layouts-components/header/header'
 import { data$, getState } from '@/shared/layouts-components/services/switcherServices'
@@ -81,7 +80,6 @@ const layout = ({ children }: any) => {
         </div>
         <Footer />
       </div>
-      <Backtotop />
       <ProductOnboarding />
     </Fragment>
   )
