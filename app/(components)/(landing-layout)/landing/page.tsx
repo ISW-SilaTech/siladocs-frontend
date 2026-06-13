@@ -13,7 +13,7 @@ import Link from 'next/link'
 import React, { Fragment, useEffect, useRef, useState } from 'react'
 import { Card, Col, Form, Nav, Row, Tab, Modal } from 'react-bootstrap'
 import axios from 'axios'
-import RegistrationRequestModal from '@/shared/layouts-components/registration-request-modal/registration-request-modal'
+
 
 
 //Efectos
@@ -324,14 +324,6 @@ const Landing = () => {
         setShowDemoModal(true);
     };
 
-    // Modal de solicitud de acceso (primer paso del flujo HU-A02)
-    const [showRequestModal, setShowRequestModal] = useState(false);
-    const handleCloseRequestModal = () => setShowRequestModal(false);
-    const handleShowRequestModal = (e?: React.MouseEvent) => {
-        if (e) e.preventDefault();
-        setShowRequestModal(true);
-    };
-
     const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsContactLoading(true);
@@ -422,13 +414,6 @@ const Landing = () => {
                                 {/* <!-- Start::header-link|switcher-icon --> */}
 
                                 <div className="btn-list d-lg-none d-flex gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={handleShowRequestModal}
-                                        className="btn btn-outline-primary"
-                                    >
-                                        Solicitar acceso
-                                    </button>
                                     <Link
                                         scroll={false}
                                         href="https://siladocs-frontend.vercel.app/authentication/sign-up/cover/"
@@ -560,13 +545,6 @@ const Landing = () => {
                                 </svg></div>
                                 <div className="d-lg-flex d-none align-items-center">
                                     <div className="btn-list d-xl-flex d-none gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleShowRequestModal}
-                                            className="btn btn-wave btn-outline-primary border"
-                                        >
-                                            <i className="ri-send-plane-line me-1"></i>Solicitar acceso
-                                        </button>
                                         <Link
                                             scroll={false}
                                             href="https://siladocs-frontend.vercel.app/authentication/sign-up/cover/"
@@ -626,12 +604,6 @@ const Landing = () => {
          </button>
     </Modal.Footer> */}
                 </Modal>
-
-                {/* Modal de solicitud de acceso (HU-A02: evaluación previa por el equipo Siladocs) */}
-                <RegistrationRequestModal
-                    show={showRequestModal}
-                    onHide={handleCloseRequestModal}
-                />
 
                 {/* Agrega este estilo CSS a tu archivo CSS global o específico del componente */}
                 <style jsx global>{`
