@@ -100,11 +100,16 @@ const SilabosPage: React.FC = () => {
         }
     };
 
+    const [coursesError, setCoursesError] = useState<string | null>(null);
+
     const fetchCourses = async () => {
+        setCoursesError(null);
         try {
             const data = await CoursesService.getAll();
             setCourses(data.map(c => ({ id: c.id, name: c.name, code: c.code })));
-        } catch { /* silent */ }
+        } catch (err) {
+            setCoursesError("No se pudieron cargar los cursos. Recarga la página.");
+        }
     };
 
     useEffect(() => { fetchSyllabi(); fetchCourses(); }, []);
@@ -125,7 +130,7 @@ const SilabosPage: React.FC = () => {
     };
 
     const handleOpenModal = () => {
-        setSelectedCourseId(courses.length > 0 ? String(courses[0].id) : "");
+        setSelectedCourseId(""); // No preseleccionar curso
         setSelectedFile(null); setFormError(null); setUploadResult(null);
         setUploadProgress(0); setIsDragging(false); setSseEvents([]);
         sseClientRef.current?.close();
@@ -190,10 +195,14 @@ const SilabosPage: React.FC = () => {
         sseClientRef.current = BlockchainEventsService.connect(sessionId, {
             onEvent: (evt) => {
                 setSseEvents(prev => [...prev, evt]);
-                setUploadProgress(evt.progress);
+                setUploadProgress(prev => Math.max(prev, evt.progress)); // H#6: never go backwards
             },
             onComplete: () => {
                 sseClientRef.current = null;
+            },
+            onError: () => { // H#7: capture SSE connection errors
+                setFormError("Se perdió la conexión en tiempo real. Verifica que el sílabo se haya registrado en la tabla.");
+                setIsUploading(false);
             },
         });
 
@@ -228,6 +237,8 @@ const SilabosPage: React.FC = () => {
 
     // --- Approve handler (TC-02) ---
     const [approvingId, setApprovingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
+
     const handleApprove = async (id: number) => {
         if (!window.confirm("¿Aprobar este sílabo? El estado cambiará a 'Validado'.")) return;
         setApprovingId(id);
@@ -263,12 +274,15 @@ const SilabosPage: React.FC = () => {
     // --- Delete handler ---
     const handleDelete = async (id: number) => {
         if (!window.confirm("¿Está seguro de que desea eliminar este sílabo?")) return;
+        setDeletingId(id);
         try {
             await SyllabiService.delete(id);
             toast.success("Sílabo eliminado.");
             await fetchSyllabi();
         } catch {
             toast.error("Error al eliminar el sílabo.");
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -277,7 +291,7 @@ const SilabosPage: React.FC = () => {
         setImportSource(source);
         setCloudFiles([]); setCloudError(null); setSelectedCloudFile(null);
         setCloudAccessToken("");
-        setImportCourseId(courses.length > 0 ? String(courses[0].id) : "");
+        setImportCourseId(""); // No preseleccionar curso
         setShowImportModal(true);
     };
 
@@ -315,6 +329,7 @@ const SilabosPage: React.FC = () => {
                 accessToken: cloudAccessToken,
                 fileId: selectedCloudFile.id,
                 fileName: selectedCloudFile.name,
+                courseId: Number(importCourseId),
             });
             toast.success(`"${selectedCloudFile.name}" importado correctamente.`);
             handleCloseImport();
@@ -426,7 +441,7 @@ const SilabosPage: React.FC = () => {
                                                         <button className="btn btn-sm btn-icon btn-success-light coach-download-btn" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
                                                             {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
                                                         </button>
-                                                        {s.status?.toLowerCase() !== "validated" && (
+                                                        {s.status?.toLowerCase() === "confirmed" && (
                                                             <button
                                                                 className="btn btn-sm btn-icon btn-warning-light coach-approve-btn"
                                                                 title="Aprobar sílabo (TC-02)"
@@ -444,8 +459,8 @@ const SilabosPage: React.FC = () => {
                                                         >
                                                             {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
                                                         </button>
-                                                        <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar" onClick={() => handleDelete(s.id)}>
-                                                            <i className="ri-delete-bin-line"></i>
+                                                        <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar" onClick={() => handleDelete(s.id)} disabled={deletingId === s.id}>
+                                                            {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
                                                         </button>
                                                     </div>
                                                 </td>
@@ -529,14 +544,16 @@ const SilabosPage: React.FC = () => {
                                             id="coach-modal-curso"
                                             value={selectedCourseId}
                                             onChange={(e) => setSelectedCourseId(e.target.value)}
-                                            disabled={isUploading}
+                                            disabled={isUploading || coursesError !== null}
                                             style={{ borderRadius: "8px" }}
                                         >
+                                            <option value="" disabled>Seleccione un curso...</option>
                                             {courses.length === 0
-                                                ? <option value="">Sin cursos disponibles</option>
+                                                ? <option value="" disabled>Sin cursos disponibles</option>
                                                 : courses.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)
                                             }
                                         </Form.Select>
+                                        {coursesError && <small className="text-danger">{coursesError}</small>}
                                     </Form.Group>
 
                                     {/* Drag and drop zone */}
@@ -933,6 +950,7 @@ const SilabosPage: React.FC = () => {
                             <Form.Group>
                                 <Form.Label className="fw-semibold">Asignar al curso <span className="text-danger">*</span></Form.Label>
                                 <Form.Select value={importCourseId} onChange={(e) => setImportCourseId(e.target.value)}>
+                                    <option value="" disabled>Seleccione un curso...</option>
                                     {courses.map(c => <option key={c.id} value={c.id}>{c.code} — {c.name}</option>)}
                                 </Form.Select>
                             </Form.Group>

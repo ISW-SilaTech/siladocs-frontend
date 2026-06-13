@@ -2,10 +2,12 @@
 
 import React, { Fragment, useState, useCallback, useRef, useEffect } from "react"
 import { Card, Row, Col, Table, Badge, Alert, Modal, ProgressBar, Spinner, Form } from "react-bootstrap"
+import { toast, ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-buttons"
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader"
 import ExcelJS from "exceljs"
-import axios from 'axios'
+import api from "@/shared/config/axios"
 import { CoursesService, Course } from "@/shared/services/courses.service"
 import { SyllabiService } from "@/shared/services/syllabi.service"
 
@@ -108,6 +110,7 @@ const BulkUploadPage: React.FC = () => {
   const [records, setRecords] = useState<RecordRow[]>([])
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
   const [backendResult, setBackendResult] = useState<BulkUploadResult | null>(null)
+  const [formattingErrors, setFormattingErrors] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const initialSteps: Step[] = [
@@ -134,12 +137,10 @@ const BulkUploadPage: React.FC = () => {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
   const showToast = (title: string, message: string, variant: "success" | "error" | "warning" = "success") => {
-    alert(`${variant.toUpperCase()}: ${title}\n${message}`)
-  }
-
-  const getAuthHeaders = () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null
-    return { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+    const fullMessage = `${title}\n${message}`;
+    if (variant === "success") toast.success(fullMessage);
+    else if (variant === "error") toast.error(fullMessage);
+    else toast.warning(fullMessage);
   }
 
   const phase1Success = !!(backendResult && backendResult.successCount > 0)
@@ -302,13 +303,14 @@ const BulkUploadPage: React.FC = () => {
         loaded.push(rec)
       })
 
-      if (formatErrors.length > 0) {
-        cs[2] = { ...cs[2], status: "error" }; setSteps([...cs])
-        throw new Error("Errores de formato en el archivo.")
-      }
-      cs[2] = { ...cs[2], status: "success" }; setSteps([...cs])
+      cs[2] = { ...cs[2], status: formatErrors.length > 0 ? "error" : "success" }; setSteps([...cs])
       setRecords(loaded)
-      setValidationResult({ isValid: true, errors: [], warnings: [] })
+      setFormattingErrors(formatErrors)
+      setValidationResult({
+        isValid: formatErrors.length === 0,
+        errors: formatErrors,
+        warnings: formatErrors.length > 0 ? [`Se encontraron ${formatErrors.length} fila(s) con errores. Solo las filas válidas pueden ser importadas.`] : []
+      })
       setProgress(100)
     } catch (err: any) {
       setValidationResult({ isValid: false, errors: [err.message ?? "Error desconocido"], warnings: [] })
@@ -349,13 +351,13 @@ const BulkUploadPage: React.FC = () => {
 
     setIsSubmitting(true); setBackendResult(null)
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://siladocs-backend-ejfkddf7fkgucrh6.westus3-01.azurewebsites.net/api"
-      const res = await axios.post<BulkUploadResult>(`${apiUrl}/bulk-upload/courses`, payload, getAuthHeaders())
+      const res = await api.post<BulkUploadResult>(`/bulk-upload/courses`, payload)
       setBackendResult(res.data)
     } catch (err: any) {
       let msg = "No se pudieron enviar los datos al servidor."
-      if (axios.isAxiosError(err) && err.response)
+      if (err.response) {
         msg = err.response.data?.error || err.response.data?.message || `Error (${err.response.status})`
+      }
       showToast("Error al Enviar", msg, "error")
     } finally {
       setIsSubmitting(false)
@@ -363,7 +365,7 @@ const BulkUploadPage: React.FC = () => {
   }
 
   const clearPhase1State = () => {
-    setFile(null); setRecords([]); setValidationResult(null); setBackendResult(null)
+    setFile(null); setRecords([]); setValidationResult(null); setBackendResult(null); setFormattingErrors([])
     setSteps(initialSteps); setProgress(0); setIsProcessing(false); setIsSubmitting(false)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
@@ -471,6 +473,7 @@ const BulkUploadPage: React.FC = () => {
 
   return (
     <Fragment>
+      <ToastContainer />
       <Pageheader title="Carga Masiva" currentpage="Carga Masiva" activepage="Dashboard" />
 
       {/* ─── Phase indicator ────────────────────────────────────────────── */}
@@ -594,15 +597,18 @@ const BulkUploadPage: React.FC = () => {
             </Col>
           </Row>
 
-          {validationResult?.isValid && records.length > 0 && (
+          {validationResult && records.length > 0 && (
             <Row>
               <Col xl={12}>
                 <Card className="custom-card">
                   <Card.Header>
                     <div className="d-flex align-items-center justify-content-between w-100">
                       <div>
-                        <Card.Title className="mb-1">Vista Previa — Registros Validados</Card.Title>
-                        <p className="text-muted mb-0 small">{records.length} cursos listos para importar</p>
+                        <Card.Title className="mb-1">Vista Previa — Registros Cargados</Card.Title>
+                        <p className="text-muted mb-0 small">
+                          {records.filter(r => !r.errors?.length).length} cursos válidos
+                          {formattingErrors.length > 0 && ` — ${formattingErrors.length} fila(s) con errores`}
+                        </p>
                       </div>
                       <div className="d-flex gap-2 align-items-center">
                         {/* Unique carreras count */}
@@ -632,8 +638,11 @@ const BulkUploadPage: React.FC = () => {
                         </thead>
                         <tbody>
                           {records.map((rec, i) => (
-                            <tr key={i}>
-                              <td className="ps-3 text-muted small">{rec.rowNumber}</td>
+                            <tr key={i} className={rec.errors?.length ? "table-danger" : ""} title={rec.errors?.length ? rec.errors.join("; ") : ""}>
+                              <td className="ps-3 text-muted small">
+                                {rec.rowNumber}
+                                {rec.errors && rec.errors.length > 0 && <i className="ri-error-warning-fill text-danger ms-1" title={rec.errors.join("; ")}></i>}
+                              </td>
                               <td className="small">{rec.carreraNombre}</td>
                               <td className="small text-muted">{rec.mallaNombre}</td>
                               <td><Badge bg="light" className="text-dark border">{rec.cursoCodigo}</Badge></td>
@@ -645,6 +654,18 @@ const BulkUploadPage: React.FC = () => {
                         </tbody>
                       </Table>
                     </div>
+
+                    {formattingErrors.length > 0 && (
+                      <div className="px-3 pt-3">
+                        <Alert variant="warning" className="mb-3">
+                          <i className="ri-alert-line me-2"></i>
+                          <strong>{formattingErrors.length} fila(s) con errores de validación:</strong>
+                          <ul className="mb-0 mt-2 ps-3">
+                            {formattingErrors.map((err, i) => <li key={i} className="text-muted small">{err}</li>)}
+                          </ul>
+                        </Alert>
+                      </div>
+                    )}
 
                     {backendResult && (
                       <div className="px-3 pt-3">
