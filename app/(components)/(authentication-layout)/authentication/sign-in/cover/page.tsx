@@ -184,9 +184,9 @@ const Cover: React.FC = () => {
                                         </div>
                                         <div className="text-center mt-2" style={{ fontSize: "0.85rem" }}>
                                             <span className="text-muted">¿Aún no tienes acceso?{" "}</span>
-                                            <Link scroll={false} href="/landing#contactus" className="text-primary animated-underline" style={{ fontSize: "0.85rem" }}>
+                                            <a href="/landing#contactus" className="text-primary animated-underline" style={{ fontSize: "0.85rem" }}>
                                                 Solicitar acceso
-                                            </Link>
+                                            </a>
                                         </div>
                                     </Card.Body>
                                 </Card>
