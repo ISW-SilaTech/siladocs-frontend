@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Modal, Form, Row, Col, Button } from "react-bootstrap";
+import Link from "next/link";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import { RegistrationRequestsService } from "@/shared/services/registration-requests.service";
@@ -205,14 +206,13 @@ const RegistrationRequestModal: React.FC<RegistrationRequestModalProps> = ({ sho
                             </Form>
                             <div className="text-center mt-3 text-muted" style={{ fontSize: "0.85rem" }}>
                                 ¿Ya tienes un código de acceso?{" "}
-                                <button
-                                    type="button"
-                                    className="btn btn-link p-0 align-baseline"
+                                <Link
+                                    href="https://siladocs-frontend.vercel.app/authentication/sign-up/cover/"
+                                    className="text-primary"
                                     style={{ fontSize: "0.85rem" }}
-                                    onClick={handleClose}
                                 >
                                     Regístrate aquí
-                                </button>
+                                </Link>
                             </div>
                         </>
                     )}
