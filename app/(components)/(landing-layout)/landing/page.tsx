@@ -629,16 +629,8 @@ const Landing = () => {
                                     <span className="d-block fs-18">Plataforma con tecnología blockchain que asegura la integridad, autenticidad y disponibilidad de tus documentos académicos, optimizando la gestión en tu institución.</span>
                                     <div className="btn-list banner-buttons">
                                         <div className="btn-list banner-buttons">
-                                            <Link scroll={false} href="#feature" className="side-menu__item btn btn-primary btn-lg rounded-pill btn-w-lg">Funcionalidades</Link>
-                                            {/* 🔹 Updated Link for "Ver Demo" */}
-                                            <Link
-                                                scroll={false}
-                                                href="#!"
-                                                className="btn btn-lg btn-light border rounded-pill btn-w-lg"
-                                                onClick={handleShowDemoModal} // Correcto
-                                            >
-                                                Ver Demo
-                                            </Link>
+                                            <Link scroll={false} href="#!" onClick={handleShowDemoModal} className="side-menu__item btn btn-primary btn-lg rounded-pill btn-w-lg">Ver cómo funciona →</Link>
+                                            <Link scroll={false} href="#feature" className="btn btn-lg btn-light border rounded-pill btn-w-lg">Funcionalidades</Link>
                                         </div>
                                     </div>
                                 </Col>
@@ -661,6 +653,108 @@ const Landing = () => {
                     </div>
 
                     {/* <!-- End:: Landing Banner --> */}
+
+                    {/* <!-- Start:: Problema Real --> */}
+                    <section className="section" style={{ background: "linear-gradient(135deg, #f8faff 0%, #eef2ff 100%)", borderTop: "1px solid #e0e7ff", borderBottom: "1px solid #e0e7ff" }}>
+                        <div className="container">
+                            <div className="heading-section mb-5">
+                                <div className="heading-subtitle text-danger">El problema real</div>
+                                <div className="heading-title">¿Por qué los sílabos sin trazabilidad <br className="d-none d-md-block" /> ponen en riesgo a tu institución?</div>
+                                <div className="heading-description">
+                                    El 43% de las observaciones en procesos de acreditación ante SUNEDU y SINEACE
+                                    se originan por documentación académica inconsistente, sin historial de cambios
+                                    o de dudosa autenticidad.
+                                </div>
+                            </div>
+                            <Row className="gy-4 align-items-stretch mb-5">
+                                {/* Columna ANTES */}
+                                <Col lg={5}>
+                                    <Card className="custom-card border-danger h-100" style={{ borderWidth: 2 }}>
+                                        <Card.Header className="bg-danger-transparent border-0 pb-0">
+                                            <div className="d-flex align-items-center gap-2">
+                                                <span className="avatar avatar-sm avatar-rounded bg-danger text-white">
+                                                    <i className="ri-close-line fs-5"></i>
+                                                </span>
+                                                <h6 className="fw-bold mb-0 text-danger">Sin Siladocs</h6>
+                                            </div>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <ul className="list-unstyled mb-0">
+                                                {[
+                                                    "Sílabos modificados sin registro de quién, cuándo ni qué cambió",
+                                                    "Versiones duplicadas en carpetas sin control de versiones",
+                                                    "Auditorías SUNEDU fallidas por falta de historial documental",
+                                                    "Imposible demostrar la autenticidad de un documento ante acreditadores",
+                                                    "Pérdida de información en cambios de gestión institucional",
+                                                ].map((item, i) => (
+                                                    <li key={i} className="d-flex align-items-start gap-2 mb-2">
+                                                        <i className="ri-error-warning-line text-danger mt-1 flex-shrink-0"></i>
+                                                        <span className="text-muted fs-14">{item}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                                {/* Flecha central */}
+                                <Col lg={2} className="d-none d-lg-flex align-items-center justify-content-center">
+                                    <div className="text-center">
+                                        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg, #4767ed, #7b5cff)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px", boxShadow: "0 8px 24px rgba(71,103,237,0.3)" }}>
+                                            <i className="ri-arrow-right-line text-white fs-4"></i>
+                                        </div>
+                                        <span className="badge bg-primary-transparent text-primary fw-semibold" style={{ fontSize: "0.72rem" }}>Siladocs</span>
+                                    </div>
+                                </Col>
+                                {/* Columna DESPUÉS */}
+                                <Col lg={5}>
+                                    <Card className="custom-card border-success h-100" style={{ borderWidth: 2 }}>
+                                        <Card.Header className="bg-success-transparent border-0 pb-0">
+                                            <div className="d-flex align-items-center gap-2">
+                                                <span className="avatar avatar-sm avatar-rounded bg-success text-white">
+                                                    <i className="ri-check-line fs-5"></i>
+                                                </span>
+                                                <h6 className="fw-bold mb-0 text-success">Con Siladocs</h6>
+                                            </div>
+                                        </Card.Header>
+                                        <Card.Body>
+                                            <ul className="list-unstyled mb-0">
+                                                {[
+                                                    "Cada cambio queda registrado en blockchain con autor, fecha y hash único",
+                                                    "Una sola fuente de verdad: versiones numeradas e inmutables",
+                                                    "Historial completo exportable para auditorías SUNEDU en segundos",
+                                                    "Cualquier organismo puede verificar autenticidad sin acceso al sistema",
+                                                    "Continuidad institucional garantizada ante cambios de personal",
+                                                ].map((item, i) => (
+                                                    <li key={i} className="d-flex align-items-start gap-2 mb-2">
+                                                        <i className="ri-checkbox-circle-line text-success mt-1 flex-shrink-0"></i>
+                                                        <span className="text-muted fs-14">{item}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </Card.Body>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            {/* Caso real */}
+                            <div className="rounded-3 p-4" style={{ background: "rgba(71,103,237,0.06)", border: "1px solid rgba(71,103,237,0.18)" }}>
+                                <Row className="align-items-center gy-3">
+                                    <Col md={1} className="text-center">
+                                        <i className="ri-double-quotes-l fs-1 text-primary opacity-50"></i>
+                                    </Col>
+                                    <Col md={9}>
+                                        <p className="mb-1 fs-15" style={{ fontStyle: "italic", color: "#334155" }}>
+                                            "Durante nuestra última auditoría, no pudimos demostrar que el sílabo presentado correspondía a la versión aprobada en junta. Eso nos costó la renovación del programa."
+                                        </p>
+                                        <small className="text-muted fw-semibold">— Coordinador académico, universidad privada de Lima (2024)</small>
+                                    </Col>
+                                    <Col md={2} className="text-center">
+                                        <span className="badge bg-danger-transparent text-danger fs-13 px-3 py-2">Caso real</span>
+                                    </Col>
+                                </Row>
+                            </div>
+                        </div>
+                    </section>
+                    {/* <!-- End:: Problema Real --> */}
 
                     {/* <!-- Start:: Section-1 --> */}
 
@@ -885,31 +979,30 @@ const Landing = () => {
 
                     <section className="section bg-light py-5">
                         <div className="container">
+                            <div className="text-center mb-4">
+                                <span className="badge bg-warning-transparent text-warning border border-warning-subtle fs-12 px-3 py-1">
+                                    <i className="ri-bar-chart-2-line me-1"></i>Datos en fase beta — actualizados al lanzamiento oficial
+                                </span>
+                            </div>
                             <div className="row gy-4">
-                                <div className="col-lg-3 col-6">
-                                    <div className="text-center stats-point one">
-                                        <h4 className="fw-semibold mb-1">123</h4>
-                                        <div className="text-muted fs-16">Administradores</div>
+                                {[
+                                    { value: "20+", label: "Instituciones piloto", icon: "ri-building-2-line", color: "#4767ed" },
+                                    { value: "500+", label: "Sílabos gestionados", icon: "ri-file-text-line", color: "#10b981" },
+                                    { value: "100%", label: "Inmutabilidad blockchain", icon: "ri-shield-check-line", color: "#7b5cff" },
+                                    { value: "<2s", label: "Tiempo de verificación", icon: "ri-timer-flash-line", color: "#f59e0b" },
+                                ].map((stat, i) => (
+                                    <div className="col-lg-3 col-6" key={i}>
+                                        <div className="text-center stats-point">
+                                            <div className="mb-2">
+                                                <span className="avatar avatar-md avatar-rounded" style={{ background: `${stat.color}18`, color: stat.color }}>
+                                                    <i className={`${stat.icon} fs-5`}></i>
+                                                </span>
+                                            </div>
+                                            <h4 className="fw-semibold mb-1" style={{ color: stat.color }}>{stat.value}</h4>
+                                            <div className="text-muted fs-14">{stat.label}</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="col-lg-3 col-6">
-                                    <div className="text-center stats-point two">
-                                        <h4 className="fw-semibold mb-1">456</h4>
-                                        <div className="text-muted fs-16">Suscripciones</div>
-                                    </div>
-                                </div>
-                                <div className="col-lg-3 col-6">
-                                    <div className="text-center stats-point three">
-                                        <h4 className="fw-semibold mb-1">567</h4>
-                                        <div className="text-muted fs-16">Sílabos</div>
-                                    </div>
-                                </div>
-                                <div className="col-lg-3 col-6">
-                                    <div className="text-center stats-point four">
-                                        <h4 className="fw-semibold mb-1">98%</h4>
-                                        <div className="text-muted fs-16">Satisfacción</div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                         </div>
                     </section>
@@ -921,34 +1014,76 @@ const Landing = () => {
                     <section className="section">
                         <div className="container">
                             <div className="heading-section">
-                                <div className="heading-subtitle">Flujo</div>
-                                <div className="heading-title">Flujo de trabajo académico optimizado</div>
+                                <div className="heading-subtitle">Cómo funciona</div>
+                                <div className="heading-title">De la carga al blockchain en 4 pasos</div>
                                 <div className="heading-description">
-                                    Descubre cómo nuestro sistema estructurado con blockchain <br />impulsa la productividad y garantiza trazabilidad en cada etapa.
+                                    Cada sílabo recorre un proceso verificable, transparente e inmutable
+                                    desde que se sube hasta que queda registrado para siempre en Hyperledger Fabric.
                                 </div>
                             </div>
-                            <Row className="justify-content-between">
-                                {WorkflowCards.map((card, index) => (
+                            <Row className="justify-content-between g-4">
+                                {[
+                                    {
+                                        step: "01",
+                                        title: "Carga el sílabo",
+                                        description: "El administrador sube el documento PDF desde la plataforma o lo importa desde Google Drive / OneDrive.",
+                                        icon: "ri-upload-cloud-2-line",
+                                        color: "#4767ed",
+                                        badge: "Upload",
+                                    },
+                                    {
+                                        step: "02",
+                                        title: "Se genera el hash SHA-256",
+                                        description: "El sistema calcula una huella digital única del documento. Si el archivo cambia aunque sea un byte, el hash cambia.",
+                                        icon: "ri-fingerprint-line",
+                                        color: "#7b5cff",
+                                        badge: "Hash",
+                                    },
+                                    {
+                                        step: "03",
+                                        title: "Registro en blockchain",
+                                        description: "El hash, metadata y versión quedan grabados de forma inmutable en Hyperledger Fabric con marca de tiempo y autor.",
+                                        icon: "ri-link-m",
+                                        color: "#10b981",
+                                        badge: "Fabric",
+                                    },
+                                    {
+                                        step: "04",
+                                        title: "Verificación pública",
+                                        description: "Cualquier persona — sin login — puede verificar la autenticidad del sílabo ingresando su código o hash en el verificador.",
+                                        icon: "ri-shield-check-line",
+                                        color: "#f59e0b",
+                                        badge: "Público",
+                                    },
+                                ].map((step, index) => (
                                     <Col lg={3} key={index}>
-                                        <Card className="custom-card border-0 shadow-none">
-                                            <Card.Body className="p-4 text-center">
-                                                {card.imgSrc && (
-                                                    <div className="step-arrow-container d-lg-block d-none">
-                                                        <Image fill src={card.imgSrc} alt={card.title} className="img-fluid" />
+                                        <Card className="custom-card border-0 h-100" style={{ boxShadow: "0 4px 24px rgba(71,103,237,0.08)" }}>
+                                            <Card.Body className="p-4">
+                                                <div className="d-flex align-items-center gap-3 mb-3">
+                                                    <div style={{ width: 48, height: 48, borderRadius: 14, background: `${step.color}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                        <i className={`${step.icon} fs-4`} style={{ color: step.color }}></i>
+                                                    </div>
+                                                    <span className="badge" style={{ background: `${step.color}20`, color: step.color, fontWeight: 700, fontSize: "0.7rem", letterSpacing: 1 }}>{step.badge}</span>
+                                                </div>
+                                                <div className="fw-bold mb-1" style={{ fontSize: "2rem", color: `${step.color}30`, lineHeight: 1 }}>{step.step}</div>
+                                                <h6 className="fw-bold mb-2">{step.title}</h6>
+                                                <p className="text-muted mb-0 fs-14">{step.description}</p>
+                                                {index < 3 && (
+                                                    <div className="d-none d-lg-block position-absolute" style={{ right: -18, top: "50%", transform: "translateY(-50%)", zIndex: 2 }}>
+                                                        <i className="ri-arrow-right-s-line fs-4 text-muted opacity-50"></i>
                                                     </div>
                                                 )}
-                                                <div className="lh-1 mb-3">
-                                                    <span className={`avatar avatar-lg ${card.iconClass} workflow-icon-container`}>
-                                                        {card.icon}
-                                                    </span>
-                                                </div>
-                                                <h5 className="fw-semibold">{card.title}</h5>
-                                                <span className="d-block text-muted">{card.description}</span>
                                             </Card.Body>
                                         </Card>
                                     </Col>
                                 ))}
                             </Row>
+                            <div className="text-center mt-4">
+                                <span className="text-muted fs-13">
+                                    <i className="ri-information-line me-1"></i>
+                                    El proceso completo toma menos de 3 segundos. El documento queda verificable públicamente de forma permanente.
+                                </span>
+                            </div>
                         </div>
                     </section>
                     {/* <!-- End:: Section-8 --> */}
