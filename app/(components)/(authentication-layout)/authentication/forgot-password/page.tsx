@@ -90,10 +90,35 @@ export default function ForgotPassword() {
                       <i className="ri-shield-keyhole-line" style={{ fontSize: "40px" }}></i>
                     </div>
                     <h3 className="fw-bold mb-2">Recuperar Contraseña</h3>
-                    <p className="text-muted mb-0">
-                      {step === "email" && "Ingresa tu email para recibir un código"}
-                      {step === "code" && "Ingresa el código que recibiste"}
-                      {step === "password" && "Crea tu nueva contraseña"}
+
+                    {/* Step indicator */}
+                    <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
+                      {(["email", "code", "password"] as const).map((s, i) => {
+                        const stepIndex = { email: 0, code: 1, password: 2 }[step];
+                        const isCompleted = i < stepIndex;
+                        const isActive = s === step;
+                        return (
+                          <div key={s} className="d-flex align-items-center gap-2">
+                            <div style={{
+                              width: 28, height: 28, borderRadius: "50%",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              background: isCompleted ? "#4767ed" : isActive ? "#4767ed" : "#e9ecef",
+                              color: isCompleted || isActive ? "#fff" : "#6c757d",
+                              fontSize: "0.75rem", fontWeight: 600,
+                            }}>
+                              {isCompleted ? <i className="ri-check-line" /> : i + 1}
+                            </div>
+                            {i < 2 && (
+                              <div style={{ width: 32, height: 2, background: isCompleted ? "#4767ed" : "#e9ecef" }} />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-muted mb-0" style={{ fontSize: "0.9rem" }}>
+                      {step === "email" && "Paso 1 de 3 — Ingresa tu correo"}
+                      {step === "code" && "Paso 2 de 3 — Verifica el código"}
+                      {step === "password" && "Paso 3 de 3 — Crea tu nueva contraseña"}
                     </p>
                   </div>
 

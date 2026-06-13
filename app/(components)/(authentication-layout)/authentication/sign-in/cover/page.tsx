@@ -177,9 +177,15 @@ const Cover: React.FC = () => {
                                             </SpkButton>
                                         </div> */}
                                         <div className="text-center mt-3 fw-medium">
-                                            ¿No tienes una cuenta?{" "}
+                                            ¿Tienes un código de acceso?{" "}
                                             <Link scroll={false} href="/authentication/sign-up/cover/" className="text-primary animated-underline">
                                                 Regístrate
+                                            </Link>
+                                        </div>
+                                        <div className="text-center mt-2" style={{ fontSize: "0.85rem" }}>
+                                            <span className="text-muted">¿Aún no tienes acceso?{" "}</span>
+                                            <Link scroll={false} href="/landing#contactus" className="text-primary animated-underline" style={{ fontSize: "0.85rem" }}>
+                                                Solicitar acceso
                                             </Link>
                                         </div>
                                     </Card.Body>

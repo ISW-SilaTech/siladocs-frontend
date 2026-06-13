@@ -10,9 +10,11 @@ import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
 import { AuthService } from "@/shared/services/auth.service";
 import { useAuth } from "@/shared/contextapi";
+import { useRecaptcha } from "@/shared/hooks/useRecaptcha";
 
 const Cover: React.FC = () => {
     const { register } = useAuth();
+    const { getToken } = useRecaptcha();
 
     const [values, setValues] = useState({
         token: '',
@@ -26,6 +28,7 @@ const Cover: React.FC = () => {
     const [isValidating, setIsValidating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
+    const [acceptTerms, setAcceptTerms] = useState(false);
 
     const validate = () => {
         const newErrors: { email?: string; password?: string; name?: string } = {};
@@ -96,9 +99,19 @@ const Cover: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+        if (!acceptTerms) {
+            toast.warn("Debes aceptar los términos y condiciones para continuar.");
+            return;
+        }
 
         setIsSubmitting(true);
         try {
+            const recaptchaToken = await getToken('sign_up');
+            if (!recaptchaToken) {
+                toast.warn("No se pudo verificar reCAPTCHA. Intenta nuevamente.");
+                return;
+            }
+
             await register({
                 accessCode: values.token,
                 fullName: values.name,
@@ -227,7 +240,14 @@ const Cover: React.FC = () => {
                                                 </Col>
                                                 <div className="mt-2">
                                                     <div className="form-check">
-                                                        <input className="form-check-input" type="checkbox" defaultChecked id="termsCheck" />
+                                                        <input
+                                                            className="form-check-input"
+                                                            type="checkbox"
+                                                            id="termsCheck"
+                                                            checked={acceptTerms}
+                                                            onChange={(e) => setAcceptTerms(e.target.checked)}
+                                                            disabled={!tokenValidated}
+                                                        />
                                                         <label className="form-check-label" htmlFor="termsCheck">
                                                             Acepto los{" "}
                                                             <Link href="/terminos-condiciones" target="_blank" style={{ color: "#4767ed" }}>
