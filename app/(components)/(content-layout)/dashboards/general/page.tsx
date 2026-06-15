@@ -432,7 +432,7 @@ const School: React.FC = () => {
                         </Card.Header>
                         <Card.Body className="pb-2">
                             {loading ? (
-                                <div className="d-flex justify-content-center align-items-center" style={{ height: 280 }}>
+                                <div className="d-flex justify-content-center align-items-center" style={{ height: 400 }}>
                                     <Spinner animation="border" variant="primary" />
                                 </div>
                             ) : total === 0 ? (
@@ -447,7 +447,7 @@ const School: React.FC = () => {
                                     chartSeries={mixedSeries}
                                     type="bar"
                                     width="100%"
-                                    height={280}
+                                    height={400}
                                 />
                             )}
                         </Card.Body>
