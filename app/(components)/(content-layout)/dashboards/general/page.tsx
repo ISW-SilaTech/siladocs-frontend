@@ -233,6 +233,7 @@ const School: React.FC = () => {
         grid: { borderColor: "#f3f4f6", strokeDashArray: 4 },
         tooltip: {
             shared: true,
+            intersect: false,
             y: { formatter: (v: number) => `${v} sílabo${v !== 1 ? "s" : ""}` },
         },
         plotOptions: { bar: { borderRadius: 4, columnWidth: "45%" } },
