@@ -140,7 +140,11 @@ export default function AdminBackofficePage() {
     if (!sendCodeTarget) return;
     setSendingCodeId(sendCodeTarget.id);
     try {
-      const code = await RegistrationRequestsService.sendCode(sendCodeTarget.id);
+      const code = await RegistrationRequestsService.sendCode(sendCodeTarget.id, {
+        email: sendCodeTarget.email,
+        fullName: sendCodeTarget.fullName,
+        institutionName: sendCodeTarget.institutionName,
+      });
       // Si la solicitud estaba pendiente, actualizarla a aprobada
       setRegistrationRequests((prev) =>
         prev.map((r) =>

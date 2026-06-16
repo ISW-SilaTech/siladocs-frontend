@@ -53,8 +53,30 @@ export const RegistrationRequestsService = {
     return { ...response.data, status: response.data.status.toLowerCase() as RequestStatus };
   },
 
-  sendCode: async (id: string): Promise<{ code: string; institutionName: string; expiresAt: string }> => {
+  sendCode: async (
+    id: string,
+    recipient: { email: string; fullName: string; institutionName: string }
+  ): Promise<{ code: string; institutionName: string; expiresAt: string }> => {
     const response = await adminApi.post(`/registration-requests/${id}/send-code`);
-    return response.data;
+    const data = response.data;
+
+    const signUpUrl = `https://siladocs-frontend.vercel.app/authentication/sign-up/cover?code=${data.code}`;
+    try {
+      await fetch('/api/send-access-code-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: recipient.email,
+          fullName: recipient.fullName,
+          institutionName: recipient.institutionName,
+          code: data.code,
+          signUpUrl,
+        }),
+      });
+    } catch (e) {
+      console.error('[RegistrationRequestsService] Error sending access code email:', e);
+    }
+
+    return data;
   },
 };
