@@ -52,4 +52,9 @@ export const RegistrationRequestsService = {
     );
     return response.data;
   },
+
+  sendCode: async (id: string): Promise<{ code: string; institutionName: string; expiresAt: string }> => {
+    const response = await adminApi.post(`/registration-requests/${id}/send-code`);
+    return response.data;
+  },
 };

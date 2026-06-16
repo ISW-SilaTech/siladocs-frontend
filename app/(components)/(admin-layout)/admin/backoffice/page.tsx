@@ -63,6 +63,11 @@ export default function AdminBackofficePage() {
   const [rejectTarget, setRejectTarget] = useState<RegistrationRequest | null>(null);
   const [rejectNote, setRejectNote] = useState("");
 
+  // Envío manual de código
+  const [showSendCodeModal, setShowSendCodeModal] = useState(false);
+  const [sendCodeTarget, setSendCodeTarget] = useState<RegistrationRequest | null>(null);
+  const [sendingCodeId, setSendingCodeId] = useState<string | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -124,6 +129,35 @@ export default function AdminBackofficePage() {
     setRejectTarget(req);
     setRejectNote("");
     setShowRejectModal(true);
+  };
+
+  const openSendCodeModal = (req: RegistrationRequest) => {
+    setSendCodeTarget(req);
+    setShowSendCodeModal(true);
+  };
+
+  const handleConfirmSendCode = async () => {
+    if (!sendCodeTarget) return;
+    setSendingCodeId(sendCodeTarget.id);
+    try {
+      const code = await RegistrationRequestsService.sendCode(sendCodeTarget.id);
+      // Si la solicitud estaba pendiente, actualizarla a aprobada
+      setRegistrationRequests((prev) =>
+        prev.map((r) =>
+          r.id === sendCodeTarget.id ? { ...r, status: "approved" as const } : r
+        )
+      );
+      toast.success(
+        `Código ${code.code} enviado al correo de ${sendCodeTarget.fullName}. Válido 7 días.`,
+        { autoClose: 6000 }
+      );
+      setShowSendCodeModal(false);
+      setSendCodeTarget(null);
+    } catch (err) {
+      toast.error(extractErrorMessage(err, "Error al enviar el código de acceso"));
+    } finally {
+      setSendingCodeId(null);
+    }
   };
 
   const handleConfirmReject = async () => {
@@ -544,7 +578,7 @@ export default function AdminBackofficePage() {
                           </td>
                           <td className="text-end">
                             {req.status === 'pending' ? (
-                              <div className="d-flex gap-2 justify-content-end">
+                              <div className="d-flex gap-2 justify-content-end flex-wrap">
                                 <Button
                                   variant="outline-success"
                                   size="sm"
@@ -558,6 +592,19 @@ export default function AdminBackofficePage() {
                                   }
                                 </Button>
                                 <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="d-inline-flex align-items-center gap-1"
+                                  disabled={sendingCodeId === req.id}
+                                  onClick={() => openSendCodeModal(req)}
+                                  title="Aprobar y enviar código por email"
+                                >
+                                  {sendingCodeId === req.id
+                                    ? <Spinner size="sm" />
+                                    : <><i className="ri-mail-send-line"></i> Enviar código</>
+                                  }
+                                </Button>
+                                <Button
                                   variant="outline-danger"
                                   size="sm"
                                   className="d-inline-flex align-items-center gap-1"
@@ -565,6 +612,25 @@ export default function AdminBackofficePage() {
                                   onClick={() => openRejectModal(req)}
                                 >
                                   <i className="ri-close-line"></i> Rechazar
+                                </Button>
+                              </div>
+                            ) : req.status === 'approved' ? (
+                              <div className="d-flex gap-2 justify-content-end align-items-center flex-wrap">
+                                <span className="text-muted" style={{ fontSize: "0.82rem" }}>
+                                  {req.reviewNote ? `"${req.reviewNote}"` : "—"}
+                                </span>
+                                <Button
+                                  variant="outline-primary"
+                                  size="sm"
+                                  className="d-inline-flex align-items-center gap-1"
+                                  disabled={sendingCodeId === req.id}
+                                  onClick={() => openSendCodeModal(req)}
+                                  title="Reenviar código de acceso por email"
+                                >
+                                  {sendingCodeId === req.id
+                                    ? <Spinner size="sm" />
+                                    : <><i className="ri-mail-send-line"></i> Reenviar código</>
+                                  }
                                 </Button>
                               </div>
                             ) : (
@@ -584,6 +650,58 @@ export default function AdminBackofficePage() {
 
         </div>
       </main>
+
+      {/* ===== MODAL: Enviar código de acceso ===== */}
+      <Modal show={showSendCodeModal} onHide={() => { if (sendingCodeId) return; setShowSendCodeModal(false); }} centered>
+        <Modal.Header closeButton={!sendingCodeId} className="border-0 pb-0">
+          <Modal.Title className="d-flex align-items-center gap-2 fw-semibold fs-6">
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#4767ed,#7b5cff)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 18, flexShrink: 0 }}>
+              <i className="ri-mail-send-line"></i>
+            </div>
+            Enviar código de acceso
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="px-4 pt-3 pb-2">
+          {sendCodeTarget && (
+            <>
+              <p className="text-muted mb-3" style={{ fontSize: "0.9rem" }}>
+                Se generará un nuevo código de acceso para <strong>{sendCodeTarget.fullName}</strong> y se enviará al correo:
+              </p>
+              <div className="d-flex align-items-center gap-2 mb-4 p-3 rounded-3" style={{ background: "#f0f4ff", border: "1px solid #c7d2fe" }}>
+                <i className="ri-mail-line text-primary fs-5"></i>
+                <span className="fw-semibold" style={{ color: "#3730a3" }}>{sendCodeTarget.email}</span>
+              </div>
+              <div className="alert border-0 mb-0" style={{ background: "#fffbeb", color: "#92400e", fontSize: "0.84rem" }}>
+                <i className="ri-information-line me-1"></i>
+                El email incluirá el código y un enlace directo al formulario de registro. El código será válido por <strong>7 días</strong>.
+                {sendCodeTarget.status === 'pending' && (
+                  <span className="d-block mt-1">
+                    <i className="ri-checkbox-circle-line me-1 text-success"></i>
+                    La solicitud también quedará marcada como <strong>aprobada</strong>.
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="border-0">
+          <Button variant="secondary" onClick={() => setShowSendCodeModal(false)} disabled={!!sendingCodeId}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirmSendCode}
+            disabled={!!sendingCodeId}
+            style={{ background: "linear-gradient(135deg,#4767ed,#7b5cff)", border: "none" }}
+            className="d-flex align-items-center gap-2"
+          >
+            {sendingCodeId ? (
+              <><Spinner size="sm" /> Enviando...</>
+            ) : (
+              <><i className="ri-mail-send-line"></i> Enviar código por email</>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {/* ===== MODAL: Rechazar solicitud ===== */}
       <Modal show={showRejectModal} onHide={() => { if (reviewingId) return; setShowRejectModal(false); }} centered>
