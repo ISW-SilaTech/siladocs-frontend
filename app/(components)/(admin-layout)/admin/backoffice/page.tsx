@@ -16,7 +16,7 @@ import {
   type RegistrationRequest,
 } from "@/shared/services/registration-requests.service";
 import { extractErrorMessage } from "@/shared/utils/errors";
-import adminApi, { ADMIN_TOKEN_KEY } from "@/shared/config/axios-admin";
+import adminApi from "@/shared/config/axios-admin";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -255,7 +255,8 @@ export default function AdminBackofficePage() {
 
   const handleLogout = () => {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    sessionStorage.removeItem("siladocs_admin_token");
+    sessionStorage.removeItem("siladocs_admin_basic");
     router.replace("/admin/login");
   };
 
