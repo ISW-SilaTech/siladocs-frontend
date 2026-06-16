@@ -4,7 +4,8 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import Seo from "@/shared/layouts-components/seo/seo";
 import Image from "next/image";
 import Link from "next/link";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Card, Col, Form, Row, Button, InputGroup } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
@@ -15,6 +16,7 @@ import { useRecaptcha } from "@/shared/hooks/useRecaptcha";
 const Cover: React.FC = () => {
     const { register } = useAuth();
     const { getToken } = useRecaptcha();
+    const searchParams = useSearchParams();
 
     const [values, setValues] = useState({
         token: '',
@@ -25,6 +27,13 @@ const Cover: React.FC = () => {
         showPassword: false,
     });
     const [tokenValidated, setTokenValidated] = useState(false);
+
+    useEffect(() => {
+        const codeParam = searchParams.get('code');
+        if (codeParam) {
+            setValues((prev) => ({ ...prev, token: codeParam }));
+        }
+    }, [searchParams]);
     const [isValidating, setIsValidating] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});

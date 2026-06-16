@@ -58,7 +58,7 @@ export default function AdminBackofficePage() {
 
   // Solicitudes de registro
   const [registrationRequests, setRegistrationRequests] = useState<RegistrationRequest[]>([]);
-  const [reviewingId, setReviewingId] = useState<number | null>(null);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<RegistrationRequest | null>(null);
   const [rejectNote, setRejectNote] = useState("");
