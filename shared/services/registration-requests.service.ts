@@ -4,7 +4,7 @@ import adminApi from '@/shared/config/axios-admin';
 export type RequestStatus = 'pending' | 'approved' | 'rejected';
 
 export interface RegistrationRequest {
-  id: number;
+  id: string;
   fullName: string;
   email: string;
   institutionName: string;
@@ -37,7 +37,7 @@ export const RegistrationRequestsService = {
     return response.data;
   },
 
-  approve: async (id: number, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
+  approve: async (id: string, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
     const response = await adminApi.patch<RegistrationRequest>(
       `/registration-requests/${id}/approve`,
       dto ?? {}
@@ -45,7 +45,7 @@ export const RegistrationRequestsService = {
     return response.data;
   },
 
-  reject: async (id: number, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
+  reject: async (id: string, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
     const response = await adminApi.patch<RegistrationRequest>(
       `/registration-requests/${id}/reject`,
       dto ?? {}
