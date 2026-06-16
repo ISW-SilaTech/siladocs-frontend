@@ -34,7 +34,7 @@ export const RegistrationRequestsService = {
 
   list: async (): Promise<RegistrationRequest[]> => {
     const response = await adminApi.get<RegistrationRequest[]>('/registration-requests');
-    return response.data;
+    return response.data.map((r) => ({ ...r, status: r.status.toLowerCase() as RequestStatus }));
   },
 
   approve: async (id: string, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
@@ -42,7 +42,7 @@ export const RegistrationRequestsService = {
       `/registration-requests/${id}/approve`,
       dto ?? {}
     );
-    return response.data;
+    return { ...response.data, status: response.data.status.toLowerCase() as RequestStatus };
   },
 
   reject: async (id: string, dto?: ReviewRequestDto): Promise<RegistrationRequest> => {
@@ -50,7 +50,7 @@ export const RegistrationRequestsService = {
       `/registration-requests/${id}/reject`,
       dto ?? {}
     );
-    return response.data;
+    return { ...response.data, status: response.data.status.toLowerCase() as RequestStatus };
   },
 
   sendCode: async (id: string): Promise<{ code: string; institutionName: string; expiresAt: string }> => {
