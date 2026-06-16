@@ -69,31 +69,35 @@ export default function AdminBackofficePage() {
 
   const loadData = async () => {
     setLoading(true);
-    try {
-      const [instRes, codesRes, reqRes] = await Promise.all([
-        adminApi.get<Institution[]>('/institutions'),
-        adminApi.get<AccessCode[]>('/access-codes'),
-        RegistrationRequestsService.list().catch(() => [] as RegistrationRequest[]),
-      ]);
-      setInstitutions(instRes.data);
-      setRegistrationRequests(reqRes);
-      setAccessCodes(codesRes.data);
-    } catch (err: any) {
-      const status = err?.response?.status;
-      const msg = err?.response?.data?.message || err?.message || '';
-      if (status === 401 || status === 403) {
-        toast.error(`Sin autorización (${status}): el backend requiere autenticación válida para estas rutas. Contacta al equipo backend.`, { autoClose: 8000 });
-      } else if (status === 404) {
-        toast.error('Rutas de admin no encontradas en el backend (404). Verifica que el backend tenga implementados /institutions y /access-codes.', { autoClose: 8000 });
-      } else if (!status) {
-        toast.error('Error de red: no se pudo alcanzar el servidor. Verifica CORS o que el backend esté activo.', { autoClose: 8000 });
-      } else {
-        toast.error(`Error ${status} al cargar datos: ${msg || 'sin detalle'}`, { autoClose: 8000 });
-      }
-      console.error('[Backoffice] loadData error:', { status, msg, err });
-    } finally {
-      setLoading(false);
+    const [instRes, codesRes, reqRes] = await Promise.allSettled([
+      adminApi.get<Institution[]>('/institutions'),
+      adminApi.get<AccessCode[]>('/access-codes'),
+      RegistrationRequestsService.list(),
+    ]);
+
+    if (instRes.status === 'fulfilled') {
+      setInstitutions(instRes.value.data);
+    } else {
+      const s = (instRes.reason as any)?.response?.status;
+      console.error('[Backoffice] /institutions error:', instRes.reason);
+      toast.warn(`Instituciones no disponibles (${s ?? 'red'})`, { autoClose: 5000 });
     }
+
+    if (codesRes.status === 'fulfilled') {
+      setAccessCodes(codesRes.value.data);
+    } else {
+      const s = (codesRes.reason as any)?.response?.status;
+      console.error('[Backoffice] /access-codes error:', codesRes.reason);
+      toast.warn(`Códigos de acceso no disponibles (${s ?? 'red'}) — error del servidor`, { autoClose: 5000 });
+    }
+
+    if (reqRes.status === 'fulfilled') {
+      setRegistrationRequests(reqRes.value);
+    } else {
+      console.error('[Backoffice] /registration-requests error:', reqRes.reason);
+    }
+
+    setLoading(false);
   };
 
   const handleChange = (e: React.ChangeEvent<any>) => {
