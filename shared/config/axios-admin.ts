@@ -8,13 +8,19 @@ const adminApi = axios.create({
 
 adminApi.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
-    // Prefer Bearer token if present (future JWT-based admin auth)
-    const bearer = sessionStorage.getItem('siladocs_admin_token');
-    if (bearer) {
-      config.headers.Authorization = `Bearer ${bearer}`;
+    // 1. Admin JWT (future use)
+    const adminBearer = sessionStorage.getItem('siladocs_admin_token');
+    if (adminBearer) {
+      config.headers.Authorization = `Bearer ${adminBearer}`;
       return config;
     }
-    // Fallback: HTTP Basic Auth with encoded admin credentials
+    // 2. Regular user JWT from localStorage (same endpoints work for logged-in admins)
+    const userBearer = localStorage.getItem('accessToken');
+    if (userBearer) {
+      config.headers.Authorization = `Bearer ${userBearer}`;
+      return config;
+    }
+    // 3. HTTP Basic Auth fallback
     const basic = sessionStorage.getItem('siladocs_admin_basic');
     if (basic) {
       config.headers.Authorization = `Basic ${basic}`;

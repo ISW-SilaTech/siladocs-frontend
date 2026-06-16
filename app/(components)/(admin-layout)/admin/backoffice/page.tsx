@@ -78,8 +78,19 @@ export default function AdminBackofficePage() {
       setInstitutions(instRes.data);
       setRegistrationRequests(reqRes);
       setAccessCodes(codesRes.data);
-    } catch (err) {
-      toast.error('Error al cargar los datos. Verifica la conexión con el servidor.');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const msg = err?.response?.data?.message || err?.message || '';
+      if (status === 401 || status === 403) {
+        toast.error(`Sin autorización (${status}): el backend requiere autenticación válida para estas rutas. Contacta al equipo backend.`, { autoClose: 8000 });
+      } else if (status === 404) {
+        toast.error('Rutas de admin no encontradas en el backend (404). Verifica que el backend tenga implementados /institutions y /access-codes.', { autoClose: 8000 });
+      } else if (!status) {
+        toast.error('Error de red: no se pudo alcanzar el servidor. Verifica CORS o que el backend esté activo.', { autoClose: 8000 });
+      } else {
+        toast.error(`Error ${status} al cargar datos: ${msg || 'sin detalle'}`, { autoClose: 8000 });
+      }
+      console.error('[Backoffice] loadData error:', { status, msg, err });
     } finally {
       setLoading(false);
     }
