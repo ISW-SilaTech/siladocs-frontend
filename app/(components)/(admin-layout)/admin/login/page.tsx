@@ -6,9 +6,8 @@ import { Card, Col, Form, Row, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { toast, ToastContainer } from "react-toastify";
+import adminApi, { ADMIN_TOKEN_KEY } from "@/shared/config/axios-admin";
 
-const ADMIN_EMAIL = "superadmin@siladocs.com";
-const ADMIN_PASSWORD = "SilaTech2025*";
 const ADMIN_SESSION_KEY = "siladocs_admin_session";
 
 export default function AdminLoginPage() {
@@ -33,14 +32,21 @@ export default function AdminLoginPage() {
     if (!validate()) return;
 
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    try {
+      const res = await adminApi.post<{ accessToken: string }>('/auth/login', { email, password });
+      const token = res.data?.accessToken;
+      if (!token) throw new Error('No token received');
+      sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
       sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
       toast.success("Acceso concedido", { autoClose: 1000 });
       setTimeout(() => router.replace("/admin/backoffice"), 900);
-    } else {
-      toast.error("Credenciales incorrectas. Verifica tu correo y contraseña.");
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 401 || status === 403) {
+        toast.error("Credenciales incorrectas. Verifica tu correo y contraseña.");
+      } else {
+        toast.error("No se pudo conectar con el servidor. Inténtalo nuevamente.");
+      }
       setLoading(false);
     }
   };
