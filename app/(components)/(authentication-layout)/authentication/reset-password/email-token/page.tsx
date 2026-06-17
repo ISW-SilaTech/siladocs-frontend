@@ -44,7 +44,7 @@ const Cover: React.FC = () => {
             setStep("code");
         } catch (error: any) {
             setApiError(true);
-            setApiMessage(error?.response?.data?.message || "Error al conectar con el servidor. Intenta de nuevo.");
+            setApiMessage(error?.response?.data?.error || error?.response?.data?.message || "Error al conectar con el servidor. Intenta de nuevo.");
         } finally {
             setIsLoading(false);
         }
@@ -64,7 +64,7 @@ const Cover: React.FC = () => {
             setStep("password");
         } catch (error: any) {
             setApiError(true);
-            setApiMessage(error?.response?.data?.message || "Código inválido o expirado. Verifica e intenta de nuevo.");
+            setApiMessage(error?.response?.data?.error || error?.response?.data?.message || "Código inválido o expirado. Verifica e intenta de nuevo.");
         } finally {
             setIsLoading(false);
         }
@@ -85,7 +85,7 @@ const Cover: React.FC = () => {
             setTimeout(() => router.push("/authentication/sign-in/cover"), 1800);
         } catch (error: any) {
             setApiError(true);
-            setApiMessage(error?.response?.data?.message || "No se pudo restablecer la contraseña. Intenta de nuevo.");
+            setApiMessage(error?.response?.data?.error || error?.response?.data?.message || "No se pudo restablecer la contraseña. Intenta de nuevo.");
             setIsLoading(false);
         }
     };
