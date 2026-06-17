@@ -398,7 +398,6 @@ export default function AdminBackofficePage() {
               { label: "Solicitudes Pendientes", value: pendingRequests.length, icon: "ri-time-line", color: "#f59e0b" },
               { label: "Códigos Disponibles", value: availableCodes.length, icon: "ri-key-line", color: "#10b981" },
               { label: "Códigos Utilizados", value: usedCodes.length, icon: "ri-checkbox-circle-line", color: "#6b7280" },
-              { label: "Códigos Expirados", value: expiredCodes.length, icon: "ri-time-line", color: "#ef4444" },
             ].map((stat) => (
               <Col xl={3} md={6} key={stat.label}>
                 <Card className="border-0 shadow-sm h-100">
