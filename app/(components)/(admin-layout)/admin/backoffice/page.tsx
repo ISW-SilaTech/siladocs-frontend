@@ -313,8 +313,10 @@ export default function AdminBackofficePage() {
     router.replace("/admin/login");
   };
 
-  const availableCodes = accessCodes.filter((c) => !c.used);
+  const isCodeExpired = (c: AccessCode) => !!c.expiresAt && new Date(c.expiresAt).getTime() < Date.now();
+  const availableCodes = accessCodes.filter((c) => !c.used && !isCodeExpired(c));
   const usedCodes = accessCodes.filter((c) => c.used);
+  const expiredCodes = accessCodes.filter((c) => !c.used && isCodeExpired(c));
   const pendingRequests = registrationRequests.filter((r) => r.status === 'pending');
   const reviewedRequests = registrationRequests.filter((r) => r.status !== 'pending');
 
@@ -396,6 +398,7 @@ export default function AdminBackofficePage() {
               { label: "Solicitudes Pendientes", value: pendingRequests.length, icon: "ri-time-line", color: "#f59e0b" },
               { label: "Códigos Disponibles", value: availableCodes.length, icon: "ri-key-line", color: "#10b981" },
               { label: "Códigos Utilizados", value: usedCodes.length, icon: "ri-checkbox-circle-line", color: "#6b7280" },
+              { label: "Códigos Expirados", value: expiredCodes.length, icon: "ri-time-line", color: "#ef4444" },
             ].map((stat) => (
               <Col xl={3} md={6} key={stat.label}>
                 <Card className="border-0 shadow-sm h-100">
@@ -503,15 +506,18 @@ export default function AdminBackofficePage() {
                               </code>
                             </td>
                             <td>
-                              <Badge bg={ac.used ? "secondary" : "success"} className="fw-normal">
-                                {ac.used ? "Utilizado" : "Disponible"}
+                              <Badge
+                                bg={ac.used ? "secondary" : isCodeExpired(ac) ? "danger" : "success"}
+                                className="fw-normal"
+                              >
+                                {ac.used ? "Utilizado" : isCodeExpired(ac) ? "Expirado" : "Disponible"}
                               </Badge>
                             </td>
                             <td className="text-muted" style={{ fontSize: "0.85rem" }}>
                               {new Date(ac.createdAt).toLocaleDateString("es-PE")}
                             </td>
                             <td>
-                              {!ac.used && (
+                              {!ac.used && !isCodeExpired(ac) && (
                                 <Button variant="ghost" size="sm" className="text-muted p-1" onClick={() => copyCode(ac.code)} title="Copiar código">
                                   <i className="ri-clipboard-line fs-5"></i>
                                 </Button>
