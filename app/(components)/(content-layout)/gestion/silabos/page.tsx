@@ -49,7 +49,10 @@ const statusLabel: Record<string, string> = {
 
 const SilabosPage: React.FC = () => {
     const { user } = useAuth();
-    const isAdmin = user?.role === "ROLE_ADMIN";
+    // HU0010: solo el rol "Administrador Académico" puede eliminar sílabos
+    // (matriz de permisos en GUIA_VALIDADORES.md). El backend re-valida este
+    // mismo rol en DELETE /syllabi/{id}; este check solo controla la UI.
+    const canDeleteSyllabus = user?.role === "Administrador Académico";
 
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [courses, setCourses] = useState<CourseOption[]>([]);
@@ -296,10 +299,19 @@ const SilabosPage: React.FC = () => {
         setDeletingId(id);
         try {
             await SyllabiService.delete(id);
-            toast.success("Sílabo eliminado correctamente.");
+            toast.success("Sílabo eliminado. Su registro en blockchain se conserva para auditoría.");
             await fetchSyllabi();
-        } catch {
-            toast.error("Error al eliminar el sílabo.");
+        } catch (err: any) {
+            const status = err?.response?.status;
+            if (status === 403) {
+                toast.error("No tiene permisos para eliminar sílabos. Solo el rol Administrador Académico puede hacerlo.");
+            } else if (status === 404) {
+                toast.error("El sílabo ya no existe.");
+            } else if (status === 409) {
+                toast.error("El sílabo ya había sido eliminado anteriormente.");
+            } else {
+                toast.error("Error al eliminar el sílabo.");
+            }
         } finally {
             setDeletingId(null);
             closeDeleteConfirm();
@@ -485,7 +497,7 @@ const SilabosPage: React.FC = () => {
                                                         >
                                                             {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
                                                         </button>
-                                                        {isAdmin && (
+                                                        {canDeleteSyllabus && (
                                                             <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar sílabo" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
                                                                 {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
                                                             </button>
@@ -1010,7 +1022,11 @@ const SilabosPage: React.FC = () => {
                 </Modal.Header>
                 <Modal.Body>
                     <p>¿Está seguro de que desea eliminar este sílabo?</p>
-                    <p className="text-muted small">Esta acción no se puede deshacer. El sílabo será eliminado permanentemente de la base de datos.</p>
+                    <p className="text-muted small mb-0">
+                        Dejará de aparecer en el listado activo. Su archivo, hash y versiones
+                        ya registradas en blockchain <strong>se conservan</strong> para mantener
+                        la auditoría e historial de cambios.
+                    </p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="secondary" onClick={closeDeleteConfirm} disabled={deletingId !== null}>
