@@ -7,7 +7,7 @@ import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar } from "react-bootstrap";
+import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar, Button } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { SyllabiService, Syllabus, SyllabusUploadResponse } from "@/shared/services/syllabi.service";
@@ -16,6 +16,7 @@ import { GoogleDriveOAuthService, GoogleDriveFile } from "@/shared/services/goog
 import { OneDriveOAuthService, OneDriveFile } from "@/shared/services/onedrive-oauth.service";
 import { BlockchainEventsService, BlockchainEvent, BlockchainEventsClient } from "@/shared/services/blockchain-events.service";
 import api from "@/shared/config/axios";
+import { useAuth } from "@/shared/contextapi";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -47,10 +48,17 @@ const statusLabel: Record<string, string> = {
 };
 
 const SilabosPage: React.FC = () => {
+    const { user } = useAuth();
+    const isAdmin = user?.role === "ROLE_ADMIN";
+
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [courses, setCourses] = useState<CourseOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Delete confirmation modal state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
     // Upload modal
     const [showModal, setShowModal] = useState(false);
@@ -272,17 +280,29 @@ const SilabosPage: React.FC = () => {
     };
 
     // --- Delete handler ---
-    const handleDelete = async (id: number) => {
-        if (!window.confirm("¿Está seguro de que desea eliminar este sílabo?")) return;
+    const openDeleteConfirm = (id: number) => {
+        setDeleteConfirmId(id);
+        setShowDeleteConfirm(true);
+    };
+
+    const closeDeleteConfirm = () => {
+        setShowDeleteConfirm(false);
+        setDeleteConfirmId(null);
+    };
+
+    const handleDelete = async () => {
+        if (deleteConfirmId === null) return;
+        const id = deleteConfirmId;
         setDeletingId(id);
         try {
             await SyllabiService.delete(id);
-            toast.success("Sílabo eliminado.");
+            toast.success("Sílabo eliminado correctamente.");
             await fetchSyllabi();
         } catch {
             toast.error("Error al eliminar el sílabo.");
         } finally {
             setDeletingId(null);
+            closeDeleteConfirm();
         }
     };
 
@@ -465,9 +485,11 @@ const SilabosPage: React.FC = () => {
                                                         >
                                                             {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
                                                         </button>
-                                                        <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar" onClick={() => handleDelete(s.id)} disabled={deletingId === s.id}>
-                                                            {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
-                                                        </button>
+                                                        {isAdmin && (
+                                                            <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar sílabo" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
+                                                                {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -978,6 +1000,35 @@ const SilabosPage: React.FC = () => {
                             : <><i className="ri-download-cloud-line me-1"></i>Importar a Azure Blob Storage</>
                         }
                     </SpkButton>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal show={showDeleteConfirm} onHide={closeDeleteConfirm} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Eliminar sílabo</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p>¿Está seguro de que desea eliminar este sílabo?</p>
+                    <p className="text-muted small">Esta acción no se puede deshacer. El sílabo será eliminado permanentemente de la base de datos.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeDeleteConfirm} disabled={deletingId !== null}>
+                        Cancelar
+                    </Button>
+                    <Button variant="danger" onClick={handleDelete} disabled={deletingId !== null}>
+                        {deletingId !== null ? (
+                            <>
+                                <Spinner as="span" animation="border" size="sm" className="me-2" />
+                                Eliminando...
+                            </>
+                        ) : (
+                            <>
+                                <i className="ri-delete-bin-line me-1"></i>
+                                Eliminar sílabo
+                            </>
+                        )}
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </Fragment>
