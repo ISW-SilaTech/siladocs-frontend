@@ -11,10 +11,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    // Los endpoints de autenticación son públicos — no enviar token aunque exista
+    // Endpoints de autenticación que son públicos — no enviar token aunque exista
     // en storage (evita que un token expirado cause 401 en validate-code, login, etc.)
-    const isAuthEndpoint = (config.url || '').includes('/auth/');
-    if (!isAuthEndpoint) {
+    // EXCEPTO /auth/change-password que requiere autenticación
+    const publicAuthEndpoints = ['/auth/login', '/auth/register', '/auth/validate-code', '/auth/forgot-password', '/auth/reset-password'];
+    const isPublicAuthEndpoint = publicAuthEndpoints.some(endpoint => (config.url || '').includes(endpoint));
+    const requiresToken = !isPublicAuthEndpoint;
+
+    if (requiresToken) {
       const token = safeStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
