@@ -8,6 +8,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import Seo from "@/shared/layouts-components/seo/seo";
 import { AuthService } from "@/shared/services/auth.service";
+import { extractErrorMessage } from "@/shared/utils/errors";
 
 // ── Step indicator ────────────────────────────────────────────────────────────
 
@@ -70,7 +71,7 @@ const getStrength = (pw: string): { score: number; label: string; color: string 
 
 const humanizeError = (err: any, step: Step): string => {
     const status: number | undefined = err?.response?.status;
-    const msg: string = (err?.response?.data?.message || "").toLowerCase();
+    const msg: string = (extractErrorMessage(err, "")).toLowerCase();
 
     if (status === undefined || err?.code === "ERR_NETWORK") {
         return "No se pudo conectar con el servidor. Verifica tu conexión a internet.";
@@ -91,10 +92,10 @@ const humanizeError = (err: any, step: Step): string => {
         return "No se pudo verificar el código. Inténtalo de nuevo.";
     }
     if (step === "password") {
-        if (status === 400) return err?.response?.data?.message || "La contraseña no cumple los requisitos mínimos.";
+        if (status === 400) return extractErrorMessage(err, "La contraseña no cumple los requisitos mínimos.");
         return "No se pudo actualizar la contraseña. Inténtalo de nuevo.";
     }
-    return err?.response?.data?.message || "Ocurrió un error inesperado. Inténtalo de nuevo.";
+    return extractErrorMessage(err, "Ocurrió un error inesperado. Inténtalo de nuevo.");
 };
 
 // ── Page ─────────────────────────────────────────────────────────────────────

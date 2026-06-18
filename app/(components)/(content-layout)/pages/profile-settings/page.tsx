@@ -128,7 +128,7 @@ const ProfileSettings: React.FC = () => {
             toast.success("Contraseña cambiada exitosamente.");
             resetPasswordForm();
         } catch (error: any) {
-            const msg = error?.response?.data?.error || error?.response?.data?.message || "Error al cambiar la contraseña.";
+            const msg = extractErrorMessage(error, "Error al cambiar la contraseña.");
             setPasswordError(msg);
             toast.error(msg);
         } finally {
