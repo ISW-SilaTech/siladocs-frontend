@@ -28,8 +28,11 @@ const mapToTrace = (s: any): SyllabusTrace => {
 };
 
 export const LedgerService = {
-  getAllSyllabus: async (): Promise<SyllabusTrace[]> => {
-    const response = await api.get<any[]>('/syllabi');
+  getAllSyllabus: async (includeDeleted: boolean = false): Promise<SyllabusTrace[]> => {
+    // Endpoint de auditoría: retorna incluso sílabos eliminados para verificar integridad blockchain.
+    // Requiere rol "Administrador Académico".
+    const endpoint = includeDeleted ? '/syllabi/audit/all' : '/syllabi';
+    const response = await api.get<any[]>(endpoint);
     return response.data.map(mapToTrace);
   },
 

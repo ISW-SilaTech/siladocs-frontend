@@ -24,7 +24,9 @@ const ResumenTab: React.FC = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await LedgerService.getAllSyllabus();
+        // Obtener todos los sílabos incluyendo eliminados para métricas completas de auditoría.
+        // El endpoint requiere rol "Administrador Académico".
+        const data = await LedgerService.getAllSyllabus(true);
         setSyllabi(data);
 
         const totalSyllabi = data.length;

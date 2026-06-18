@@ -18,7 +18,9 @@ const TrazabilidadTab: React.FC = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const data = await LedgerService.getAllSyllabus();
+        // Obtener todos los sílabos incluyendo eliminados para trazabilidad completa.
+        // El endpoint requiere rol "Administrador Académico".
+        const data = await LedgerService.getAllSyllabus(true);
         setCourses(data);
       } catch (error) {
         console.error("Error fetching courses:", error);

@@ -23,7 +23,9 @@ const AuditoriaTab: React.FC = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        const data = await LedgerService.getAllSyllabus();
+        // Obtener todos los sílabos incluyendo eliminados para auditoría completa.
+        // El endpoint requiere rol "Administrador Académico".
+        const data = await LedgerService.getAllSyllabus(true);
         setRows(data.map((s) => ({ syllabus: s, verified: null, block: null, checking: false })));
       } catch (err) {
         console.error("Error cargando sílabos para auditoría:", err);
