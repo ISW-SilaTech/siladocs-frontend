@@ -34,7 +34,7 @@ export const ProfileService = {
   },
 
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
-    await api.post('/profile/change-password', data);
+    await api.post('/auth/change-password', data);
   },
 
   uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
