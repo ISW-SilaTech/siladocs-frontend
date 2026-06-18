@@ -11,9 +11,14 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = safeStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Los endpoints de autenticación son públicos — no enviar token aunque exista
+    // en storage (evita que un token expirado cause 401 en validate-code, login, etc.)
+    const isAuthEndpoint = (config.url || '').includes('/auth/');
+    if (!isAuthEndpoint) {
+      const token = safeStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },

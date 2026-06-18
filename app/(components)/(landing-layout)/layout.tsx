@@ -1,5 +1,4 @@
 "use client"
-import Backtotop from '@/shared/layouts-components/backtotop/backtotop';
 import React, { Fragment, useEffect, useRef } from 'react'
 
 const layout = ({ children }: any) => {
@@ -46,7 +45,6 @@ const layout = ({ children }: any) => {
       <div>
         {children}
       </div>
-      <Backtotop />
     </Fragment>
   )
 }

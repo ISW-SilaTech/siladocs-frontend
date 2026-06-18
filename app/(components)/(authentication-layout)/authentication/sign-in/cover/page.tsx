@@ -9,9 +9,11 @@ import { Card, Col, Form, Row } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import { motion } from "framer-motion";
 import { useAuth } from "@/shared/contextapi";
+import RegistrationRequestModal from "@/shared/layouts-components/registration-request-modal/registration-request-modal";
 
 const Cover: React.FC = () => {
     const { login } = useAuth();
+    const [showRequestAccessModal, setShowRequestAccessModal] = useState(false);
     const [values, setValues] = useState({
         email: "",
         password: "",
@@ -177,10 +179,21 @@ const Cover: React.FC = () => {
                                             </SpkButton>
                                         </div> */}
                                         <div className="text-center mt-3 fw-medium">
-                                            ¿No tienes una cuenta?{" "}
+                                            ¿Tienes un código de acceso?{" "}
                                             <Link scroll={false} href="/authentication/sign-up/cover/" className="text-primary animated-underline">
                                                 Regístrate
                                             </Link>
+                                        </div>
+                                        <div className="text-center mt-2" style={{ fontSize: "0.85rem" }}>
+                                            <span className="text-muted">¿Aún no tienes acceso?{" "}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowRequestAccessModal(true)}
+                                                className="text-primary animated-underline"
+                                                style={{ fontSize: "0.85rem", border: "none", background: "none", padding: 0, cursor: "pointer" }}
+                                            >
+                                                Solicitar acceso
+                                            </button>
                                         </div>
                                     </Card.Body>
                                 </Card>
@@ -215,6 +228,7 @@ const Cover: React.FC = () => {
                     </Col>
                 </Row>
                 <ToastContainer />
+                <RegistrationRequestModal show={showRequestAccessModal} onHide={() => setShowRequestAccessModal(false)} />
             </motion.div>
         </Fragment>
     );

@@ -618,23 +618,7 @@ const Header = () => {
                                     <li>
                                         <ul className="list-unstyled mb-0 sub-list">
                                             <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings/"><i className="ti ti-user-circle me-2 fs-18"></i>Ver Perfil</Link>
-                                            </li>
-                                            <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings"><i className="ti ti-settings-cog me-2 fs-18"></i>Configuración</Link>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li>
-                                        <ul className="list-unstyled mb-0 sub-list">
-                                            <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/contacto"><i className="ti ti-lifebuoy me-2 fs-18"></i>Soporte</Link>
-                                            </li>
-                                            <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/core/trazabilidad"><i className="ti ti-bolt me-2 fs-18"></i>Registros</Link>
-                                            </li>
-                                            <li>
-                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/core/blockchain"><i className="ti ti-calendar me-2 fs-18"></i>Eventos</Link>
+                                                <Link scroll={false} className="dropdown-item d-flex align-items-center" href="/pages/profile-settings/"><i className="ti ti-settings-cog me-2 fs-18"></i>Configuración de Perfil</Link>
                                             </li>
                                         </ul>
                                     </li>

@@ -6,9 +6,6 @@ import { Card, Col, Form, Row, Spinner } from "react-bootstrap";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { toast, ToastContainer } from "react-toastify";
-
-const ADMIN_EMAIL = "superadmin@siladocs.com";
-const ADMIN_PASSWORD = "SilaTech2025*";
 const ADMIN_SESSION_KEY = "siladocs_admin_session";
 
 export default function AdminLoginPage() {
@@ -35,8 +32,14 @@ export default function AdminLoginPage() {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 600));
 
+    const ADMIN_EMAIL = "superadmin@siladocs.com";
+    const ADMIN_PASSWORD = "SilaTech2025*";
+
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
       sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+      // Guardar credenciales codificadas para que adminApi las use como Basic Auth
+      const encoded = btoa(`${email}:${password}`);
+      sessionStorage.setItem("siladocs_admin_basic", encoded);
       toast.success("Acceso concedido", { autoClose: 1000 });
       setTimeout(() => router.replace("/admin/backoffice"), 900);
     } else {

@@ -128,7 +128,7 @@ const ProfileSettings: React.FC = () => {
             toast.success("Contraseña cambiada exitosamente.");
             resetPasswordForm();
         } catch (error: any) {
-            const msg = extractErrorMessage(error, "Error al cambiar la contraseña.");
+            const msg = error?.response?.data?.error || error?.response?.data?.message || "Error al cambiar la contraseña.";
             setPasswordError(msg);
             toast.error(msg);
         } finally {
@@ -414,11 +414,11 @@ const ProfileSettings: React.FC = () => {
                                         <div className="position-relative">
                                             <Form.Control
                                                 type={passwordVisibility.new ? 'text' : 'password'}
-                                                placeholder="Mínimo 8 caracteres"
+                                                placeholder="Mínimo 6 caracteres"
                                                 isInvalid={!!errors.newPassword}
                                                 {...register('newPassword', {
                                                     required: 'Requerido',
-                                                    minLength: { value: 8, message: 'Mínimo 8 caracteres' },
+                                                    minLength: { value: 6, message: 'Mínimo 6 caracteres' },
                                                 })}
                                                 disabled={isSavingPassword}
                                             />
