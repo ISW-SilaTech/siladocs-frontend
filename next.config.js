@@ -9,6 +9,12 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   basePath: "",
+  async redirects() {
+    return [
+      { source: "/core/trazabilidad", destination: "/core/blockchain", permanent: true },
+      { source: "/core/auditoria", destination: "/core/blockchain", permanent: true },
+    ];
+  },
 };
 
 module.exports = nextConfig;
