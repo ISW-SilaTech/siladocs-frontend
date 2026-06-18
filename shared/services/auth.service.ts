@@ -1,5 +1,6 @@
 import api from '@/shared/config/axios';
 import { safeStorage } from '@/shared/utils/safeStorage';
+import { extractErrorMessage } from '@/shared/utils/errors';
 
 export interface ValidateCodeResponse {
   institutionName: string;
@@ -40,10 +41,9 @@ export const AuthService = {
       const response = await api.get<ValidateCodeResponse>(`/auth/validate-code?code=${encodeURIComponent(code)}`);
       return response.data;
     } catch (error: any) {
-      // Re-throw with enhanced error context
       throw {
         ...error,
-        message: error?.response?.data?.message || error?.message || 'Error validating access code',
+        message: extractErrorMessage(error, 'Error validating access code'),
         statusCode: error?.response?.status,
       };
     }

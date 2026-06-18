@@ -5,6 +5,7 @@ import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap"
 import { useRouter } from "next/navigation";
 import Seo from "@/shared/layouts-components/seo/seo";
 import api from "@/shared/config/axios";
+import { extractErrorMessage } from "@/shared/utils/errors";
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
       setSuccess("Código de recuperación enviado a tu email");
       setStep("code");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al enviar el código");
+      setError(extractErrorMessage(err, "Error al enviar el código"));
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ export default function ForgotPassword() {
       setSuccess("Código verificado correctamente");
       setStep("password");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Código inválido");
+      setError(extractErrorMessage(err, "Código inválido"));
     } finally {
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export default function ForgotPassword() {
       setSuccess("Contraseña actualizada exitosamente");
       setTimeout(() => router.push("/authentication/sign-in/cover"), 2000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al resetear la contraseña");
+      setError(extractErrorMessage(err, "Error al resetear la contraseña"));
     } finally {
       setLoading(false);
     }

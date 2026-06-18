@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { toast, ToastContainer } from "react-toastify"
 import { useAuth } from "@/shared/contextapi"
 import { ProfileService, UserProfile } from "@/shared/services/profile.service"
+import { extractErrorMessage } from "@/shared/utils/errors"
 import Link from "next/link"
 
 interface PasswordFormValues {
@@ -127,7 +128,7 @@ const ProfileSettings: React.FC = () => {
             toast.success("Contraseña cambiada exitosamente.");
             resetPasswordForm();
         } catch (error: any) {
-            const msg = error?.response?.data?.message || error?.message || "Error al cambiar la contraseña.";
+            const msg = extractErrorMessage(error, "Error al cambiar la contraseña.");
             setPasswordError(msg);
             toast.error(msg);
         } finally {

@@ -5,6 +5,7 @@ import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap"
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import ConfigService from "@/shared/services/config.service";
+import { extractErrorMessage } from "@/shared/utils/errors";
 
 export default function SystemConfig() {
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ export default function SystemConfig() {
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Error al guardar la configuración");
+      setError(extractErrorMessage(err, "Error al guardar la configuración"));
     }
   };
 
