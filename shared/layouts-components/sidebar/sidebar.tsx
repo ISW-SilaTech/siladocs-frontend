@@ -838,7 +838,7 @@ const Sidebar = () => {
 							{/* <!-- End::slide --> */}
 							{/* <!-- Start::slide --> */}
 							<li className="slide">
-								<Link href="/pages/profile" className="side-menu__item p-1 rounded-circle mb-0">
+								<Link href="/pages/profile-settings" className="side-menu__item p-1 rounded-circle mb-0">
 									<span className="avatar avatar-md avatar-rounded overflow-hidden">
 										{user?.avatarUrl ? (
 											<Image fill src={user.avatarUrl} alt="Avatar" className="" style={{ objectFit: 'cover', borderRadius: '50%' }} />
