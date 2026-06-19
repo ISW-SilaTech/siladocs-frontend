@@ -839,13 +839,13 @@ const Sidebar = () => {
 							{/* <!-- Start::slide --> */}
 							<li className="slide">
 								<Link href="/pages/profile" className="side-menu__item p-1 rounded-circle mb-0">
-									<span className="avatar avatar-md avatar-rounded">
+									<span className="avatar avatar-md avatar-rounded overflow-hidden">
 										{user?.avatarUrl ? (
-											<Image fill src={user.avatarUrl} alt="Avatar" className="" style={{ objectFit: 'cover' }} />
+											<Image fill src={user.avatarUrl} alt="Avatar" className="" style={{ objectFit: 'cover', borderRadius: '50%' }} />
 										) : (
 											<span
 												className="d-flex align-items-center justify-content-center w-100 h-100 bg-primary text-white"
-												style={{ fontSize: '16px' }}
+												style={{ fontSize: '16px', borderRadius: '50%' }}
 											>
 												<i className="ri-user-fill"></i>
 											</span>
