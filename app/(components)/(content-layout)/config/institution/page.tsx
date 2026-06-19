@@ -2,12 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+import Image from "next/image";
 import Seo from "@/shared/layouts-components/seo/seo";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import ConfigService from "@/shared/services/config.service";
 import { extractErrorMessage } from "@/shared/utils/errors";
+import UploadAvatarModal from "@/shared/components/upload-avatar-modal";
+import { useAuth } from "@/shared/contextapi";
 
 export default function InstitutionConfig() {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "Universidad Peruana de Ciencias",
     domain: "siladocs.edu.pe",
@@ -19,6 +24,7 @@ export default function InstitutionConfig() {
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   useEffect(() => {
     loadConfig();
@@ -66,6 +72,49 @@ export default function InstitutionConfig() {
       <Container className="py-5">
         <Row className="justify-content-center">
           <Col lg={8}>
+            {/* Avatar Section */}
+            <Card className="custom-card shadow-sm border-0 mb-4">
+              <Card.Body className="p-4">
+                <div className="text-center">
+                  <div className="mb-3">
+                    {user?.avatarUrl ? (
+                      <Image
+                        src={user.avatarUrl}
+                        alt="Avatar"
+                        width={120}
+                        height={120}
+                        className="rounded-circle border border-3 border-primary"
+                        style={{ objectFit: "cover" }}
+                      />
+                    ) : (
+                      <div
+                        className="rounded-circle bg-primary d-flex align-items-center justify-content-center mx-auto"
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          fontSize: "48px",
+                          color: "white",
+                        }}
+                      >
+                        <i className="ri-user-fill"></i>
+                      </div>
+                    )}
+                  </div>
+                  <h5 className="fw-bold mb-1">{user?.fullName || "Usuario"}</h5>
+                  <p className="text-muted mb-3">{user?.email}</p>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => setShowAvatarModal(true)}
+                    className="d-flex align-items-center gap-2 mx-auto"
+                  >
+                    <i className="ri-image-edit-line"></i>
+                    Cambiar Foto
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+
             <Card className="custom-card shadow-sm border-0">
               <Card.Body className="p-5">
                 <h4 className="fw-bold mb-4">
@@ -151,6 +200,12 @@ export default function InstitutionConfig() {
           </Col>
         </Row>
       </Container>
+
+      <UploadAvatarModal
+        show={showAvatarModal}
+        onHide={() => setShowAvatarModal(false)}
+        currentAvatarUrl={user?.avatarUrl}
+      />
     </>
   );
 }

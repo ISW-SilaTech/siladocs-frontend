@@ -9,6 +9,8 @@ interface User {
   id: string;
   email: string;
   role: string;
+  avatarUrl?: string;
+  fullName?: string;
 }
 
 interface Institution {
@@ -28,6 +30,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (data: RegisterRequest) => Promise<void>;
+  updateUserAvatar: (avatarUrl: string) => void;
 }
 
 const AUTH_DATA_KEY = "authUserData";
@@ -98,9 +101,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push("/authentication/sign-in/cover");
   };
 
+  const updateUserAvatar = (avatarUrl: string) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, avatarUrl };
+      safeStorage.setItem(AUTH_DATA_KEY, JSON.stringify({ user: updated, institution }));
+      return updated;
+    });
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, institution, loading, login, logout, register }}
+      value={{ user, institution, loading, login, logout, register, updateUserAvatar }}
     >
       {children}
     </AuthContext.Provider>

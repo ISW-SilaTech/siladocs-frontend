@@ -11,9 +11,10 @@ import { usePathname } from 'next/navigation';
 import { basePath } from '@/next.config';
 import Image from 'next/image';
 import SpkTooltips from '@/shared/@spk-reusable-components/general-reusable/reusable-uielements/spk-tooltips';
+import { useAuth } from '@/shared/contextapi';
 
 const Sidebar = () => {
-
+	const { user } = useAuth();
 	let [variable, setVariable] = useState(getState());
 	const local_varaiable = variable;
 
@@ -839,7 +840,16 @@ const Sidebar = () => {
 							<li className="slide">
 								<Link href="/pages/profile" className="side-menu__item p-1 rounded-circle mb-0">
 									<span className="avatar avatar-md avatar-rounded">
-										<Image fill src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/faces/10.jpg`} alt="" className="" />
+										{user?.avatarUrl ? (
+											<Image fill src={user.avatarUrl} alt="Avatar" className="" style={{ objectFit: 'cover' }} />
+										) : (
+											<span
+												className="d-flex align-items-center justify-content-center w-100 h-100 bg-primary text-white"
+												style={{ fontSize: '16px' }}
+											>
+												<i className="ri-user-fill"></i>
+											</span>
+										)}
 									</span>
 								</Link>
 							</li>

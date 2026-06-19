@@ -587,8 +587,14 @@ const Header = () => {
                             {/* <!-- Start::header-link|dropdown-toggle --> */}
 
                             <Dropdown.Toggle as="a" variant='' href="#!" className="header-link dropdown-toggle" id="mainHeaderProfile" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
-                                <div>
-                                    <Image width={36} height={36} src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/faces/12.jpg`} alt="img" className="header-link-icon" />
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {user?.avatarUrl ? (
+                                        <Image width={36} height={36} src={user.avatarUrl} alt="img" className="header-link-icon" style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                                    ) : (
+                                        <span style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#4767ed', color: 'white', fontSize: '18px' }}>
+                                            <i className="ri-user-fill"></i>
+                                        </span>
+                                    )}
                                 </div>
                             </Dropdown.Toggle>
 
@@ -603,12 +609,18 @@ const Header = () => {
                                 <div className="p-3">
                                     <div className="d-flex align-items-start gap-2">
                                         <div className="lh-1">
-                                            <span className="avatar avatar-sm bg-primary-transparent avatar-rounded">
-                                                <Image width={36} height={36} src={`${process.env.NODE_ENV === 'production' ? basePath : ''}/assets/images/faces/12.jpg`} alt="" />
+                                            <span className="avatar avatar-sm avatar-rounded">
+                                                {user?.avatarUrl ? (
+                                                    <Image width={36} height={36} src={user.avatarUrl} alt="Avatar" style={{ objectFit: 'cover' }} />
+                                                ) : (
+                                                    <span className="d-flex align-items-center justify-content-center w-100 h-100 bg-primary text-white">
+                                                        <i className="ri-user-fill" style={{ fontSize: '18px' }}></i>
+                                                    </span>
+                                                )}
                                             </span>
                                         </div>
                                         <div>
-                                            <span className="d-block fw-semibold lh-1">{user?.email?.split('@')[0] || 'Usuario'}</span>
+                                            <span className="d-block fw-semibold lh-1">{user?.fullName || user?.email?.split('@')[0] || 'Usuario'}</span>
                                             <span className="text-muted fs-12">{user?.email || ''}</span>
                                         </div>
                                     </div>
