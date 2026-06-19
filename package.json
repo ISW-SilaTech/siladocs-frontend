@@ -103,6 +103,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.61.0",
     "@types/crypto-js": "^4.2.2",
     "@types/isotope-layout": "^3.0.15",
     "@types/node": "^20",
@@ -113,6 +114,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "i": "^0.3.7",
+    "playwright": "^1.61.0",
     "sass": "^1.86.3",
     "typescript": "^5"
   }
