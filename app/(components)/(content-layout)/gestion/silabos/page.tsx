@@ -17,6 +17,7 @@ import { OneDriveOAuthService, OneDriveFile } from "@/shared/services/onedrive-o
 import { BlockchainEventsService, BlockchainEvent, BlockchainEventsClient } from "@/shared/services/blockchain-events.service";
 import api from "@/shared/config/axios";
 import { useAuth } from "@/shared/contextapi";
+import SyllabusConfirmationModal from "@/shared/components/syllabus-confirmation-modal";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -99,6 +100,15 @@ const SilabosPage: React.FC = () => {
     const [importCourseId, setImportCourseId] = useState("");
     const [isImporting, setIsImporting] = useState(false);
     const [cloudError, setCloudError] = useState<string | null>(null);
+
+    // Confirmation modal (double validation before upload)
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+    const [pendingUploadData, setPendingUploadData] = useState<{
+      courseId: number;
+      courseName: string;
+      courseCode: string;
+      fileName: string;
+    } | null>(null);
 
     const fetchSyllabi = async () => {
         setIsLoading(true); setError(null);
@@ -198,15 +208,33 @@ const SilabosPage: React.FC = () => {
         }
     }, [sseEvents]);
 
-    const handleUpload = async () => {
+    const handleUploadClick = async () => {
         setFormError(null);
         if (!selectedCourseId) { setFormError("Seleccione un curso."); return; }
         if (!selectedFile) { setFormError("Seleccione un archivo."); return; }
+
+        // Find course details
+        const course = courses.find(c => c.id === Number(selectedCourseId));
+        if (!course) { setFormError("Curso no encontrado."); return; }
+
+        // Show confirmation modal
+        setPendingUploadData({
+            courseId: course.id,
+            courseName: course.name,
+            courseCode: course.code,
+            fileName: selectedFile.name,
+        });
+        setShowConfirmationModal(true);
+    };
+
+    const handleUpload = async () => {
+        if (!pendingUploadData || !selectedFile) return;
 
         const sessionId = BlockchainEventsService.newSessionId();
         setSseEvents([]);
         setIsUploading(true);
         setUploadProgress(0);
+        setShowConfirmationModal(false);
 
         // Open SSE connection before sending the file so events arrive in order
         sseClientRef.current?.close();
@@ -225,8 +253,8 @@ const SilabosPage: React.FC = () => {
         });
 
         try {
-            console.log('[DEBUG] Starting upload for course:', selectedCourseId);
-            const result = await SyllabiService.uploadWithSession(Number(selectedCourseId), selectedFile, sessionId);
+            console.log('[DEBUG] Starting upload for course:', pendingUploadData.courseId);
+            const result = await SyllabiService.uploadWithSession(pendingUploadData.courseId, selectedFile, sessionId);
             console.log('[DEBUG] Upload result:', result);
             setUploadProgress(100);
             setUploadResult(result);
@@ -879,7 +907,7 @@ const SilabosPage: React.FC = () => {
                     ) : (
                         <>
                             <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading}>Cancelar</SpkButton>
-                            <SpkButton Customclass="btn btn-primary" onClick={handleUpload} Disabled={isUploading || !selectedFile || !selectedCourseId}>
+                            <SpkButton Customclass="btn btn-primary" onClick={handleUploadClick} Disabled={isUploading || !selectedFile || !selectedCourseId}>
                                 {isUploading
                                     ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Procesando...</>
                                     : <><i className="ri-upload-cloud-2-line me-1"></i>Subir y Registrar en Blockchain</>
@@ -889,6 +917,22 @@ const SilabosPage: React.FC = () => {
                     )}
                 </Modal.Footer>
             </Modal>
+
+            {/* ── Syllabus Confirmation Modal ── */}
+            {pendingUploadData && (
+                <SyllabusConfirmationModal
+                    show={showConfirmationModal}
+                    courseName={pendingUploadData.courseName}
+                    courseCode={pendingUploadData.courseCode}
+                    syllabusFileName={pendingUploadData.fileName}
+                    onConfirm={handleUpload}
+                    onCancel={() => {
+                        setShowConfirmationModal(false);
+                        setPendingUploadData(null);
+                    }}
+                    isLoading={isUploading}
+                />
+            )}
 
             {/* ── Preview Modal ── */}
             <Modal show={!!previewSyllabus} onHide={() => setPreviewSyllabus(null)} centered size="lg">
