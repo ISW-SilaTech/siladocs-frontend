@@ -161,6 +161,7 @@ const SilabosPage: React.FC = () => {
         setSelectedFile(null); setFormError(null); setUploadResult(null);
         setUploadProgress(0); setIsDragging(false); setSseEvents([]);
         setUploadVerificationStatus(null);
+        setShowConfirmationModal(false); setPendingUploadData(null);
         sseClientRef.current?.close();
         sseClientRef.current = null;
         setShowModal(true);
@@ -610,12 +611,7 @@ const SilabosPage: React.FC = () => {
             </Row>
 
             {/* ── Upload Modal ── */}
-            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}
-              style={{
-                opacity: showConfirmationModal ? 0.4 : 1,
-                pointerEvents: showConfirmationModal ? 'none' : 'auto',
-                transition: 'opacity 0.3s ease, pointer-events 0.3s ease',
-              }}>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
 
                 <Modal.Header closeButton className="border-bottom-0 pb-0">
                     <Modal.Title className="fs-16 fw-bold">
@@ -623,7 +619,11 @@ const SilabosPage: React.FC = () => {
                         Subir Sílabo
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body className="pt-2">
+                <Modal.Body className="pt-2" style={{
+                    opacity: showConfirmationModal ? 0.4 : 1,
+                    pointerEvents: showConfirmationModal ? 'none' : 'auto',
+                    transition: 'opacity 0.3s ease, pointer-events 0.3s ease',
+                  }}>
                     {uploadResult ? (
                         /* ── Success screen ── */
                         <div className="text-center py-4">
@@ -915,8 +915,8 @@ const SilabosPage: React.FC = () => {
                         </SpkButton>
                     ) : (
                         <>
-                            <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading}>Cancelar</SpkButton>
-                            <SpkButton Customclass="btn btn-primary" onClick={handleUploadClick} Disabled={isUploading || !selectedFile || !selectedCourseId}>
+                            <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading || showConfirmationModal}>Cancelar</SpkButton>
+                            <SpkButton Customclass="btn btn-primary" onClick={handleUploadClick} Disabled={isUploading || showConfirmationModal || !selectedFile || !selectedCourseId}>
                                 {isUploading
                                     ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Procesando...</>
                                     : <><i className="ri-upload-cloud-2-line me-1"></i>Subir y Registrar en Blockchain</>

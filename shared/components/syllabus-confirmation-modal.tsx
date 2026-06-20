@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
+import { Modal, Button, Spinner, Alert, ProgressBar } from 'react-bootstrap';
 import { SyllabiService } from '@/shared/services/syllabi.service';
+import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from '@/shared/utils/syllabusValidation';
 
 interface SyllabusConfirmationModalProps {
   show: boolean;
@@ -33,11 +34,13 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
     message: string;
   } | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [heuristics, setHeuristics] = useState<SyllabusHeuristicResult | null>(null);
 
   useEffect(() => {
     if (show) {
       setStep('confirm');
       setAnalysisResult(null);
+      setHeuristics(null);
       // Ejecutar análisis de forma asincrónica dentro del modal
       if (file && courseCode) {
         performAnalysis();
@@ -48,6 +51,7 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
   const performAnalysis = async () => {
     if (!file) return;
     setIsAnalyzing(true);
+    let contentAnalysis: { isMatch: boolean; confidence: number } | null = null;
     try {
       console.log('[DEBUG] Analyzing file in modal:', file.name, 'for course:', courseCode);
       const result = await SyllabiService.analyzeFile(file, courseCode);
@@ -58,10 +62,19 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
         isMatch: result.isMatch,
         message: result.message,
       });
+      contentAnalysis = { isMatch: result.isMatch, confidence: result.confidence };
     } catch (err) {
       console.warn('[DEBUG] File analysis failed in modal:', err);
       setAnalysisResult(null);
     } finally {
+      // Filtros 1-3: nombre de archivo, contenido (resultado de /syllabi/analyze ya obtenido)
+      // y heurística de validez del documento, combinados en un único % de confianza.
+      setHeuristics(evaluateSyllabusHeuristics({
+        fileName: file.name,
+        fileSize: file.size,
+        courseCode,
+        contentAnalysis,
+      }));
       setIsAnalyzing(false);
     }
   };
@@ -184,6 +197,53 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
                     </div>
                   </div>
                 </Alert>
+              </div>
+            )}
+
+            {/* Heuristic validation: 3 filtros + % de confianza */}
+            {!isAnalyzing && heuristics && (
+              <div className="mb-4">
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
+                    <i className="ri-shield-check-line me-1"></i>Validador de Sílabos
+                  </span>
+                  <span className={`badge ${heuristics.isDraft ? 'bg-warning-transparent text-warning' : 'bg-success-transparent text-success'}`}>
+                    {heuristics.isDraft ? 'Se registrará como Borrador' : 'Listo para registrar'}
+                  </span>
+                </div>
+
+                <ul className="list-unstyled mb-3 fs-13">
+                  <li className="d-flex align-items-center gap-2 mb-1">
+                    <i className={`ri-${heuristics.filenameHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                    Filtro 1: el código del curso ({courseCode}) {heuristics.filenameHasCourseCode ? 'aparece' : 'no aparece'} en el nombre del archivo
+                  </li>
+                  <li className="d-flex align-items-center gap-2 mb-1">
+                    <i className={`ri-${heuristics.contentHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                    Filtro 2: el código del curso {heuristics.contentHasCourseCode ? 'fue encontrado' : 'no fue encontrado'} dentro del contenido del documento
+                  </li>
+                  <li className="d-flex align-items-center gap-2">
+                    <i className={`ri-${heuristics.sizeLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                    Filtro 3: el documento {heuristics.sizeLooksReasonable ? 'parece' : 'no parece'} tener el contenido típico de un sílabo
+                  </li>
+                </ul>
+
+                <div className="d-flex justify-content-between fs-12 text-muted mb-1">
+                  <span>Precisión del validador</span>
+                  <span className="fw-semibold" style={{ color: heuristics.aiConfidence >= 60 ? '#198754' : '#f59e0b' }}>
+                    {heuristics.aiConfidence}%
+                  </span>
+                </div>
+                <ProgressBar
+                  now={heuristics.aiConfidence}
+                  variant={heuristics.aiConfidence >= 60 ? 'success' : 'warning'}
+                  style={{ height: '6px', borderRadius: '99px' }}
+                />
+                {heuristics.isDraft && (
+                  <p className="text-muted fs-12 mt-2 mb-0">
+                    <i className="ri-information-line me-1"></i>
+                    Mientras no se cumplan los 3 filtros, el sílabo se marcará como <strong>Borrador</strong> hasta que un administrador lo confirme.
+                  </p>
+                )}
               </div>
             )}
 
