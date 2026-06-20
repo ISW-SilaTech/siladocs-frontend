@@ -610,7 +610,10 @@ const SilabosPage: React.FC = () => {
             </Row>
 
             {/* ── Upload Modal ── */}
-            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}
+              className={showConfirmationModal ? 'opacity-50' : ''}
+              style={{ pointerEvents: showConfirmationModal ? 'none' : 'auto' }}>
+
                 <Modal.Header closeButton className="border-bottom-0 pb-0">
                     <Modal.Title className="fs-16 fw-bold">
                         <i className="ri-upload-cloud-2-line me-2 text-primary"></i>
@@ -1158,6 +1161,14 @@ const SilabosPage: React.FC = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+            <style>{`
+              .opacity-50 {
+                opacity: 0.5 !important;
+                filter: blur(2px);
+                transition: opacity 0.3s ease, filter 0.3s ease;
+              }
+            `}</style>
         </Fragment>
     );
 };
