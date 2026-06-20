@@ -2,21 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Spinner, Alert } from 'react-bootstrap';
+import { SyllabiService } from '@/shared/services/syllabi.service';
 
 interface SyllabusConfirmationModalProps {
   show: boolean;
   courseName: string;
   courseCode: string;
   syllabusFileName: string;
+  file?: File | null;
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
-  analysisResult?: {
-    detectedCode: string | null;
-    confidence: number;
-    isMatch: boolean;
-    message: string;
-  } | null;
 }
 
 const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
@@ -24,18 +20,51 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
   courseName,
   courseCode,
   syllabusFileName,
+  file = null,
   onConfirm,
   onCancel,
   isLoading = false,
-  analysisResult = null,
 }) => {
   const [step, setStep] = useState<'confirm' | 'confirmed'>('confirm');
+  const [analysisResult, setAnalysisResult] = useState<{
+    detectedCode: string | null;
+    confidence: number;
+    isMatch: boolean;
+    message: string;
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (show) {
       setStep('confirm');
+      setAnalysisResult(null);
+      // Ejecutar análisis de forma asincrónica dentro del modal
+      if (file && courseCode) {
+        performAnalysis();
+      }
     }
   }, [show]);
+
+  const performAnalysis = async () => {
+    if (!file) return;
+    setIsAnalyzing(true);
+    try {
+      console.log('[DEBUG] Analyzing file in modal:', file.name, 'for course:', courseCode);
+      const result = await SyllabiService.analyzeFile(file, courseCode);
+      console.log('[DEBUG] Analysis result:', result);
+      setAnalysisResult({
+        detectedCode: result.detectedCode,
+        confidence: result.confidence,
+        isMatch: result.isMatch,
+        message: result.message,
+      });
+    } catch (err) {
+      console.warn('[DEBUG] File analysis failed in modal:', err);
+      setAnalysisResult(null);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handleConfirm = () => {
     setStep('confirmed');
@@ -57,6 +86,7 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
       backdrop="static"
       keyboard={false}
       size="lg"
+      backdropClassName="syllabus-modal-backdrop"
     >
       <Modal.Header closeButton={!isLoading} className="border-bottom-0 pb-0">
         <Modal.Title className="fs-16 fw-bold">
@@ -124,13 +154,25 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
               </div>
             </div>
 
+            {/* Analysis Loading State */}
+            {isAnalyzing && (
+              <div className="mb-4">
+                <Alert variant="info" className="mb-0">
+                  <div className="d-flex align-items-center gap-2">
+                    <Spinner as="span" animation="border" size="sm" />
+                    <span><strong>Analizando archivo...</strong> Detectando código de curso en el documento</span>
+                  </div>
+                </Alert>
+              </div>
+            )}
+
             {/* File Analysis Result */}
-            {analysisResult && (
+            {!isAnalyzing && analysisResult && (
               <div className="mb-4">
                 <Alert variant={analysisResult.isMatch ? "success" : "warning"} className="mb-0">
                   <div className="d-flex align-items-start gap-2">
                     <div>
-                      <i className={`ri-${analysisResult.isMatch ? 'check-line text-success' : 'alert-line text-warning'} me-2`}></i>
+                      <i className={`ri-${analysisResult.isMatch ? 'check-circle-fill text-success' : 'alert-line text-warning'}`}></i>
                     </div>
                     <div className="flex-grow-1">
                       <strong>{analysisResult.message}</strong>
@@ -192,6 +234,12 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
           </>
         )}
       </Modal.Footer>
+      <style>{`
+        .syllabus-modal-backdrop {
+          background-color: rgba(0, 0, 0, 0.5) !important;
+          opacity: 1 !important;
+        }
+      `}</style>
     </Modal>
   );
 };
