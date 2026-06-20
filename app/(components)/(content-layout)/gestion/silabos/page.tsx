@@ -109,6 +109,13 @@ const SilabosPage: React.FC = () => {
       courseCode: string;
       fileName: string;
     } | null>(null);
+    const [analysisResult, setAnalysisResult] = useState<{
+      detectedCode: string | null;
+      confidence: number;
+      isMatch: boolean;
+      message: string;
+    } | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const fetchSyllabi = async () => {
         setIsLoading(true); setError(null);
@@ -216,6 +223,25 @@ const SilabosPage: React.FC = () => {
         // Find course details
         const course = courses.find(c => c.id === Number(selectedCourseId));
         if (!course) { setFormError("Curso no encontrado."); return; }
+
+        // Analyze file before showing confirmation modal
+        setIsAnalyzing(true);
+        try {
+            console.log('[DEBUG] Analyzing file:', selectedFile.name, 'for course:', course.code);
+            const result = await SyllabiService.analyzeFile(selectedFile, course.code);
+            console.log('[DEBUG] Analysis result:', result);
+            setAnalysisResult({
+                detectedCode: result.detectedCode,
+                confidence: result.confidence,
+                isMatch: result.isMatch,
+                message: result.message,
+            });
+        } catch (err) {
+            console.warn('[DEBUG] File analysis failed, continuing without analysis:', err);
+            setAnalysisResult(null);
+        } finally {
+            setIsAnalyzing(false);
+        }
 
         // Show confirmation modal
         setPendingUploadData({
@@ -929,8 +955,10 @@ const SilabosPage: React.FC = () => {
                     onCancel={() => {
                         setShowConfirmationModal(false);
                         setPendingUploadData(null);
+                        setAnalysisResult(null);
                     }}
-                    isLoading={isUploading}
+                    isLoading={isUploading || isAnalyzing}
+                    analysisResult={analysisResult}
                 />
             )}
 

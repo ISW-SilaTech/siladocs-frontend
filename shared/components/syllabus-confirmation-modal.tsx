@@ -11,6 +11,12 @@ interface SyllabusConfirmationModalProps {
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
+  analysisResult?: {
+    detectedCode: string | null;
+    confidence: number;
+    isMatch: boolean;
+    message: string;
+  } | null;
 }
 
 const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
@@ -21,6 +27,7 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
   onConfirm,
   onCancel,
   isLoading = false,
+  analysisResult = null,
 }) => {
   const [step, setStep] = useState<'confirm' | 'confirmed'>('confirm');
 
@@ -116,6 +123,27 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* File Analysis Result */}
+            {analysisResult && (
+              <div className="mb-4">
+                <Alert variant={analysisResult.isMatch ? "success" : "warning"} className="mb-0">
+                  <div className="d-flex align-items-start gap-2">
+                    <div>
+                      <i className={`ri-${analysisResult.isMatch ? 'check-line text-success' : 'alert-line text-warning'} me-2`}></i>
+                    </div>
+                    <div className="flex-grow-1">
+                      <strong>{analysisResult.message}</strong>
+                      {analysisResult.detectedCode && !analysisResult.isMatch && (
+                        <p className="mb-0 mt-1 small text-muted">
+                          Código esperado: <strong>{courseCode}</strong> | Detectado: <strong>{analysisResult.detectedCode}</strong> ({(analysisResult.confidence * 100).toFixed(0)}% confianza)
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Alert>
+              </div>
+            )}
 
             {/* Alert */}
             <Alert variant="info" className="mb-0">

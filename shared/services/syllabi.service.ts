@@ -31,6 +31,15 @@ export interface DownloadUrlResponse {
   downloadUrl: string;
 }
 
+export interface FileAnalysisResponse {
+  courseCode: string;
+  detectedCode: string | null;
+  confidence: number;
+  allDetectedCodes: string[];
+  isMatch: boolean;
+  message: string;
+}
+
 const mapSyllabus = (s: any): Syllabus => ({
   id: s.id,
   courseId: s.courseId,
@@ -76,6 +85,18 @@ export const SyllabiService = {
     if (sessionId) formData.append('sessionId', sessionId);
 
     const response = await api.post<SyllabusUploadResponse>('/syllabi/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    return response.data;
+  },
+
+  analyzeFile: async (file: File, courseCode: string): Promise<FileAnalysisResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('courseCode', courseCode);
+
+    const response = await api.post<FileAnalysisResponse>('/syllabi/analyze', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
