@@ -47,8 +47,16 @@ const mapSyllabus = (s: any): Syllabus => ({
 
 export const SyllabiService = {
   getAll: async (): Promise<Syllabus[]> => {
+    console.log('[SYLLABI DEBUG] Calling GET /syllabi');
     const response = await api.get<any[]>('/syllabi');
-    return response.data.map(mapSyllabus);
+    console.log('[SYLLABI DEBUG] Raw response from server:', response);
+    console.log('[SYLLABI DEBUG] Response data:', response.data);
+    console.log('[SYLLABI DEBUG] Response data length:', response.data?.length);
+    console.log('[SYLLABI DEBUG] Response headers:', response.headers);
+    const mapped = response.data.map(mapSyllabus);
+    console.log('[SYLLABI DEBUG] Mapped syllabi count:', mapped.length);
+    console.log('[SYLLABI DEBUG] Mapped syllabi:', mapped);
+    return mapped;
   },
 
   getByCourse: async (courseId: number): Promise<Syllabus[]> => {

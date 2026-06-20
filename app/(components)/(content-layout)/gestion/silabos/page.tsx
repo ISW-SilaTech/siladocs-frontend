@@ -461,7 +461,14 @@ const SilabosPage: React.FC = () => {
                                 <div className="d-flex align-items-center gap-2 text-muted fs-13">
                                     <i className="ri-shield-check-line text-success"></i>
                                     Registrados en Hyperledger Fabric
-                                    <span className="badge bg-info-transparent text-info ms-2">{syllabi.length} sílabos</span>
+                                    <span className="badge bg-info-transparent text-info ms-2">
+                                        {syllabi.length} sílabo{syllabi.length !== 1 ? 's' : ''}
+                                    </span>
+                                    {syllabi.length === 4 && (
+                                        <span className="badge bg-danger-transparent text-danger ms-2" title="⚠️ Es probable que hay más sílabos en la BD. Revisa el navegador DevTools (F12) → Console">
+                                            ⚠️ Posible límite en backend
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </Card.Body>
