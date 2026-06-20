@@ -72,6 +72,7 @@ const SilabosPage: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadResult, setUploadResult] = useState<SyllabusUploadResponse | null>(null);
     const [formError, setFormError] = useState<string | null>(null);
+    const [uploadVerificationStatus, setUploadVerificationStatus] = useState<'pending' | 'verified' | 'not-found' | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Preview URL for selected file (object URL)
@@ -102,9 +103,13 @@ const SilabosPage: React.FC = () => {
     const fetchSyllabi = async () => {
         setIsLoading(true); setError(null);
         try {
+            console.log('[DEBUG] Fetching syllabi...');
             const data = await SyllabiService.getAll();
+            console.log('[DEBUG] Fetched syllabi:', data);
+            console.log(`[DEBUG] Total syllabi: ${data.length}`);
             setSyllabi(data);
-        } catch {
+        } catch (err) {
+            console.error('[DEBUG] Error fetching syllabi:', err);
             setError("Error al cargar los sílabos. Intente de nuevo.");
         } finally {
             setIsLoading(false);
@@ -144,6 +149,7 @@ const SilabosPage: React.FC = () => {
         setSelectedCourseId(""); // No preseleccionar curso
         setSelectedFile(null); setFormError(null); setUploadResult(null);
         setUploadProgress(0); setIsDragging(false); setSseEvents([]);
+        setUploadVerificationStatus(null);
         sseClientRef.current?.close();
         sseClientRef.current = null;
         setShowModal(true);
@@ -155,6 +161,7 @@ const SilabosPage: React.FC = () => {
         sseClientRef.current = null;
         setShowModal(false); setUploadResult(null); setFormError(null);
         setSelectedFile(null); setUploadProgress(0); setSseEvents([]);
+        setUploadVerificationStatus(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -218,13 +225,50 @@ const SilabosPage: React.FC = () => {
         });
 
         try {
+            console.log('[DEBUG] Starting upload for course:', selectedCourseId);
             const result = await SyllabiService.uploadWithSession(Number(selectedCourseId), selectedFile, sessionId);
+            console.log('[DEBUG] Upload result:', result);
             setUploadProgress(100);
             setUploadResult(result);
+            setUploadVerificationStatus('pending');
             toast.success("¡Sílabo subido y confirmado en blockchain!");
-            await fetchSyllabi();
+
+            // Wait 1 second to ensure database transaction is committed before fetching
+            console.log('[DEBUG] Waiting 1 second before fetching updated list...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Fetch with retry logic in case of timing issues
+            let retries = 3;
+            let fetchSucceeded = false;
+            while (retries > 0 && !fetchSucceeded) {
+                try {
+                    console.log(`[DEBUG] Fetching syllabi (attempt ${4 - retries}/3)...`);
+                    await fetchSyllabi();
+                    fetchSucceeded = true;
+                    console.log('[DEBUG] Successfully refreshed syllabi list');
+                } catch (fetchErr) {
+                    retries--;
+                    console.error(`[DEBUG] Fetch failed, retries remaining: ${retries}`, fetchErr);
+                    if (retries > 0) {
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+                }
+            }
+
+            // Verify if the newly uploaded syllabus appears in the list
+            if (result.id) {
+                const foundInList = syllabi.some(s => s.id === result.id);
+                if (foundInList) {
+                    console.log('[DEBUG] ✓ Newly uploaded syllabus found in list');
+                    setUploadVerificationStatus('verified');
+                } else {
+                    console.warn('[DEBUG] ✗ Newly uploaded syllabus NOT found in list after refresh');
+                    setUploadVerificationStatus('not-found');
+                }
+            }
         } catch (err: any) {
             setUploadProgress(0);
+            console.error('[DEBUG] Upload error:', err);
             const msg = err?.response?.data?.error || err?.response?.data?.message || err?.message || "Error al subir el sílabo.";
             setFormError(msg);
             toast.error(msg);
@@ -408,10 +452,16 @@ const SilabosPage: React.FC = () => {
                                         <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#0364B8" d="M29 21l-5.2-3.1L17 29h17l-5-8z"/><path fill="#0078D4" d="M19.8 17.9L14 24l17 5-2-12z"/><path fill="#1490DF" d="M14 24l-5 4c-2.2 1.7-3 4.8-1.7 7.3C8.5 37.7 11 39 13.5 39H34l-3-10z"/><path fill="#28A8E8" d="M29 21L20 18c-4.7-1.5-9.8 1.1-11.3 5.8-.3 1-.4 2-.3 3L14 24z"/></svg>
                                         OneDrive
                                     </button>
+                                    <button className="btn btn-light d-flex align-items-center gap-2" onClick={() => fetchSyllabi()} disabled={isLoading} title="Actualizar lista de sílabos">
+                                        <Spinner as="span" animation="border" size="sm" className={isLoading ? '' : 'd-none'} />
+                                        <i className={`ri-refresh-line ${isLoading ? 'd-none' : ''}`}></i>
+                                        Actualizar
+                                    </button>
                                 </div>
                                 <div className="d-flex align-items-center gap-2 text-muted fs-13">
                                     <i className="ri-shield-check-line text-success"></i>
                                     Registrados en Hyperledger Fabric
+                                    <span className="badge bg-info-transparent text-info ms-2">{syllabi.length} sílabos</span>
                                 </div>
                             </div>
                         </Card.Body>
@@ -538,6 +588,12 @@ const SilabosPage: React.FC = () => {
                             </div>
                             <h5 className="text-success fw-bold mb-1">¡Registrado en Blockchain!</h5>
                             <p className="text-muted mb-4">El sílabo fue subido y verificado en Hyperledger Fabric.</p>
+                            {uploadVerificationStatus === 'not-found' && (
+                                <Alert variant="warning" className="mb-3">
+                                    <i className="ri-alert-line me-2"></i>
+                                    <strong>Advertencia:</strong> El sílabo se registró correctamente en blockchain, pero aún no aparece en la lista. Intenta hacer clic en "Actualizar" en la barra de herramientas.
+                                </Alert>
+                            )}
                             <div className="border rounded-3 p-4 bg-light text-start">
                                 <div className="row g-3">
                                     <div className="col-sm-6">
