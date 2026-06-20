@@ -610,9 +610,7 @@ const SilabosPage: React.FC = () => {
             </Row>
 
             {/* ── Upload Modal ── */}
-            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}
-              className={showConfirmationModal ? 'opacity-50' : ''}
-              style={{ pointerEvents: showConfirmationModal ? 'none' : 'auto' }}>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
 
                 <Modal.Header closeButton className="border-bottom-0 pb-0">
                     <Modal.Title className="fs-16 fw-bold">
@@ -924,6 +922,17 @@ const SilabosPage: React.FC = () => {
                 </Modal.Footer>
             </Modal>
 
+            {/* ── Global Overlay para Confirmation Modal ── */}
+            {showConfirmationModal && (
+                <div
+                  className="global-overlay"
+                  onClick={() => {
+                    setShowConfirmationModal(false);
+                    setPendingUploadData(null);
+                  }}
+                />
+            )}
+
             {/* ── Syllabus Confirmation Modal ── */}
             {pendingUploadData && (
                 <SyllabusConfirmationModal
@@ -1163,10 +1172,24 @@ const SilabosPage: React.FC = () => {
             </Modal>
 
             <style>{`
-              .opacity-50 {
-                opacity: 0.5 !important;
-                filter: blur(2px);
-                transition: opacity 0.3s ease, filter 0.3s ease;
+              .global-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+                animation: fadeIn 0.3s ease;
+              }
+
+              @keyframes fadeIn {
+                from {
+                  opacity: 0;
+                }
+                to {
+                  opacity: 1;
+                }
               }
             `}</style>
         </Fragment>
