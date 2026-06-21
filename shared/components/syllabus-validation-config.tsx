@@ -315,43 +315,42 @@ const SyllabusValidationConfig: React.FC = () => {
               />
 
               {templateFile && (
-                <Row className="g-2">
-                  <Col xs={6}>
-                    {templateUrl && (
-                      <div className="border rounded-3 overflow-hidden" style={{ height: 360 }}>
-                        <iframe src={templateUrl} width="100%" height="100%" style={{ border: "none" }} title="Plantilla modelo" />
-                      </div>
-                    )}
-                  </Col>
-                  <Col xs={6}>
-                    <div className="border rounded-3 p-2" style={{ height: 360, overflowY: "auto" }}>
-                      {isExtractingTemplate ? (
-                        <div className="d-flex align-items-center gap-2 text-muted fs-13 p-2">
-                          <Spinner animation="border" size="sm" />
-                          Leyendo plantilla...
-                        </div>
-                      ) : templateLines.length === 0 ? (
-                        <p className="text-muted fs-12 p-2 mb-0">No se detectó texto seleccionable en el PDF.</p>
-                      ) : (
-                        <ul className="list-unstyled mb-0 fs-12">
-                          {templateLines.map((line, idx) => (
-                            <li
-                              key={idx}
-                              className="px-2 py-1 rounded-1"
-                              style={{ cursor: "pointer" }}
-                              onMouseEnter={(e) => (e.currentTarget.style.background = "#eef2ff")}
-                              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                              onClick={() => handleAddRuleFromLine(line.text)}
-                              title="Clic para crear una sección a partir de esta línea"
-                            >
-                              <span className="text-muted">p.{line.page}</span> {line.text}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                <>
+                  {templateUrl && (
+                    <div className="border rounded-3 overflow-hidden mb-2" style={{ height: 420 }}>
+                      <iframe src={templateUrl} width="100%" height="100%" style={{ border: "none" }} title="Plantilla modelo" />
                     </div>
-                  </Col>
-                </Row>
+                  )}
+                  <span className="fs-12 fw-semibold text-uppercase ls-1 text-muted d-block mb-2">
+                    Líneas detectadas
+                  </span>
+                  <div className="border rounded-3 p-2" style={{ height: 220, overflowY: "auto" }}>
+                    {isExtractingTemplate ? (
+                      <div className="d-flex align-items-center gap-2 text-muted fs-13 p-2">
+                        <Spinner animation="border" size="sm" />
+                        Leyendo plantilla...
+                      </div>
+                    ) : templateLines.length === 0 ? (
+                      <p className="text-muted fs-12 p-2 mb-0">No se detectó texto seleccionable en el PDF.</p>
+                    ) : (
+                      <ul className="list-unstyled mb-0 fs-12">
+                        {templateLines.map((line, idx) => (
+                          <li
+                            key={idx}
+                            className="px-2 py-1 rounded-1"
+                            style={{ cursor: "pointer" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#eef2ff")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                            onClick={() => handleAddRuleFromLine(line.text)}
+                            title="Clic para crear una sección a partir de esta línea"
+                          >
+                            <span className="text-muted">p.{line.page}</span> {line.text}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </>
               )}
             </Card.Body>
           </Card>
