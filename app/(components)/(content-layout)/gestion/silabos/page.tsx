@@ -18,6 +18,8 @@ import { BlockchainEventsService, BlockchainEvent, BlockchainEventsClient } from
 import api from "@/shared/config/axios";
 import { useAuth } from "@/shared/contextapi";
 import SyllabusConfirmationModal from "@/shared/components/syllabus-confirmation-modal";
+import { extractPdfText } from "@/shared/utils/pdfText";
+import { detectSyllabusStructure, SyllabusStructureResult } from "@/shared/utils/syllabusStructure";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -78,6 +80,12 @@ const SilabosPage: React.FC = () => {
 
     // Preview URL for selected file (object URL)
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    // Structure pre-flight check (primer filtro: ¿el sílabo tiene las secciones que exige la institución?)
+    const [previewTab, setPreviewTab] = useState<'estructura' | 'documento'>('estructura');
+    const [structureResult, setStructureResult] = useState<SyllabusStructureResult | null>(null);
+    const [isCheckingStructure, setIsCheckingStructure] = useState(false);
+    const [structureError, setStructureError] = useState<string | null>(null);
 
     // SSE live blockchain events
     const [sseEvents, setSseEvents] = useState<BlockchainEvent[]>([]);
@@ -149,6 +157,33 @@ const SilabosPage: React.FC = () => {
         return () => URL.revokeObjectURL(url);
     }, [selectedFile]);
 
+    // Primer filtro: en cuanto se selecciona un PDF, se revisa su estructura
+    // en el navegador (sin esperar a que el docente haga clic en "Subir").
+    useEffect(() => {
+        setStructureResult(null);
+        setStructureError(null);
+        setPreviewTab('estructura');
+
+        if (!selectedFile || selectedFile.type !== "application/pdf") return;
+
+        let cancelled = false;
+        setIsCheckingStructure(true);
+        extractPdfText(selectedFile)
+            .then((text) => {
+                if (cancelled) return;
+                setStructureResult(detectSyllabusStructure(text));
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setStructureError("No se pudo analizar la estructura del documento. Puedes continuar y revisarlo manualmente.");
+            })
+            .finally(() => {
+                if (!cancelled) setIsCheckingStructure(false);
+            });
+
+        return () => { cancelled = true; };
+    }, [selectedFile]);
+
     // --- Upload handlers ---
     const validateFile = (file: File): string | null => {
         if (!ALLOWED_MIME_TYPES.includes(file.type)) return "Tipo de archivo no permitido. Solo PDF, DOC o DOCX.";
@@ -162,6 +197,7 @@ const SilabosPage: React.FC = () => {
         setUploadProgress(0); setIsDragging(false); setSseEvents([]);
         setUploadVerificationStatus(null);
         setShowConfirmationModal(false); setPendingUploadData(null);
+        setStructureResult(null); setStructureError(null); setPreviewTab('estructura');
         sseClientRef.current?.close();
         sseClientRef.current = null;
         setShowModal(true);
@@ -174,6 +210,7 @@ const SilabosPage: React.FC = () => {
         setShowModal(false); setUploadResult(null); setFormError(null);
         setSelectedFile(null); setUploadProgress(0); setSseEvents([]);
         setUploadVerificationStatus(null);
+        setStructureResult(null); setStructureError(null); setPreviewTab('estructura');
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -854,18 +891,80 @@ const SilabosPage: React.FC = () => {
                                                 `}</style>
                                             </>
                                         ) : (
-                                            /* ── Static file preview ── */
+                                            /* ── Structure pre-flight check + static file preview ── */
                                             <>
                                                 <div className="d-flex align-items-center justify-content-between mb-2">
-                                                    <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
-                                                        <i className="ri-eye-line me-1"></i>Previsualización
-                                                    </span>
+                                                    <div className="d-flex gap-1" role="tablist">
+                                                        <button
+                                                            type="button"
+                                                            className={`btn btn-sm ${previewTab === 'estructura' ? 'btn-primary' : 'btn-light text-muted'}`}
+                                                            onClick={() => setPreviewTab('estructura')}
+                                                        >
+                                                            <i className="ri-list-check-2 me-1"></i>Estructura
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className={`btn btn-sm ${previewTab === 'documento' ? 'btn-primary' : 'btn-light text-muted'}`}
+                                                            onClick={() => setPreviewTab('documento')}
+                                                        >
+                                                            <i className="ri-eye-line me-1"></i>Documento
+                                                        </button>
+                                                    </div>
                                                     <span className={`badge ${selectedFile.name.endsWith(".pdf") ? "bg-danger-transparent text-danger" : "bg-primary-transparent text-primary"}`}>
                                                         {selectedFile.name.endsWith(".pdf") ? "PDF" : "DOCX"}
                                                     </span>
                                                 </div>
 
-                                                {selectedFile.type === "application/pdf" && previewUrl ? (
+                                                {previewTab === 'estructura' ? (
+                                                    <div className="flex-grow-1 border rounded-3 p-3" style={{ minHeight: "360px" }}>
+                                                        {selectedFile.type !== "application/pdf" ? (
+                                                            <Alert variant="info" className="fs-12 mb-0 py-2">
+                                                                <i className="ri-information-line me-1"></i>
+                                                                La verificación automática de estructura solo está disponible para archivos PDF. Revisa manualmente que tu DOCX incluya las secciones que exige la institución.
+                                                            </Alert>
+                                                        ) : isCheckingStructure ? (
+                                                            <div className="d-flex align-items-center gap-2 text-muted fs-13">
+                                                                <Spinner animation="border" size="sm" />
+                                                                Revisando estructura del documento...
+                                                            </div>
+                                                        ) : structureError ? (
+                                                            <Alert variant="warning" className="fs-12 mb-0 py-2">
+                                                                <i className="ri-alert-line me-1"></i>{structureError}
+                                                            </Alert>
+                                                        ) : structureResult ? (
+                                                            <>
+                                                                <div className="d-flex align-items-center justify-content-between mb-2">
+                                                                    <span className="fs-12 fw-semibold text-muted text-uppercase ls-1">
+                                                                        <i className="ri-shield-check-line me-1"></i>Secciones requeridas por la institución
+                                                                    </span>
+                                                                    <span className={`badge ${structureResult.foundCount === structureResult.totalCount ? 'bg-success-transparent text-success' : 'bg-warning-transparent text-warning'}`}>
+                                                                        {structureResult.foundCount}/{structureResult.totalCount} encontradas
+                                                                    </span>
+                                                                </div>
+                                                                <ul className="list-unstyled mb-3 fs-13">
+                                                                    {structureResult.sections.map((section) => (
+                                                                        <li key={section.key} className="d-flex align-items-center gap-2 mb-1">
+                                                                            <i className={`ri-${section.found ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                                            {section.label}
+                                                                            {!section.found && <span className="text-muted fs-12">— no encontrada</span>}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                                <ProgressBar
+                                                                    now={structureResult.structureScore}
+                                                                    variant={structureResult.structureScore === 100 ? 'success' : structureResult.structureScore >= 50 ? 'warning' : 'danger'}
+                                                                    style={{ height: '6px', borderRadius: '99px' }}
+                                                                />
+                                                                {structureResult.foundCount < structureResult.totalCount && (
+                                                                    <p className="text-muted fs-12 mt-2 mb-0">
+                                                                        <i className="ri-information-line me-1"></i>
+                                                                        Completa las secciones faltantes en tu documento antes de subirlo para evitar que sea rebotado en la revisión.
+                                                                    </p>
+                                                                )}
+                                                            </>
+                                                        ) : null}
+                                                    </div>
+                                                ) : selectedFile.type === "application/pdf" && previewUrl ? (
                                                     <div className="flex-grow-1 border rounded-3 overflow-hidden" style={{ minHeight: "360px" }}>
                                                         <iframe
                                                             src={previewUrl}
