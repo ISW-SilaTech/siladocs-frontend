@@ -7,7 +7,7 @@ import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
 import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar, Button } from "react-bootstrap";
+import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar, Button, Tab, Nav } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { SyllabiService, Syllabus, SyllabusUploadResponse } from "@/shared/services/syllabi.service";
@@ -20,6 +20,7 @@ import { useAuth } from "@/shared/contextapi";
 import { extractPdfText } from "@/shared/utils/pdfText";
 import { detectSyllabusStructure, SyllabusStructureResult } from "@/shared/utils/syllabusStructure";
 import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/utils/syllabusValidation";
+import SyllabusValidationConfig from "@/shared/components/syllabus-validation-config";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -57,6 +58,7 @@ const SilabosPage: React.FC = () => {
     // mismo rol en DELETE /syllabi/{id}; este check solo controla la UI.
     const canDeleteSyllabus = user?.role === "Administrador Académico";
 
+    const [activeTab, setActiveTab] = useState<'lista' | 'config'>('lista');
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
     const [courses, setCourses] = useState<CourseOption[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -532,6 +534,23 @@ const SilabosPage: React.FC = () => {
             <Pageheader title="Gestión Académica" subtitle="Sílabos" currentpage="Lista de Sílabos" activepage="Gestión de Sílabos" />
             <ToastContainer />
 
+            <Tab.Container activeKey={activeTab} onSelect={(k) => setActiveTab((k as 'lista' | 'config') || 'lista')}>
+                <Nav variant="tabs" className="mb-3 border-bottom">
+                    <Nav.Item>
+                        <Nav.Link eventKey="lista" className="fw-semibold">
+                            <i className="ri-file-list-3-line me-2"></i>Lista de Sílabos
+                        </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                        <Nav.Link eventKey="config" className="fw-semibold">
+                            <i className="ri-shield-check-line me-2"></i>Configuración de Validación
+                        </Nav.Link>
+                    </Nav.Item>
+                </Nav>
+
+                <Tab.Content>
+                <Tab.Pane eventKey="lista">
+
             {/* Toolbar */}
             <Row>
                 <Col xl={12}>
@@ -676,6 +695,14 @@ const SilabosPage: React.FC = () => {
                     </Card>
                 </Col>
             </Row>
+
+                </Tab.Pane>
+
+                <Tab.Pane eventKey="config">
+                    <SyllabusValidationConfig />
+                </Tab.Pane>
+                </Tab.Content>
+            </Tab.Container>
 
             {/* ── Upload Modal ── */}
             <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
