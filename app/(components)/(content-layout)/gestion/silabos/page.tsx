@@ -122,7 +122,7 @@ const SilabosPage: React.FC = () => {
     const [isImporting, setIsImporting] = useState(false);
     const [cloudError, setCloudError] = useState<string | null>(null);
 
-    const fetchSyllabi = async () => {
+    const fetchSyllabi = async (): Promise<Syllabus[]> => {
         setIsLoading(true); setError(null);
         try {
             console.log('[DEBUG] Fetching syllabi...');
@@ -130,9 +130,11 @@ const SilabosPage: React.FC = () => {
             console.log('[DEBUG] Fetched syllabi:', data);
             console.log(`[DEBUG] Total syllabi: ${data.length}`);
             setSyllabi(data);
+            return data;
         } catch (err) {
             console.error('[DEBUG] Error fetching syllabi:', err);
             setError("Error al cargar los sílabos. Intente de nuevo.");
+            return [];
         } finally {
             setIsLoading(false);
         }
@@ -341,25 +343,21 @@ const SilabosPage: React.FC = () => {
 
             // Fetch with retry logic in case of timing issues
             let retries = 3;
-            let fetchSucceeded = false;
-            while (retries > 0 && !fetchSucceeded) {
-                try {
-                    console.log(`[DEBUG] Fetching syllabi (attempt ${4 - retries}/3)...`);
-                    await fetchSyllabi();
-                    fetchSucceeded = true;
-                    console.log('[DEBUG] Successfully refreshed syllabi list');
-                } catch (fetchErr) {
-                    retries--;
-                    console.error(`[DEBUG] Fetch failed, retries remaining: ${retries}`, fetchErr);
-                    if (retries > 0) {
-                        await new Promise(resolve => setTimeout(resolve, 500));
-                    }
+            let latestSyllabi: Syllabus[] = [];
+            let foundInList = false;
+            while (retries > 0 && !foundInList) {
+                console.log(`[DEBUG] Fetching syllabi (attempt ${4 - retries}/3)...`);
+                latestSyllabi = await fetchSyllabi();
+                foundInList = result.id ? latestSyllabi.some(s => s.id === result.id) : true;
+                retries--;
+                if (!foundInList && retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
             }
+            console.log('[DEBUG] Successfully refreshed syllabi list');
 
             // Verify if the newly uploaded syllabus appears in the list
             if (result.id) {
-                const foundInList = syllabi.some(s => s.id === result.id);
                 if (foundInList) {
                     console.log('[DEBUG] ✓ Newly uploaded syllabus found in list');
                     setUploadVerificationStatus('verified');
