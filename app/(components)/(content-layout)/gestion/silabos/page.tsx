@@ -222,12 +222,13 @@ const SilabosPage: React.FC = () => {
                     fileSize: selectedFile.size,
                     courseCode: course.code,
                     contentAnalysis,
+                    structureScore: structureResult?.structureScore,
                 }));
                 setIsAnalyzing(false);
             });
 
         return () => { cancelled = true; };
-    }, [selectedFile, selectedCourseId, courses]);
+    }, [selectedFile, selectedCourseId, courses, structureResult]);
 
     // Curso seleccionado en el modal de carga (derivado de selectedCourseId).
     const selectedCourse = courses.find(c => c.id === Number(selectedCourseId)) ?? null;
@@ -1138,8 +1139,8 @@ const SilabosPage: React.FC = () => {
                                                 Filtro 2: el código del curso {heuristics.contentHasCourseCode ? 'fue encontrado' : 'no fue encontrado'} dentro del contenido del documento
                                             </li>
                                             <li className="d-flex align-items-center gap-2">
-                                                <i className={`ri-${heuristics.sizeLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
-                                                Filtro 3: el documento {heuristics.sizeLooksReasonable ? 'parece' : 'no parece'} tener el contenido típico de un sílabo
+                                                <i className={`ri-${heuristics.structureLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                Filtro 3: el documento {heuristics.structureLooksReasonable ? 'parece' : 'no parece'} tener el contenido típico de un sílabo
                                             </li>
                                         </ul>
                                     </Col>

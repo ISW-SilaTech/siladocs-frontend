@@ -11,7 +11,7 @@ export interface SyllabusFilenameCheck {
 export interface SyllabusHeuristicResult {
   filenameHasCourseCode: boolean;
   contentHasCourseCode: boolean;
-  sizeLooksReasonable: boolean;
+  structureLooksReasonable: boolean;
   aiConfidence: number; // 0-100
   isDraft: boolean;
   reasons: string[];
@@ -35,36 +35,43 @@ export const checkFilenameHasCourseCode = (fileName: string, courseCode: string)
   };
 };
 
-const MIN_REASONABLE_SIZE_BYTES = 5 * 1024; // un sílabo real rara vez pesa menos de 5 KB
+// Si todavía no se pudo extraer/analizar la estructura del PDF (p. ej. falló la
+// lectura), se usa el tamaño como respaldo: un sílabo real rara vez pesa menos de 5 KB.
+const MIN_REASONABLE_SIZE_BYTES = 5 * 1024;
+const MIN_REASONABLE_STRUCTURE_SCORE = 40;
 const DRAFT_CONFIDENCE_THRESHOLD = 60;
 
 // Combina los 3 filtros solicitados:
 //  1) nombre de archivo contiene el código del curso
 //  2) el contenido del documento referencia el curso (vía /syllabi/analyze, ya consultado)
-//  3) heurística de "esto parece un documento real de sílabo" (tamaño/formato)
+//  3) el documento contiene la estructura típica de un sílabo (secciones detectadas
+//     por detectSyllabusStructure: sumilla, competencias, unidades, etc.), no su peso en bytes
 // y produce un único porcentaje de confianza para el usuario.
 export const evaluateSyllabusHeuristics = (params: {
   fileName: string;
   fileSize: number;
   courseCode: string;
   contentAnalysis?: { isMatch: boolean; confidence: number } | null;
+  structureScore?: number | null;
 }): SyllabusHeuristicResult => {
-  const { fileName, fileSize, courseCode, contentAnalysis } = params;
+  const { fileName, fileSize, courseCode, contentAnalysis, structureScore } = params;
   const { filenameHasCourseCode } = checkFilenameHasCourseCode(fileName, courseCode);
   const contentHasCourseCode = contentAnalysis?.isMatch ?? false;
-  const sizeLooksReasonable = fileSize >= MIN_REASONABLE_SIZE_BYTES;
+  const structureLooksReasonable = typeof structureScore === 'number'
+    ? structureScore >= MIN_REASONABLE_STRUCTURE_SCORE
+    : fileSize >= MIN_REASONABLE_SIZE_BYTES;
 
   const filenameScore = filenameHasCourseCode ? 30 : 0;
   const contentScore = contentHasCourseCode ? 40 * Math.min(1, Math.max(0, contentAnalysis?.confidence ?? 1)) : 0;
-  const sizeScore = sizeLooksReasonable ? 30 : 0;
-  const aiConfidence = Math.round(filenameScore + contentScore + sizeScore);
+  const structureContributionScore = structureLooksReasonable ? 30 : 0;
+  const aiConfidence = Math.round(filenameScore + contentScore + structureContributionScore);
 
   const reasons: string[] = [];
   if (!filenameHasCourseCode) reasons.push('El nombre del archivo no contiene el código del curso.');
   if (!contentHasCourseCode) reasons.push('No se detectó el código del curso dentro del contenido del documento.');
-  if (!sizeLooksReasonable) reasons.push('El archivo es demasiado pequeño para ser un sílabo completo.');
+  if (!structureLooksReasonable) reasons.push('El documento no contiene la estructura típica de un sílabo (sumilla, competencias, unidades, etc.).');
 
   const isDraft = !filenameHasCourseCode || !contentHasCourseCode || aiConfidence < DRAFT_CONFIDENCE_THRESHOLD;
 
-  return { filenameHasCourseCode, contentHasCourseCode, sizeLooksReasonable, aiConfidence, isDraft, reasons };
+  return { filenameHasCourseCode, contentHasCourseCode, structureLooksReasonable, aiConfidence, isDraft, reasons };
 };
