@@ -38,6 +38,9 @@ const SyllabusValidationConfig: React.FC = () => {
   const [testResult, setTestResult] = useState<SyllabusStructureResult | null>(null);
   const testInputRef = useRef<HTMLInputElement>(null);
 
+  const [isDraggingTemplate, setIsDraggingTemplate] = useState(false);
+  const [isDraggingTest, setIsDraggingTest] = useState(false);
+
   const weightTotal = requiredWeightTotal(rules);
   const isOverweight = weightTotal > 100;
   const isDirty = JSON.stringify(rules) !== JSON.stringify(savedRules);
@@ -119,6 +122,18 @@ const SyllabusValidationConfig: React.FC = () => {
     } finally {
       setIsTesting(false);
     }
+  };
+
+  // --- Drag & drop genérico para las dropzones ---
+  const handleDropFile = (e: React.DragEvent<HTMLDivElement>, onFile: (file: File) => void) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      toast.error("Solo se aceptan archivos PDF.");
+      return;
+    }
+    onFile(file);
   };
 
   // --- Acciones finales ---
@@ -280,14 +295,18 @@ const SyllabusValidationConfig: React.FC = () => {
 
               <div
                 onClick={() => templateInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDraggingTemplate(true); }}
+                onDragLeave={() => setIsDraggingTemplate(false)}
+                onDrop={(e) => { setIsDraggingTemplate(false); handleDropFile(e, handleTemplateSelect); }}
                 style={{
-                  border: `2px dashed ${templateFile ? "#22c55e" : "#cbd5e1"}`,
+                  border: `2px dashed ${isDraggingTemplate ? "#6366f1" : templateFile ? "#22c55e" : "#cbd5e1"}`,
                   borderRadius: "12px",
                   padding: templateFile ? "0.75rem" : "1.5rem",
                   textAlign: "center",
                   cursor: "pointer",
-                  background: templateFile ? "#f0fdf4" : "#f8fafc",
+                  background: isDraggingTemplate ? "#eef2ff" : templateFile ? "#f0fdf4" : "#f8fafc",
                   marginBottom: "0.75rem",
+                  transition: "background-color 0.15s, border-color 0.15s",
                 }}
               >
                 {templateFile ? (
@@ -375,14 +394,18 @@ const SyllabusValidationConfig: React.FC = () => {
             <div className="mt-3">
               <div
                 onClick={() => testInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setIsDraggingTest(true); }}
+                onDragLeave={() => setIsDraggingTest(false)}
+                onDrop={(e) => { setIsDraggingTest(false); handleDropFile(e, handleTestSelect); }}
                 style={{
-                  border: `2px dashed ${testFile ? "#22c55e" : "#cbd5e1"}`,
+                  border: `2px dashed ${isDraggingTest ? "#6366f1" : testFile ? "#22c55e" : "#cbd5e1"}`,
                   borderRadius: "12px",
                   padding: "1rem",
                   textAlign: "center",
                   cursor: "pointer",
-                  background: testFile ? "#f0fdf4" : "#f8fafc",
+                  background: isDraggingTest ? "#eef2ff" : testFile ? "#f0fdf4" : "#f8fafc",
                   marginBottom: "1rem",
+                  transition: "background-color 0.15s, border-color 0.15s",
                 }}
               >
                 {testFile ? (
