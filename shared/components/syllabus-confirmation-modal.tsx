@@ -191,7 +191,7 @@ const SyllabusConfirmationModal: React.FC<SyllabusConfirmationModalProps> = ({
                       <strong>{analysisResult.message}</strong>
                       {analysisResult.detectedCode && !analysisResult.isMatch && (
                         <p className="mb-0 mt-1 small text-muted">
-                          Código esperado: <strong>{courseCode}</strong> | Detectado: <strong>{analysisResult.detectedCode}</strong> ({(analysisResult.confidence * 100).toFixed(0)}% confianza)
+                          Código esperado: <strong>{courseCode}</strong> | Detectado: <strong>{analysisResult.detectedCode}</strong>
                         </p>
                       )}
                     </div>
