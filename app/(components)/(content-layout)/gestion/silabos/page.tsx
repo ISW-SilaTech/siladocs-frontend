@@ -17,9 +17,9 @@ import { OneDriveOAuthService, OneDriveFile } from "@/shared/services/onedrive-o
 import { BlockchainEventsService, BlockchainEvent, BlockchainEventsClient } from "@/shared/services/blockchain-events.service";
 import api from "@/shared/config/axios";
 import { useAuth } from "@/shared/contextapi";
-import SyllabusConfirmationModal from "@/shared/components/syllabus-confirmation-modal";
 import { extractPdfText } from "@/shared/utils/pdfText";
 import { detectSyllabusStructure, SyllabusStructureResult } from "@/shared/utils/syllabusStructure";
+import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/utils/syllabusValidation";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -82,10 +82,21 @@ const SilabosPage: React.FC = () => {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
     // Structure pre-flight check (primer filtro: ¿el sílabo tiene las secciones que exige la institución?)
-    const [previewTab, setPreviewTab] = useState<'estructura' | 'documento'>('estructura');
+    const [previewTab, setPreviewTab] = useState<'documento' | 'estructura'>('documento');
     const [structureResult, setStructureResult] = useState<SyllabusStructureResult | null>(null);
     const [isCheckingStructure, setIsCheckingStructure] = useState(false);
     const [structureError, setStructureError] = useState<string | null>(null);
+
+    // Validador de sílabos (código de curso en nombre/contenido + heurística) calculado
+    // en cuanto hay curso y archivo seleccionados, dentro del mismo modal de carga.
+    const [analysisResult, setAnalysisResult] = useState<{
+        detectedCode: string | null;
+        confidence: number;
+        isMatch: boolean;
+        message: string;
+    } | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [heuristics, setHeuristics] = useState<SyllabusHeuristicResult | null>(null);
 
     // SSE live blockchain events
     const [sseEvents, setSseEvents] = useState<BlockchainEvent[]>([]);
@@ -108,16 +119,6 @@ const SilabosPage: React.FC = () => {
     const [importCourseId, setImportCourseId] = useState("");
     const [isImporting, setIsImporting] = useState(false);
     const [cloudError, setCloudError] = useState<string | null>(null);
-
-    // Confirmation modal (double validation before upload)
-    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-    const [pendingUploadData, setPendingUploadData] = useState<{
-      courseId: number;
-      courseName: string;
-      courseCode: string;
-      fileName: string;
-      file?: File;
-    } | null>(null);
 
     const fetchSyllabi = async () => {
         setIsLoading(true); setError(null);
@@ -162,7 +163,6 @@ const SilabosPage: React.FC = () => {
     useEffect(() => {
         setStructureResult(null);
         setStructureError(null);
-        setPreviewTab('estructura');
 
         if (!selectedFile || selectedFile.type !== "application/pdf") return;
 
@@ -184,6 +184,52 @@ const SilabosPage: React.FC = () => {
         return () => { cancelled = true; };
     }, [selectedFile]);
 
+    // Validador de sílabos: corre en cuanto hay curso Y archivo seleccionados,
+    // directamente dentro del modal de carga (sin un segundo paso/modal).
+    useEffect(() => {
+        setAnalysisResult(null);
+        setHeuristics(null);
+
+        if (!selectedFile || !selectedCourseId) return;
+        const course = courses.find(c => c.id === Number(selectedCourseId));
+        if (!course) return;
+
+        let cancelled = false;
+        setIsAnalyzing(true);
+        let contentAnalysis: { isMatch: boolean; confidence: number } | null = null;
+
+        SyllabiService.analyzeFile(selectedFile, course.code)
+            .then((result) => {
+                if (cancelled) return;
+                setAnalysisResult({
+                    detectedCode: result.detectedCode,
+                    confidence: result.confidence,
+                    isMatch: result.isMatch,
+                    message: result.message,
+                });
+                contentAnalysis = { isMatch: result.isMatch, confidence: result.confidence };
+            })
+            .catch(() => {
+                if (cancelled) return;
+                setAnalysisResult(null);
+            })
+            .finally(() => {
+                if (cancelled) return;
+                setHeuristics(evaluateSyllabusHeuristics({
+                    fileName: selectedFile.name,
+                    fileSize: selectedFile.size,
+                    courseCode: course.code,
+                    contentAnalysis,
+                }));
+                setIsAnalyzing(false);
+            });
+
+        return () => { cancelled = true; };
+    }, [selectedFile, selectedCourseId, courses]);
+
+    // Curso seleccionado en el modal de carga (derivado de selectedCourseId).
+    const selectedCourse = courses.find(c => c.id === Number(selectedCourseId)) ?? null;
+
     // --- Upload handlers ---
     const validateFile = (file: File): string | null => {
         if (!ALLOWED_MIME_TYPES.includes(file.type)) return "Tipo de archivo no permitido. Solo PDF, DOC o DOCX.";
@@ -196,8 +242,8 @@ const SilabosPage: React.FC = () => {
         setSelectedFile(null); setFormError(null); setUploadResult(null);
         setUploadProgress(0); setIsDragging(false); setSseEvents([]);
         setUploadVerificationStatus(null);
-        setShowConfirmationModal(false); setPendingUploadData(null);
-        setStructureResult(null); setStructureError(null); setPreviewTab('estructura');
+        setStructureResult(null); setStructureError(null); setPreviewTab('documento');
+        setAnalysisResult(null); setHeuristics(null);
         sseClientRef.current?.close();
         sseClientRef.current = null;
         setShowModal(true);
@@ -210,7 +256,8 @@ const SilabosPage: React.FC = () => {
         setShowModal(false); setUploadResult(null); setFormError(null);
         setSelectedFile(null); setUploadProgress(0); setSseEvents([]);
         setUploadVerificationStatus(null);
-        setStructureResult(null); setStructureError(null); setPreviewTab('estructura');
+        setStructureResult(null); setStructureError(null); setPreviewTab('documento');
+        setAnalysisResult(null); setHeuristics(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -247,35 +294,18 @@ const SilabosPage: React.FC = () => {
         }
     }, [sseEvents]);
 
-    const handleUploadClick = async () => {
+    const handleUpload = async () => {
         setFormError(null);
         if (!selectedCourseId) { setFormError("Seleccione un curso."); return; }
         if (!selectedFile) { setFormError("Seleccione un archivo."); return; }
 
-        // Find course details
         const course = courses.find(c => c.id === Number(selectedCourseId));
         if (!course) { setFormError("Curso no encontrado."); return; }
-
-        // Show confirmation modal immediately
-        // Analysis will be performed inside the modal
-        setPendingUploadData({
-            courseId: course.id,
-            courseName: course.name,
-            courseCode: course.code,
-            fileName: selectedFile.name,
-            file: selectedFile,
-        });
-        setShowConfirmationModal(true);
-    };
-
-    const handleUpload = async () => {
-        if (!pendingUploadData || !selectedFile) return;
 
         const sessionId = BlockchainEventsService.newSessionId();
         setSseEvents([]);
         setIsUploading(true);
         setUploadProgress(0);
-        setShowConfirmationModal(false);
 
         // Open SSE connection before sending the file so events arrive in order
         sseClientRef.current?.close();
@@ -294,8 +324,8 @@ const SilabosPage: React.FC = () => {
         });
 
         try {
-            console.log('[DEBUG] Starting upload for course:', pendingUploadData.courseId);
-            const result = await SyllabiService.uploadWithSession(pendingUploadData.courseId, selectedFile, sessionId);
+            console.log('[DEBUG] Starting upload for course:', course.id);
+            const result = await SyllabiService.uploadWithSession(course.id, selectedFile, sessionId);
             console.log('[DEBUG] Upload result:', result);
             setUploadProgress(100);
             setUploadResult(result);
@@ -653,14 +683,10 @@ const SilabosPage: React.FC = () => {
                 <Modal.Header closeButton className="border-bottom-0 pb-0">
                     <Modal.Title className="fs-16 fw-bold">
                         <i className="ri-upload-cloud-2-line me-2 text-primary"></i>
-                        Subir Sílabo
+                        Subir y Validar Sílabo
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body className="pt-2" style={{
-                    opacity: showConfirmationModal ? 0.4 : 1,
-                    pointerEvents: showConfirmationModal ? 'none' : 'auto',
-                    transition: 'opacity 0.3s ease, pointer-events 0.3s ease',
-                  }}>
+                <Modal.Body className="pt-2">
                     {uploadResult ? (
                         /* ── Success screen ── */
                         <div className="text-center py-4">
@@ -800,10 +826,51 @@ const SilabosPage: React.FC = () => {
                                     )}
 
                                     {!isUploading && sseEvents.length === 0 && (
-                                        <div className="d-flex align-items-start gap-2 p-2 rounded-2 fs-12 text-muted" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
+                                        <div className="d-flex align-items-start gap-2 p-2 rounded-2 fs-12 text-muted mb-3" style={{ background: "#f0f9ff", border: "1px solid #bae6fd" }}>
                                             <i className="ri-shield-keyhole-line text-info mt-1 flex-shrink-0"></i>
                                             <span>El archivo se cifra con <strong>SHA-256</strong> y se registra en <strong>Hyperledger Fabric</strong> con marca de tiempo inmutable.</span>
                                         </div>
+                                    )}
+
+                                    {/* Confirmación visual: aparece en cuanto hay curso + archivo seleccionados */}
+                                    {!isUploading && sseEvents.length === 0 && selectedFile && selectedCourse && (
+                                        <>
+                                            <div className="mb-2">
+                                                <div className="d-flex align-items-start gap-3 p-3 border rounded-3 bg-light">
+                                                    <div className="d-flex align-items-center justify-content-center" style={{
+                                                        width: '40px', height: '40px', borderRadius: '8px',
+                                                        background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', flexShrink: 0,
+                                                    }}>
+                                                        <i className="ri-book-open-line text-info" style={{ fontSize: '1.25rem' }}></i>
+                                                    </div>
+                                                    <div className="flex-grow-1 overflow-hidden">
+                                                        <p className="text-muted fs-11 fw-bold mb-1 text-uppercase ls-1">Curso Destino</p>
+                                                        <p className="fw-bold mb-1">
+                                                            <code className="bg-white px-2 py-1 rounded">{selectedCourse.code}</code>
+                                                        </p>
+                                                        <p className="text-secondary mb-0 fs-13 text-truncate">{selectedCourse.name}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-center mb-2">
+                                                <i className="ri-arrow-down-line text-primary"></i>
+                                            </div>
+                                            <div className="mb-3">
+                                                <div className="d-flex align-items-start gap-3 p-3 border rounded-3 bg-light">
+                                                    <div className="d-flex align-items-center justify-content-center" style={{
+                                                        width: '40px', height: '40px', borderRadius: '8px',
+                                                        background: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)', flexShrink: 0,
+                                                    }}>
+                                                        <i className="ri-file-pdf-2-line text-warning" style={{ fontSize: '1.25rem' }}></i>
+                                                    </div>
+                                                    <div className="flex-grow-1 overflow-hidden">
+                                                        <p className="text-muted fs-11 fw-bold mb-1 text-uppercase ls-1">Sílabo a Cargar</p>
+                                                        <p className="fw-medium mb-1 fs-13 text-truncate" style={{ wordBreak: 'break-word' }}>{selectedFile.name}</p>
+                                                        <small className="text-muted">Se registrará como <strong>Draft</strong> hasta confirmar los detalles</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
                                     )}
                                 </div>
                             </Col>
@@ -1006,6 +1073,77 @@ const SilabosPage: React.FC = () => {
                             )}
                         </Row>
                     )}
+
+                    {/* ── Validador de Sílabos: aparece debajo en cuanto hay curso + archivo ── */}
+                    {!uploadResult && !isUploading && selectedFile && selectedCourse && (
+                        <div className="border-top mt-3 pt-3">
+                            <div className="d-flex align-items-center justify-content-between mb-2">
+                                <span className="fs-13 fw-semibold text-uppercase ls-1">
+                                    <i className="ri-shield-check-line me-1 text-primary"></i>Validador de Sílabos
+                                </span>
+                                {isAnalyzing ? (
+                                    <span className="badge bg-light text-muted">
+                                        <Spinner as="span" animation="border" size="sm" className="me-1" style={{ width: 10, height: 10, borderWidth: 1 }} />
+                                        Analizando...
+                                    </span>
+                                ) : heuristics ? (
+                                    <span className={`badge ${heuristics.isDraft ? 'bg-warning-transparent text-warning' : 'bg-success-transparent text-success'}`}>
+                                        {heuristics.isDraft ? 'Se registrará como Borrador' : 'Listo para registrar'}
+                                    </span>
+                                ) : null}
+                            </div>
+
+                            {isAnalyzing && !heuristics ? (
+                                <div className="d-flex align-items-center gap-2 text-muted fs-13 py-2">
+                                    <Spinner animation="border" size="sm" />
+                                    Detectando código de curso y validando el documento...
+                                </div>
+                            ) : heuristics ? (
+                                <Row className="g-3">
+                                    <Col md={7}>
+                                        <ul className="list-unstyled mb-0 fs-13">
+                                            <li className="d-flex align-items-center gap-2 mb-1">
+                                                <i className={`ri-${heuristics.filenameHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                Filtro 1: el código del curso ({selectedCourse.code}) {heuristics.filenameHasCourseCode ? 'aparece' : 'no aparece'} en el nombre del archivo
+                                            </li>
+                                            <li className="d-flex align-items-center gap-2 mb-1">
+                                                <i className={`ri-${heuristics.contentHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                Filtro 2: el código del curso {heuristics.contentHasCourseCode ? 'fue encontrado' : 'no fue encontrado'} dentro del contenido del documento
+                                            </li>
+                                            <li className="d-flex align-items-center gap-2">
+                                                <i className={`ri-${heuristics.sizeLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                Filtro 3: el documento {heuristics.sizeLooksReasonable ? 'parece' : 'no parece'} tener el contenido típico de un sílabo
+                                            </li>
+                                        </ul>
+                                    </Col>
+                                    <Col md={5}>
+                                        <div className="d-flex justify-content-between fs-12 text-muted mb-1">
+                                            <span>Precisión del validador</span>
+                                            <span className="fw-semibold" style={{ color: heuristics.aiConfidence >= 60 ? '#198754' : '#f59e0b' }}>
+                                                {heuristics.aiConfidence}%
+                                            </span>
+                                        </div>
+                                        <ProgressBar
+                                            now={heuristics.aiConfidence}
+                                            variant={heuristics.aiConfidence >= 60 ? 'success' : 'warning'}
+                                            style={{ height: '6px', borderRadius: '99px' }}
+                                        />
+                                        {heuristics.isDraft && (
+                                            <p className="text-muted fs-12 mt-2 mb-0">
+                                                <i className="ri-information-line me-1"></i>
+                                                Mientras no se cumplan los 3 filtros, el sílabo se marcará como <strong>Borrador</strong> hasta que un administrador lo confirme.
+                                            </p>
+                                        )}
+                                    </Col>
+                                </Row>
+                            ) : null}
+
+                            <Alert variant="info" className="mb-0 mt-3">
+                                <i className="ri-alert-line me-2"></i>
+                                <strong>Verifica los datos antes de continuar.</strong> Podrás rectificar o rechazar el sílabo en la siguiente etapa.
+                            </Alert>
+                        </div>
+                    )}
                 </Modal.Body>
                 <Modal.Footer className="border-top-0 pt-0">
                     {uploadResult ? (
@@ -1014,34 +1152,19 @@ const SilabosPage: React.FC = () => {
                         </SpkButton>
                     ) : (
                         <>
-                            <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading || showConfirmationModal}>Cancelar</SpkButton>
-                            <SpkButton Customclass="btn btn-primary" onClick={handleUploadClick} Disabled={isUploading || showConfirmationModal || !selectedFile || !selectedCourseId}>
+                            <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading}>Cancelar</SpkButton>
+                            <SpkButton Customclass="btn btn-primary" onClick={handleUpload} Disabled={isUploading || isAnalyzing || !selectedFile || !selectedCourseId}>
                                 {isUploading
                                     ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Procesando...</>
-                                    : <><i className="ri-upload-cloud-2-line me-1"></i>Subir y Registrar en Blockchain</>
+                                    : isAnalyzing
+                                        ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Validando...</>
+                                        : <><i className="ri-upload-cloud-2-line me-1"></i>Confirmar y Registrar en Blockchain</>
                                 }
                             </SpkButton>
                         </>
                     )}
                 </Modal.Footer>
             </Modal>
-
-            {/* ── Syllabus Confirmation Modal ── */}
-            {pendingUploadData && (
-                <SyllabusConfirmationModal
-                    show={showConfirmationModal}
-                    courseName={pendingUploadData.courseName}
-                    courseCode={pendingUploadData.courseCode}
-                    syllabusFileName={pendingUploadData.fileName}
-                    file={pendingUploadData.file}
-                    onConfirm={handleUpload}
-                    onCancel={() => {
-                        setShowConfirmationModal(false);
-                        setPendingUploadData(null);
-                    }}
-                    isLoading={isUploading}
-                />
-            )}
 
             {/* ── Preview Modal ── */}
             <Modal show={!!previewSyllabus} onHide={() => setPreviewSyllabus(null)} centered size="lg">
