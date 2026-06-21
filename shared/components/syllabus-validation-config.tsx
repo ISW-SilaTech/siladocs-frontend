@@ -343,7 +343,7 @@ const SyllabusValidationConfig: React.FC = () => {
                   <span className="fs-12 fw-semibold text-uppercase ls-1 text-muted d-block mb-2">
                     Líneas detectadas
                   </span>
-                  <div className="border rounded-3 p-2" style={{ height: 220, overflowY: "auto" }}>
+                  <div className="border rounded-3 p-2" style={{ height: 420, overflowY: "auto" }}>
                     {isExtractingTemplate ? (
                       <div className="d-flex align-items-center gap-2 text-muted fs-13 p-2">
                         <Spinner animation="border" size="sm" />
