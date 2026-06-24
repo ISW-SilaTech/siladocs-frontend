@@ -189,7 +189,6 @@ const Landing = () => {
     });
 
     function handleClick1() {
-        setExpande(false);
         setExpande1(false);
         setExpande2(false);
         const newState = {
