@@ -200,7 +200,6 @@ const Landing = () => {
     }
 
     // State hooks for menu expansion
-    const [expande, setExpande] = useState(false);
     const [expande1, setExpande1] = useState(false);
     const [expande2, setExpande2] = useState(false);
     const [isActive, setIsActive] = useState(false);
@@ -215,14 +214,6 @@ const Landing = () => {
             documentSelector('html')?.setAttribute('data-menu-styles', 'light');
         }
     }, []);
-
-    const toggleExpand = () => {
-        setExpande(!expande);
-        // Ensure you're only setting light theme once
-        if (localStorage.getItem('data-menu-styles') === 'light') {
-            documentSelector('html')?.setAttribute('data-menu-styles', 'light');
-        }
-    };
 
     const handleSubMenuToggle1 = () => setExpande1(!expande1);
     const handleSubMenuToggle2 = () => setExpande2(!expande2);
@@ -497,26 +488,6 @@ const Landing = () => {
 
                     <!-- Start::slide --> */}
                                     {/* <!-- End::slide --> */}
-
-                                    <li className={`slide has-sub ${expande ? 'open' : ''} `}>
-                                        <Link scroll={false} href="#!" className={`side-menu__item ${expande ? 'active' : ''} ${isActive ? 'active' : ''}`} onClick={toggleExpand} >
-                                            <span className="side-menu__label">Páginas</span>
-                                            <i className="fe fe-chevron-down side-menu__angle op-8 me-2"></i>
-                                        </Link>
-                                        <ul className={`slide-menu child1 ${expande ? 'active' : ''}`}
-                                            style={{ display: expande ? 'block' : 'none' }}
-                                        >
-                                            <li className="slide">
-                                                <Link scroll={false} href="/sobre-nosotros" className="side-menu__item">Sobre Nosotros</Link>
-                                            </li>
-                                            <li className="slide">
-                                                <Link scroll={false} href="/terminos-condiciones" className="side-menu__item">Términos y Condiciones</Link>
-                                            </li>
-                                            <li className="slide">
-                                                <Link scroll={false} href="/politicas-privacidad" className="side-menu__item">Políticas de Privacidad</Link>
-                                            </li>
-                                        </ul>
-                                    </li>
 
                                     {/* <!-- Start::slide --> */}
 
