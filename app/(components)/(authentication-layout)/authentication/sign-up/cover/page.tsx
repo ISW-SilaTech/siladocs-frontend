@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { AuthService } from "@/shared/services/auth.service";
 import { useAuth } from "@/shared/contextapi";
 import { useRecaptcha } from "@/shared/hooks/useRecaptcha";
+import { extractErrorMessage } from "@/shared/utils/errors";
 
 const Cover: React.FC = () => {
     const { register } = useAuth();
@@ -130,7 +131,7 @@ const Cover: React.FC = () => {
 
             toast.success("Cuenta creada correctamente", { position: "top-right", autoClose: 1500 });
         } catch (err: any) {
-            const msg = err?.response?.data?.message || err?.message || 'Error en el registro';
+            const msg = extractErrorMessage(err, 'Error en el registro');
             toast.error(msg);
             setTokenValidated(false);
         } finally {
