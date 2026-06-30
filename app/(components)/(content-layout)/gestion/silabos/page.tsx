@@ -913,7 +913,7 @@ const SilabosPage: React.FC = () => {
             </Tab.Container>
 
             {/* ── Upload Modal ── */}
-            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false}>
+            <Modal show={showModal} onHide={handleCloseModal} centered backdrop="static" size="xl" keyboard={false} dialogClassName="modal-upload-wide">
 
                 <Modal.Header closeButton className="border-bottom-0 pb-0">
                     <Modal.Title className="fs-16 fw-bold">
@@ -966,10 +966,10 @@ const SilabosPage: React.FC = () => {
                         </div>
                     ) : (
                         /* ── Two-column layout: form + preview ── */
-                        <Row className="g-0" style={{ minHeight: "440px" }}>
+                        <Row className="g-0" style={{ minHeight: "520px" }}>
                             {/* LEFT: Form */}
                             <Col md={selectedFile ? 5 : 12} style={{ transition: "all 0.3s ease" }}>
-                                <div className="pe-md-3" style={{ borderRight: selectedFile ? "1px solid #e9ecef" : "none" }}>
+                                <div className="pe-md-3" style={{ borderRight: selectedFile ? "1px solid #e9ecef" : "none", overflowY: 'auto', maxHeight: '68vh', paddingRight: selectedFile ? '12px' : undefined }}>
                                     {formError && <Alert variant="danger" className="py-2 fs-13">{formError}</Alert>}
 
                                     {/* Duplicate file warning */}
@@ -1114,45 +1114,28 @@ const SilabosPage: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {/* Confirmación visual: aparece en cuanto hay curso + archivo seleccionados */}
+                                    {/* Confirmación visual: curso → sílabo en una fila compacta */}
                                     {!isUploading && sseEvents.length === 0 && selectedFile && selectedCourse && (
-                                        <>
-                                            <div className="mb-2">
-                                                <div className="d-flex align-items-start gap-3 p-3 border rounded-3 bg-light">
-                                                    <div className="d-flex align-items-center justify-content-center" style={{
-                                                        width: '40px', height: '40px', borderRadius: '8px',
-                                                        background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', flexShrink: 0,
-                                                    }}>
-                                                        <i className="ri-book-open-line text-info" style={{ fontSize: '1.25rem' }}></i>
-                                                    </div>
-                                                    <div className="flex-grow-1 overflow-hidden">
-                                                        <p className="text-muted fs-11 fw-bold mb-1 text-uppercase ls-1">Curso Destino</p>
-                                                        <p className="fw-bold mb-1">
-                                                            <code className="bg-white px-2 py-1 rounded">{selectedCourse.code}</code>
-                                                        </p>
-                                                        <p className="text-secondary mb-0 fs-13 text-truncate">{selectedCourse.name}</p>
-                                                    </div>
+                                        <div className="mb-2 d-flex align-items-center gap-2 p-2 rounded-3 border bg-light flex-wrap">
+                                            <div style={{ width: 30, height: 30, borderRadius: 6, background: 'linear-gradient(135deg,#dbeafe,#bfdbfe)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <i className="ri-book-open-line text-info"></i>
+                                            </div>
+                                            <div className="flex-grow-1 overflow-hidden">
+                                                <div className="fs-10 text-muted text-uppercase fw-bold mb-0">Curso</div>
+                                                <div className="fw-bold fs-13 text-truncate">
+                                                    <code className="fs-12">{selectedCourse.code}</code>
+                                                    <span className="ms-1 text-secondary">{selectedCourse.name}</span>
                                                 </div>
                                             </div>
-                                            <div className="text-center mb-2">
-                                                <i className="ri-arrow-down-line text-primary"></i>
+                                            <i className="ri-arrow-right-line text-muted flex-shrink-0"></i>
+                                            <div style={{ width: 30, height: 30, borderRadius: 6, background: 'linear-gradient(135deg,#fef3c7,#fed7aa)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                <i className="ri-file-pdf-2-line text-warning"></i>
                                             </div>
-                                            <div className="mb-3">
-                                                <div className="d-flex align-items-start gap-3 p-3 border rounded-3 bg-light">
-                                                    <div className="d-flex align-items-center justify-content-center" style={{
-                                                        width: '40px', height: '40px', borderRadius: '8px',
-                                                        background: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)', flexShrink: 0,
-                                                    }}>
-                                                        <i className="ri-file-pdf-2-line text-warning" style={{ fontSize: '1.25rem' }}></i>
-                                                    </div>
-                                                    <div className="flex-grow-1 overflow-hidden">
-                                                        <p className="text-muted fs-11 fw-bold mb-1 text-uppercase ls-1">Sílabo a Cargar</p>
-                                                        <p className="fw-medium mb-1 fs-13 text-truncate" style={{ wordBreak: 'break-word' }}>{selectedFile.name}</p>
-                                                        <small className="text-muted">Se registrará como <strong>Draft</strong> hasta confirmar los detalles</small>
-                                                    </div>
-                                                </div>
+                                            <div className="flex-grow-1 overflow-hidden">
+                                                <div className="fs-10 text-muted text-uppercase fw-bold mb-0">Sílabo</div>
+                                                <div className="fs-13 fw-medium text-truncate">{selectedFile.name}</div>
                                             </div>
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             </Col>
@@ -1237,6 +1220,7 @@ const SilabosPage: React.FC = () => {
                                                 <style>{`
                                                     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
                                                     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+                                                    .modal-upload-wide { max-width: min(94vw, 1300px) !important; }
                                                 `}</style>
                                             </>
                                         ) : (
@@ -1265,7 +1249,7 @@ const SilabosPage: React.FC = () => {
                                                 </div>
 
                                                 {previewTab === 'estructura' ? (
-                                                    <div className="flex-grow-1 border rounded-3 p-3" style={{ minHeight: "360px" }}>
+                                                    <div className="border rounded-3 p-3" style={{ height: "260px", overflowY: 'auto' }}>
                                                         {selectedFile.type !== "application/pdf" ? (
                                                             <Alert variant="info" className="fs-12 mb-0 py-2">
                                                                 <i className="ri-information-line me-1"></i>
@@ -1314,37 +1298,82 @@ const SilabosPage: React.FC = () => {
                                                         ) : null}
                                                     </div>
                                                 ) : selectedFile.type === "application/pdf" && previewUrl ? (
-                                                    <div className="flex-grow-1 border rounded-3 overflow-hidden" style={{ minHeight: "360px" }}>
+                                                    <div className="border rounded-3 overflow-hidden" style={{ height: "260px" }}>
                                                         <iframe
                                                             src={previewUrl}
                                                             width="100%"
                                                             height="100%"
-                                                            style={{ border: "none", minHeight: "360px" }}
+                                                            style={{ border: "none", minHeight: "260px" }}
                                                             title="Vista previa del sílabo"
                                                         />
                                                     </div>
                                                 ) : (
-                                                    <div className="flex-grow-1 d-flex flex-column align-items-center justify-content-center border rounded-3 bg-light p-4 text-center" style={{ minHeight: "360px" }}>
-                                                        <i className="ri-file-word-line text-primary mb-3" style={{ fontSize: "5rem" }}></i>
+                                                    <div className="d-flex flex-column align-items-center justify-content-center border rounded-3 bg-light p-3 text-center" style={{ height: "260px" }}>
+                                                        <i className="ri-file-word-line text-primary mb-2" style={{ fontSize: "4rem" }}></i>
                                                         <h6 className="fw-bold mb-1 text-truncate w-100">{selectedFile.name}</h6>
-                                                        <p className="text-muted fs-13 mb-3">{formatBytes(selectedFile.size)}</p>
-                                                        <div className="d-flex flex-column gap-2 w-100">
-                                                            <div className="d-flex justify-content-between border-bottom pb-2">
+                                                        <p className="text-muted fs-13 mb-2">{formatBytes(selectedFile.size)}</p>
+                                                        <div className="d-flex flex-column gap-1 w-100">
+                                                            <div className="d-flex justify-content-between border-bottom pb-1">
                                                                 <span className="text-muted fs-12">Tipo</span>
                                                                 <span className="fw-medium fs-12">Word Document</span>
                                                             </div>
-                                                            <div className="d-flex justify-content-between border-bottom pb-2">
+                                                            <div className="d-flex justify-content-between">
                                                                 <span className="text-muted fs-12">Tamaño</span>
                                                                 <span className="fw-medium fs-12">{formatBytes(selectedFile.size)}</span>
                                                             </div>
-                                                            <div className="d-flex justify-content-between">
-                                                                <span className="text-muted fs-12">Última modificación</span>
-                                                                <span className="fw-medium fs-12">{new Date(selectedFile.lastModified).toLocaleDateString("es-PE")}</span>
-                                                            </div>
                                                         </div>
-                                                        <Alert variant="info" className="fs-12 mt-3 mb-0 py-2 text-start w-100">
-                                                            <i className="ri-information-line me-1"></i>
-                                                            La previsualización de DOCX no está disponible en el navegador.
+                                                    </div>
+                                                )}
+
+                                                {/* ── Validador de Sílabos (inline bajo el preview) ── */}
+                                                {selectedCourse && (
+                                                    <div className="border-top mt-3 pt-2">
+                                                        <div className="d-flex align-items-center justify-content-between mb-2">
+                                                            <span className="fs-12 fw-semibold text-uppercase ls-1">
+                                                                <i className="ri-shield-check-line me-1 text-primary"></i>Validador de Sílabos
+                                                            </span>
+                                                            {isAnalyzing ? (
+                                                                <span className="badge bg-light text-muted fs-11">
+                                                                    <Spinner as="span" animation="border" size="sm" className="me-1" style={{ width: 10, height: 10, borderWidth: 1 }} />
+                                                                    Analizando...
+                                                                </span>
+                                                            ) : heuristics ? (
+                                                                <span className={`badge fs-11 ${heuristics.isDraft ? 'bg-warning-transparent text-warning' : 'bg-success-transparent text-success'}`}>
+                                                                    {heuristics.isDraft ? 'Se registrará como Borrador' : 'Listo para registrar'}
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
+                                                        {isAnalyzing && !heuristics ? (
+                                                            <div className="d-flex align-items-center gap-2 text-muted fs-12 py-1">
+                                                                <Spinner animation="border" size="sm" />
+                                                                Detectando código de curso y validando...
+                                                            </div>
+                                                        ) : heuristics ? (
+                                                            <>
+                                                                <ul className="list-unstyled mb-2 fs-12">
+                                                                    <li className="d-flex align-items-center gap-2 mb-1">
+                                                                        <i className={`ri-${heuristics.filenameHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                                        Código <code className="fs-11">{selectedCourse.code}</code> {heuristics.filenameHasCourseCode ? 'aparece en el nombre del archivo' : 'no aparece en el nombre'}
+                                                                    </li>
+                                                                    <li className="d-flex align-items-center gap-2 mb-1">
+                                                                        <i className={`ri-${heuristics.contentHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                                        Código {heuristics.contentHasCourseCode ? 'encontrado en el contenido' : 'no encontrado en el contenido'}
+                                                                    </li>
+                                                                    <li className="d-flex align-items-center gap-2">
+                                                                        <i className={`ri-${heuristics.structureLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
+                                                                        Estructura {heuristics.structureLooksReasonable ? 'típica de sílabo detectada' : 'atípica para sílabo'}
+                                                                    </li>
+                                                                </ul>
+                                                                <div className="d-flex justify-content-between fs-12 text-muted mb-1">
+                                                                    <span>Precisión del validador</span>
+                                                                    <span className="fw-semibold" style={{ color: heuristics.aiConfidence >= 60 ? '#198754' : '#f59e0b' }}>{heuristics.aiConfidence}%</span>
+                                                                </div>
+                                                                <ProgressBar now={heuristics.aiConfidence} variant={heuristics.aiConfidence >= 60 ? 'success' : 'warning'} style={{ height: '5px', borderRadius: '99px' }} />
+                                                            </>
+                                                        ) : null}
+                                                        <Alert variant="info" className="mb-0 mt-2 py-2 fs-12">
+                                                            <i className="ri-alert-line me-1"></i>
+                                                            <strong>Verifica los datos antes de continuar.</strong> Podrás rectificar o rechazar el sílabo en la siguiente etapa.
                                                         </Alert>
                                                     </div>
                                                 )}
@@ -1354,77 +1383,6 @@ const SilabosPage: React.FC = () => {
                                 </Col>
                             )}
                         </Row>
-                    )}
-
-                    {/* ── Validador de Sílabos: aparece debajo en cuanto hay curso + archivo ── */}
-                    {!uploadResult && !isUploading && selectedFile && selectedCourse && (
-                        <div className="border-top mt-3 pt-3">
-                            <div className="d-flex align-items-center justify-content-between mb-2">
-                                <span className="fs-13 fw-semibold text-uppercase ls-1">
-                                    <i className="ri-shield-check-line me-1 text-primary"></i>Validador de Sílabos
-                                </span>
-                                {isAnalyzing ? (
-                                    <span className="badge bg-light text-muted">
-                                        <Spinner as="span" animation="border" size="sm" className="me-1" style={{ width: 10, height: 10, borderWidth: 1 }} />
-                                        Analizando...
-                                    </span>
-                                ) : heuristics ? (
-                                    <span className={`badge ${heuristics.isDraft ? 'bg-warning-transparent text-warning' : 'bg-success-transparent text-success'}`}>
-                                        {heuristics.isDraft ? 'Se registrará como Borrador' : 'Listo para registrar'}
-                                    </span>
-                                ) : null}
-                            </div>
-
-                            {isAnalyzing && !heuristics ? (
-                                <div className="d-flex align-items-center gap-2 text-muted fs-13 py-2">
-                                    <Spinner animation="border" size="sm" />
-                                    Detectando código de curso y validando el documento...
-                                </div>
-                            ) : heuristics ? (
-                                <Row className="g-3">
-                                    <Col md={7}>
-                                        <ul className="list-unstyled mb-0 fs-13">
-                                            <li className="d-flex align-items-center gap-2 mb-1">
-                                                <i className={`ri-${heuristics.filenameHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
-                                                Filtro 1: el código del curso ({selectedCourse.code}) {heuristics.filenameHasCourseCode ? 'aparece' : 'no aparece'} en el nombre del archivo
-                                            </li>
-                                            <li className="d-flex align-items-center gap-2 mb-1">
-                                                <i className={`ri-${heuristics.contentHasCourseCode ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
-                                                Filtro 2: el código del curso {heuristics.contentHasCourseCode ? 'fue encontrado' : 'no fue encontrado'} dentro del contenido del documento
-                                            </li>
-                                            <li className="d-flex align-items-center gap-2">
-                                                <i className={`ri-${heuristics.structureLooksReasonable ? 'checkbox-circle-fill text-success' : 'close-circle-fill text-danger'}`}></i>
-                                                Filtro 3: el documento {heuristics.structureLooksReasonable ? 'parece' : 'no parece'} tener el contenido típico de un sílabo
-                                            </li>
-                                        </ul>
-                                    </Col>
-                                    <Col md={5}>
-                                        <div className="d-flex justify-content-between fs-12 text-muted mb-1">
-                                            <span>Precisión del validador</span>
-                                            <span className="fw-semibold" style={{ color: heuristics.aiConfidence >= 60 ? '#198754' : '#f59e0b' }}>
-                                                {heuristics.aiConfidence}%
-                                            </span>
-                                        </div>
-                                        <ProgressBar
-                                            now={heuristics.aiConfidence}
-                                            variant={heuristics.aiConfidence >= 60 ? 'success' : 'warning'}
-                                            style={{ height: '6px', borderRadius: '99px' }}
-                                        />
-                                        {heuristics.isDraft && (
-                                            <p className="text-muted fs-12 mt-2 mb-0">
-                                                <i className="ri-information-line me-1"></i>
-                                                Mientras no se cumplan los 3 filtros, el sílabo se marcará como <strong>Borrador</strong> hasta que un administrador lo confirme.
-                                            </p>
-                                        )}
-                                    </Col>
-                                </Row>
-                            ) : null}
-
-                            <Alert variant="info" className="mb-0 mt-3">
-                                <i className="ri-alert-line me-2"></i>
-                                <strong>Verifica los datos antes de continuar.</strong> Podrás rectificar o rechazar el sílabo en la siguiente etapa.
-                            </Alert>
-                        </div>
                     )}
                 </Modal.Body>
                 <Modal.Footer className="border-top-0 pt-0">
