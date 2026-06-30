@@ -13,6 +13,7 @@ import { CurriculumsService, Curriculum, CurriculumRequest } from "@/shared/serv
 import { CareersService } from "@/shared/services/careers.service";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useTableSort, SortTh } from "@/shared/utils/tableSort";
 
 interface CareerOption {
     id: number;
@@ -208,6 +209,11 @@ const MallasList: React.FC = () => {
         return curriculum.name?.toLowerCase().includes(q) || curriculum.careerName?.toLowerCase().includes(q);
     });
 
+    const { sorted: displayCurriculums, sortKey, sortDir, toggle } = useTableSort(filteredCurriculums);
+    const th = (label: string, field: string) => (
+        <SortTh label={label} field={field} sortKey={sortKey as string} sortDir={sortDir} onSort={toggle as (k: string) => void} />
+    );
+
     return (
         <div className="min-vh-100 d-flex flex-column">
             <Fragment>
@@ -253,8 +259,16 @@ const MallasList: React.FC = () => {
                                                 : <p>No se encontraron mallas.</p>}
                                         </div>
                                     ) : (
-                                        <SpkTables tableClass="text-nowrap" header={[{ title: 'Malla' }, { title: "Año" }, { title: 'Nº Cursos' }, { title: 'Créditos' }, { title: 'Estado' }, { title: 'Descripción' }, { title: 'Acciones' }]}>
-                                            {filteredCurriculums.map((curriculum) => (
+                                        <SpkTables tableClass="text-nowrap table-hover" header={[
+                                            { title: th('Malla', 'name') },
+                                            { title: th('Año', 'year') },
+                                            { title: th('Nº Cursos', 'courseCount') },
+                                            { title: th('Créditos', 'totalCredits') },
+                                            { title: th('Estado', 'status') },
+                                            { title: 'Descripción' },
+                                            { title: 'Acciones' },
+                                        ]}>
+                                            {displayCurriculums.map((curriculum) => (
                                                 <tr key={curriculum.id}>
                                                     <td>{curriculum.name}</td>
                                                     <td>

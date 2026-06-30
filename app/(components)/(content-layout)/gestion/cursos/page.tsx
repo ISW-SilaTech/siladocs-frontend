@@ -13,6 +13,7 @@ import { CareersService } from "@/shared/services/careers.service";
 import { CurriculumsService } from "@/shared/services/curriculums.service";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useTableSort, SortTh } from "@/shared/utils/tableSort";
 
 interface CareerOption {
     id: number;
@@ -270,6 +271,11 @@ const CursosList: React.FC = () => {
         return course.name?.toLowerCase().includes(q) || course.code?.toLowerCase().includes(q);
     });
 
+    const { sorted: displayCourses, sortKey, sortDir, toggle } = useTableSort(filteredCourses);
+    const th = (label: string, field: string) => (
+        <SortTh label={label} field={field} sortKey={sortKey as string} sortDir={sortDir} onSort={toggle as (k: string) => void} />
+    );
+
     return (
         <Fragment>
             <ToastContainer />
@@ -308,8 +314,18 @@ const CursosList: React.FC = () => {
                                             : <p>No se encontraron cursos.</p>}
                                     </div>
                                 ) : (
-                                    <SpkTables tableClass="table-hover text-nowrap" Customcheckclass="ps-4" header={[{ title: 'Curso' }, { title: 'Carrera' }, { title: 'Facultad' }, { title: 'Nº Sílabos' }, { title: 'Año' }, { title: 'Estado' }, { title: 'Malla' }, { title: 'Publicación' }, { title: 'Acción' }]}>
-                                        {filteredCourses.map((course) => (
+                                    <SpkTables tableClass="table-hover text-nowrap" Customcheckclass="ps-4" header={[
+                                        { title: th('Curso', 'name') },
+                                        { title: th('Carrera', 'careerName') },
+                                        { title: th('Facultad', 'faculty') },
+                                        { title: th('Nº Sílabos', 'syllabusCount') },
+                                        { title: th('Año', 'year') },
+                                        { title: th('Estado', 'status') },
+                                        { title: 'Malla' },
+                                        { title: th('Publicación', 'publicationDate') },
+                                        { title: 'Acción' },
+                                    ]}>
+                                        {displayCourses.map((course) => (
                                             <tr key={course.id}>
                                                 <td>
                                                     <div className="d-flex align-items-center">

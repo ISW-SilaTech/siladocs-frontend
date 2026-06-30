@@ -23,6 +23,7 @@ import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/ut
 import SyllabusValidationConfig from "@/shared/components/syllabus-validation-config";
 import { saveValidationScore, getValidationScore } from "@/shared/utils/validationScoreCache";
 import { checkFilenameHasCourseCode } from "@/shared/utils/syllabusValidation";
+import { useTableSort, SortTh } from "@/shared/utils/tableSort";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -541,6 +542,11 @@ const SilabosPage: React.FC = () => {
     const formatDate = (iso?: string) =>
         iso ? new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
+    const { sorted: displaySyllabi, sortKey: sylSortKey, sortDir: sylSortDir, toggle: sylToggle } = useTableSort(syllabi);
+    const th = (label: string, field: string) => (
+        <SortTh label={label} field={field} sortKey={sylSortKey as string} sortDir={sylSortDir} onSort={sylToggle as (k: string) => void} />
+    );
+
     return (
         <Fragment>
             <Seo title="Sílabos" />
@@ -619,11 +625,17 @@ const SilabosPage: React.FC = () => {
                                     <Alert variant="danger" className="m-3">{error}</Alert>
                                 ) : (
                                     <div id="coach-syllabus-table">
-                                    <SpkTables tableClass="text-nowrap" header={[
-                                        { title: "Archivo" }, { title: "Curso" }, { title: "Hash SHA-256" },
-                                        { title: "Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "% Aceptación" }, { title: "Acciones" },
+                                    <SpkTables tableClass="text-nowrap table-hover" header={[
+                                        { title: th("Archivo", "fileName") },
+                                        { title: th("Curso", "courseName") },
+                                        { title: "Hash SHA-256" },
+                                        { title: "Blockchain" },
+                                        { title: th("Fecha", "uploadedAt") },
+                                        { title: th("Estado", "status") },
+                                        { title: "% Aceptación" },
+                                        { title: "Acciones" },
                                     ]}>
-                                        {syllabi.map((s) => (
+                                        {displaySyllabi.map((s) => (
                                             <tr key={s.id}>
                                                 <td>
                                                     <div className="d-flex align-items-center gap-2">

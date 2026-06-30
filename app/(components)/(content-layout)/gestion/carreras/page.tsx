@@ -12,6 +12,7 @@ import { Card, Col, Dropdown, Form, Row, Spinner, Alert } from "react-bootstrap"
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { CareersService, Career, CareerRequest } from "@/shared/services/careers.service";
+import { useTableSort, SortTh } from "@/shared/utils/tableSort";
 
 const CarrerasList: React.FC = () => {
 
@@ -171,6 +172,11 @@ const CarrerasList: React.FC = () => {
         return career.name?.toLowerCase().includes(q) || career.faculty?.toLowerCase().includes(q);
     });
 
+    const { sorted: displayCareers, sortKey, sortDir, toggle } = useTableSort(filteredCareers);
+    const th = (label: string, field: string) => (
+        <SortTh label={label} field={field} sortKey={sortKey as string} sortDir={sortDir} onSort={toggle as (k: string) => void} />
+    );
+
     return (
         <div className="min-vh-100 d-flex flex-column">
             <Fragment>
@@ -220,8 +226,15 @@ const CarrerasList: React.FC = () => {
                                                 : <p>No se encontraron carreras.</p>}
                                         </div>
                                     ) : (
-                                        <SpkTables tableClass="text-nowrap" header={[{ title: 'Carrera' }, { title: "Facultad" }, { title: 'Ciclos' }, { title: 'Actualización' }, { title: 'Estado' }, { title: 'Acciones' }]}>
-                                            {filteredCareers.map((career) => (
+                                        <SpkTables tableClass="text-nowrap table-hover" header={[
+                                            { title: th('Carrera', 'name') },
+                                            { title: th('Facultad', 'faculty') },
+                                            { title: th('Ciclos', 'cycles') },
+                                            { title: th('Actualización', 'lastUpdated') },
+                                            { title: th('Estado', 'status') },
+                                            { title: 'Acciones' },
+                                        ]}>
+                                            {displayCareers.map((career) => (
                                                 <tr key={career.id}>
                                                     <td>{career.name}</td>
                                                     <td>
