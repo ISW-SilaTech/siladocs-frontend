@@ -101,6 +101,8 @@ const SilabosPage: React.FC = () => {
     } | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [heuristics, setHeuristics] = useState<SyllabusHeuristicResult | null>(null);
+    // Ref para evitar stale closure en handleUpload (función async con múltiples re-renders)
+    const heuristicsRef = useRef<SyllabusHeuristicResult | null>(null);
 
     // SSE live blockchain events
     const [sseEvents, setSseEvents] = useState<BlockchainEvent[]>([]);
@@ -195,6 +197,7 @@ const SilabosPage: React.FC = () => {
     useEffect(() => {
         setAnalysisResult(null);
         setHeuristics(null);
+        heuristicsRef.current = null;
 
         if (!selectedFile || !selectedCourseId) return;
         const course = courses.find(c => c.id === Number(selectedCourseId));
@@ -221,13 +224,15 @@ const SilabosPage: React.FC = () => {
             })
             .finally(() => {
                 if (cancelled) return;
-                setHeuristics(evaluateSyllabusHeuristics({
+                const h = evaluateSyllabusHeuristics({
                     fileName: selectedFile.name,
                     fileSize: selectedFile.size,
                     courseCode: course.code,
                     contentAnalysis,
                     structureScore: structureResult?.structureScore,
-                }));
+                });
+                heuristicsRef.current = h;
+                setHeuristics(h);
                 setIsAnalyzing(false);
             });
 
@@ -337,11 +342,11 @@ const SilabosPage: React.FC = () => {
             setUploadProgress(100);
             setUploadResult(result);
             setUploadVerificationStatus('pending');
-            if (result.id && heuristics) {
-                saveValidationScore(result.id, heuristics.aiConfidence, {
-                    filenameOk: heuristics.filenameHasCourseCode,
-                    contentOk: heuristics.contentHasCourseCode,
-                    structureOk: heuristics.structureLooksReasonable,
+            if (result.id && heuristicsRef.current) {
+                saveValidationScore(result.id, heuristicsRef.current.aiConfidence, {
+                    filenameOk: heuristicsRef.current.filenameHasCourseCode,
+                    contentOk: heuristicsRef.current.contentHasCourseCode,
+                    structureOk: heuristicsRef.current.structureLooksReasonable,
                 });
             }
             toast.success("¡Sílabo subido y confirmado en blockchain!");
