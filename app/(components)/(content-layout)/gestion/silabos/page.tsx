@@ -123,6 +123,10 @@ const SilabosPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
 
+    // Duplicate hash detection (client-side, before any API call)
+    const [duplicateWarning, setDuplicateWarning] = useState<Syllabus | null>(null);
+    const [isComputingHash, setIsComputingHash] = useState(false);
+
     // Cloud Import modal
     const [showImportModal, setShowImportModal] = useState(false);
     const [importSource, setImportSource] = useState<ImportSource>(null);
@@ -173,6 +177,32 @@ const SilabosPage: React.FC = () => {
         setPreviewUrl(url);
         return () => URL.revokeObjectURL(url);
     }, [selectedFile]);
+
+    // Client-side duplicate hash detection — compares SHA-256 of selected file
+    // against hashes already stored for the same course, before any API call.
+    useEffect(() => {
+        setDuplicateWarning(null);
+        if (!selectedFile || !selectedCourseId) return;
+
+        let cancelled = false;
+        setIsComputingHash(true);
+
+        selectedFile.arrayBuffer()
+            .then(buffer => crypto.subtle.digest('SHA-256', buffer))
+            .then(hashBuffer => {
+                if (cancelled) return;
+                const hex = Array.from(new Uint8Array(hashBuffer))
+                    .map(b => b.toString(16).padStart(2, '0'))
+                    .join('');
+                const courseId = Number(selectedCourseId);
+                const existing = syllabi.find(s => s.courseId === courseId && s.hash === hex);
+                if (existing) setDuplicateWarning(existing);
+            })
+            .catch(() => { /* ignore — don't block upload if hash fails */ })
+            .finally(() => { if (!cancelled) setIsComputingHash(false); });
+
+        return () => { cancelled = true; };
+    }, [selectedFile, selectedCourseId, syllabi]);
 
     // Primer filtro: en cuanto se selecciona un PDF, se revisa su estructura
     // en el navegador (sin esperar a que el docente haga clic en "Subir").
@@ -264,6 +294,7 @@ const SilabosPage: React.FC = () => {
         setUploadVerificationStatus(null);
         setStructureResult(null); setStructureError(null); setPreviewTab('documento');
         setAnalysisResult(null); setHeuristics(null);
+        setDuplicateWarning(null); setIsComputingHash(false);
         sseClientRef.current?.close();
         sseClientRef.current = null;
         setShowModal(true);
@@ -278,6 +309,7 @@ const SilabosPage: React.FC = () => {
         setUploadVerificationStatus(null);
         setStructureResult(null); setStructureError(null); setPreviewTab('documento');
         setAnalysisResult(null); setHeuristics(null);
+        setDuplicateWarning(null); setIsComputingHash(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
@@ -940,6 +972,40 @@ const SilabosPage: React.FC = () => {
                                 <div className="pe-md-3" style={{ borderRight: selectedFile ? "1px solid #e9ecef" : "none" }}>
                                     {formError && <Alert variant="danger" className="py-2 fs-13">{formError}</Alert>}
 
+                                    {/* Duplicate file warning */}
+                                    {isComputingHash && (
+                                        <Alert variant="light" className="py-2 fs-13 d-flex align-items-center gap-2 border">
+                                            <Spinner animation="border" size="sm" className="flex-shrink-0" />
+                                            Verificando si el archivo ya existe para este curso...
+                                        </Alert>
+                                    )}
+                                    {duplicateWarning && !isComputingHash && (
+                                        <Alert variant="warning" className="py-2 fs-13">
+                                            <div className="d-flex align-items-start gap-2">
+                                                <i className="ri-error-warning-fill text-warning fs-5 flex-shrink-0 mt-1"></i>
+                                                <div>
+                                                    <strong>Archivo duplicado detectado</strong>
+                                                    <p className="mb-1 mt-1">
+                                                        Este archivo es idéntico a una versión ya registrada para este curso.
+                                                        El sistema identifica los archivos por su huella digital (SHA-256), por lo que subir el mismo archivo
+                                                        no generará una nueva versión.
+                                                    </p>
+                                                    <div className="d-flex flex-wrap gap-2 mt-2">
+                                                        <span className="badge bg-warning-transparent text-warning">
+                                                            <i className="ri-file-line me-1"></i>{duplicateWarning.fileName}
+                                                        </span>
+                                                        <span className="badge bg-light text-muted">
+                                                            Subido el {new Date(duplicateWarning.uploadedAt).toLocaleDateString('es-PE')}
+                                                        </span>
+                                                    </div>
+                                                    <p className="mb-0 mt-2 fs-12 text-muted">
+                                                        Para subir una nueva versión, asegúrate de que el archivo tenga cambios respecto al original.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </Alert>
+                                    )}
+
                                     {/* Course selector */}
                                     <Form.Group className="mb-3">
                                         <Form.Label className="fw-semibold fs-13">
@@ -1369,12 +1435,14 @@ const SilabosPage: React.FC = () => {
                     ) : (
                         <>
                             <SpkButton Customclass="btn btn-secondary" onClick={handleCloseModal} Disabled={isUploading}>Cancelar</SpkButton>
-                            <SpkButton Customclass="btn btn-primary" onClick={handleUpload} Disabled={isUploading || isAnalyzing || !selectedFile || !selectedCourseId}>
+                            <SpkButton Customclass="btn btn-primary" onClick={handleUpload} Disabled={isUploading || isAnalyzing || isComputingHash || !!duplicateWarning || !selectedFile || !selectedCourseId}>
                                 {isUploading
                                     ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Procesando...</>
-                                    : isAnalyzing
-                                        ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Validando...</>
-                                        : <><i className="ri-upload-cloud-2-line me-1"></i>Confirmar y Registrar en Blockchain</>
+                                    : isComputingHash
+                                        ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Verificando...</>
+                                        : isAnalyzing
+                                            ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Validando...</>
+                                            : <><i className="ri-upload-cloud-2-line me-1"></i>Confirmar y Registrar en Blockchain</>
                                 }
                             </SpkButton>
                         </>
