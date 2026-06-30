@@ -658,38 +658,23 @@ const SilabosPage: React.FC = () => {
                                                     {(() => {
                                                         const cached = getValidationScore(s.id);
                                                         if (cached) {
-                                                            const { score, filenameOk, contentOk, structureOk } = cached;
+                                                            const { score } = cached;
                                                             const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
                                                             return (
-                                                                <div style={{ minWidth: 100 }}>
-                                                                    <div className="d-flex align-items-center gap-1 mb-1">
-                                                                        <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
-                                                                    </div>
-                                                                    <ProgressBar now={score} variant={color} style={{ height: 4, borderRadius: 99 }} className="mb-1" />
-                                                                    <div className="d-flex gap-1 flex-wrap">
-                                                                        <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameOk ? "✅" : "❌"} Nombre</span>
-                                                                        <span title="Contenido" style={{ fontSize: 10 }}>{contentOk ? "✅" : "❌"} Contenido</span>
-                                                                        <span title="Estructura" style={{ fontSize: 10 }}>{structureOk ? "✅" : "❌"} Estructura</span>
-                                                                    </div>
+                                                                <div style={{ minWidth: 80 }}>
+                                                                    <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
+                                                                    <ProgressBar now={score} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
                                                                 </div>
                                                             );
                                                         }
-                                                        // Fallback para sílabos existentes: solo filtro 1 (nombre de archivo)
                                                         const { filenameHasCourseCode } = checkFilenameHasCourseCode(s.fileName ?? '', s.courseCode ?? '');
                                                         const partialScore = filenameHasCourseCode ? 30 : 0;
                                                         const color = filenameHasCourseCode ? "warning" : "danger";
                                                         return (
-                                                            <div style={{ minWidth: 100 }}>
-                                                                <div className="d-flex align-items-center gap-1 mb-1">
-                                                                    <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
-                                                                    <span className="badge bg-light text-muted fs-10" title="Solo filtro de nombre disponible para sílabos existentes. Vuelve a subir el archivo para el análisis completo.">parcial</span>
-                                                                </div>
-                                                                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99 }} className="mb-1" />
-                                                                <div className="d-flex gap-1 flex-wrap">
-                                                                    <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameHasCourseCode ? "✅" : "❌"} Nombre</span>
-                                                                    <span title="Requiere re-subir para analizar" style={{ fontSize: 10, color: '#94a3b8' }}>⬜ Contenido</span>
-                                                                    <span title="Requiere re-subir para analizar" style={{ fontSize: 10, color: '#94a3b8' }}>⬜ Estructura</span>
-                                                                </div>
+                                                            <div style={{ minWidth: 80 }} title="Score parcial — solo filtro de nombre. Re-sube el archivo para análisis completo.">
+                                                                <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
+                                                                <span className="text-muted fs-11 ms-1">parcial</span>
+                                                                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
                                                             </div>
                                                         );
                                                     })()}
@@ -1333,6 +1318,70 @@ const SilabosPage: React.FC = () => {
                                     )}
                                 </div>
                             </Col>
+
+                            {/* % Aceptación */}
+                            <Col xs={12}>
+                                {(() => {
+                                    const cached = getValidationScore(previewSyllabus.id);
+                                    const { filenameHasCourseCode } = checkFilenameHasCourseCode(previewSyllabus.fileName ?? '', previewSyllabus.courseCode ?? '');
+                                    const isPartial = !cached;
+                                    const score = cached ? cached.score : (filenameHasCourseCode ? 30 : 0);
+                                    const filenameOk = cached ? cached.filenameOk : filenameHasCourseCode;
+                                    const contentOk = cached?.contentOk ?? null;
+                                    const structureOk = cached?.structureOk ?? null;
+                                    const color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
+                                    return (
+                                        <div className="border rounded p-3">
+                                            <div className="d-flex align-items-center gap-2 mb-3">
+                                                <i className="ri-percent-line fs-5 text-info"></i>
+                                                <span className="fw-semibold fs-13">% Aceptación del Estándar</span>
+                                                {isPartial && (
+                                                    <span className="badge bg-light text-muted ms-auto fs-11" title="Score parcial — solo filtro de nombre disponible. Re-sube el archivo para análisis completo.">
+                                                        parcial
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="d-flex align-items-center gap-3 mb-3">
+                                                <div style={{ fontSize: 36, fontWeight: 700, color }}>{score}%</div>
+                                                <div className="flex-grow-1">
+                                                    <ProgressBar now={score} max={isPartial ? 30 : 100} style={{ height: 10, borderRadius: 99, background: '#e2e8f0' }}>
+                                                        <div style={{ width: `${isPartial ? (score / 30) * 100 : score}%`, background: color, height: '100%', borderRadius: 99 }} />
+                                                    </ProgressBar>
+                                                </div>
+                                            </div>
+                                            <div className="row g-2">
+                                                <div className="col-4">
+                                                    <div className={`rounded p-2 text-center ${filenameOk ? 'bg-success-transparent' : 'bg-danger-transparent'}`}>
+                                                        <div className="fs-16">{filenameOk ? '✅' : '❌'}</div>
+                                                        <div className="fs-11 fw-semibold">Nombre</div>
+                                                        <div className="fs-10 text-muted">30 pts</div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-4">
+                                                    <div className={`rounded p-2 text-center ${contentOk === null ? 'bg-light' : contentOk ? 'bg-success-transparent' : 'bg-danger-transparent'}`}>
+                                                        <div className="fs-16">{contentOk === null ? '⬜' : contentOk ? '✅' : '❌'}</div>
+                                                        <div className="fs-11 fw-semibold">Contenido</div>
+                                                        <div className="fs-10 text-muted">40 pts</div>
+                                                    </div>
+                                                </div>
+                                                <div className="col-4">
+                                                    <div className={`rounded p-2 text-center ${structureOk === null ? 'bg-light' : structureOk ? 'bg-success-transparent' : 'bg-danger-transparent'}`}>
+                                                        <div className="fs-16">{structureOk === null ? '⬜' : structureOk ? '✅' : '❌'}</div>
+                                                        <div className="fs-11 fw-semibold">Estructura</div>
+                                                        <div className="fs-10 text-muted">30 pts</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {isPartial && (
+                                                <p className="text-muted fs-11 mt-2 mb-0">
+                                                    <i className="ri-information-line me-1"></i>
+                                                    Vuelve a subir el archivo para obtener el análisis completo de contenido y estructura.
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </Col>
                         </Row>
                     </Modal.Body>
                 )}
@@ -1341,10 +1390,13 @@ const SilabosPage: React.FC = () => {
                     {previewSyllabus && (
                         <SpkButton
                             Customclass="btn btn-success"
-                            onClick={() => { handleDownload(previewSyllabus); setPreviewSyllabus(null); }}
+                            onClick={() => handleDownload(previewSyllabus)}
                             Disabled={downloadingId === previewSyllabus.id}
                         >
-                            <i className="ri-download-2-line me-1"></i>Descargar Sílabo
+                            {downloadingId === previewSyllabus.id
+                                ? <><Spinner as="span" animation="border" size="sm" className="me-1" />Descargando...</>
+                                : <><i className="ri-download-2-line me-1"></i>Descargar Sílabo</>
+                            }
                         </SpkButton>
                     )}
                 </Modal.Footer>
