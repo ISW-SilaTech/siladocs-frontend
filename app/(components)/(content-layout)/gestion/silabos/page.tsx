@@ -5,7 +5,7 @@ import SpkButton from "@/shared/@spk-reusable-components/general-reusable/reusab
 import SpkTables from "@/shared/@spk-reusable-components/reusable-tables/spk-tables";
 import Pageheader from "@/shared/layouts-components/pageheader/pageheader";
 import Seo from "@/shared/layouts-components/seo/seo";
-import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
+import React, { Fragment, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Card, Col, Row, Spinner, Alert, Modal, Form, ListGroup, ProgressBar, Button, Tab, Nav } from "react-bootstrap";
 import { toast, ToastContainer } from "react-toastify";
@@ -23,7 +23,8 @@ import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/ut
 import SyllabusValidationConfig from "@/shared/components/syllabus-validation-config";
 import { saveValidationScore, getValidationScore } from "@/shared/utils/validationScoreCache";
 import { checkFilenameHasCourseCode } from "@/shared/utils/syllabusValidation";
-import { useTableSort, SortTh } from "@/shared/utils/tableSort";
+import { LedgerService } from "@/shared/services/ledger.service";
+import { SyllabusVersion } from "@/shared/types/ledger";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -115,6 +116,12 @@ const SilabosPage: React.FC = () => {
 
     // Preview modal
     const [previewSyllabus, setPreviewSyllabus] = useState<Syllabus | null>(null);
+    const [previewLedgerVersions, setPreviewLedgerVersions] = useState<SyllabusVersion[]>([]);
+    const [loadingPreviewVersions, setLoadingPreviewVersions] = useState(false);
+
+    // Search & grouped-by-course view
+    const [searchTerm, setSearchTerm] = useState("");
+    const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
 
     // Cloud Import modal
     const [showImportModal, setShowImportModal] = useState(false);
@@ -542,10 +549,77 @@ const SilabosPage: React.FC = () => {
     const formatDate = (iso?: string) =>
         iso ? new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
-    const { sorted: displaySyllabi, sortKey: sylSortKey, sortDir: sylSortDir, toggle: sylToggle } = useTableSort(syllabi);
-    const th = (label: string, field: string) => (
-        <SortTh label={label} field={field} sortKey={sylSortKey as string} sortDir={sylSortDir} onSort={sylToggle as (k: string) => void} />
-    );
+    interface CourseGroup {
+        courseId: number;
+        courseName: string;
+        courseCode: string;
+        syllabi: Syllabus[];
+    }
+
+    const filteredSyllabi = useMemo(() => {
+        const q = searchTerm.trim().toLowerCase();
+        if (!q) return syllabi;
+        return syllabi.filter(s =>
+            s.courseName?.toLowerCase().includes(q) ||
+            s.courseCode?.toLowerCase().includes(q) ||
+            s.fileName?.toLowerCase().includes(q)
+        );
+    }, [syllabi, searchTerm]);
+
+    const courseGroups = useMemo((): CourseGroup[] => {
+        const map = new Map<number, CourseGroup>();
+        filteredSyllabi.forEach(s => {
+            if (!map.has(s.courseId)) {
+                map.set(s.courseId, { courseId: s.courseId, courseName: s.courseName, courseCode: s.courseCode, syllabi: [] });
+            }
+            map.get(s.courseId)!.syllabi.push(s);
+        });
+        map.forEach(g => g.syllabi.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()));
+        return Array.from(map.values()).sort((a, b) => a.courseName.localeCompare(b.courseName, 'es'));
+    }, [filteredSyllabi]);
+
+    const renderAcceptanceCell = (s: Syllabus) => {
+        const cached = getValidationScore(s.id);
+        if (cached) {
+            const { score } = cached;
+            const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
+            return (
+                <div style={{ minWidth: 80 }}>
+                    <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
+                    <ProgressBar now={score} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
+                </div>
+            );
+        }
+        const { filenameHasCourseCode } = checkFilenameHasCourseCode(s.fileName ?? '', s.courseCode ?? '');
+        const partialScore = filenameHasCourseCode ? 30 : 0;
+        const color = filenameHasCourseCode ? "warning" : "danger";
+        return (
+            <div style={{ minWidth: 80 }} title="Score parcial — solo filtro de nombre. Re-sube para análisis completo.">
+                <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
+                <span className="text-muted fs-11 ms-1">parcial</span>
+                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
+            </div>
+        );
+    };
+
+    const handleOpenUploadForCourse = (courseId: number) => {
+        setSelectedCourseId(String(courseId));
+        setShowModal(true);
+    };
+
+    const handleOpenPreview = async (s: Syllabus) => {
+        setPreviewSyllabus(s);
+        setPreviewLedgerVersions([]);
+        setLoadingPreviewVersions(true);
+        try {
+            const versions = await LedgerService.getSyllabusVersions(String(s.id));
+            setPreviewLedgerVersions(versions);
+        } catch {
+            // silently ignore — ledger endpoint may not have versions yet
+        } finally {
+            setLoadingPreviewVersions(false);
+        }
+    };
 
     return (
         <Fragment>
@@ -595,17 +669,26 @@ const SilabosPage: React.FC = () => {
                                         Actualizar
                                     </button>
                                 </div>
-                                <div className="d-flex align-items-center gap-2 text-muted fs-13">
-                                    <i className="ri-shield-check-line text-success"></i>
-                                    Registrados en Hyperledger Fabric
-                                    <span className="badge bg-info-transparent text-info ms-2">
-                                        {syllabi.length} sílabo{syllabi.length !== 1 ? 's' : ''}
-                                    </span>
-                                    {syllabi.length === 4 && (
-                                        <span className="badge bg-danger-transparent text-danger ms-2" title="⚠️ Es probable que hay más sílabos en la BD. Revisa el navegador DevTools (F12) → Console">
-                                            ⚠️ Posible límite en backend
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
+                                    <Form.Control
+                                        style={{ maxWidth: "240px" }}
+                                        type="search"
+                                        placeholder="Buscar por curso o archivo"
+                                        aria-label="Buscar sílabos"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                    <div className="d-flex align-items-center gap-2 text-muted fs-13">
+                                        <i className="ri-shield-check-line text-success"></i>
+                                        <span className="badge bg-info-transparent text-info">
+                                            {courseGroups.length} curso{courseGroups.length !== 1 ? 's' : ''} · {syllabi.length} versión{syllabi.length !== 1 ? 'es' : ''}
                                         </span>
-                                    )}
+                                        {syllabi.length === 4 && (
+                                            <span className="badge bg-danger-transparent text-danger" title="⚠️ Posible límite en backend">
+                                                ⚠️
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </Card.Body>
@@ -625,123 +708,166 @@ const SilabosPage: React.FC = () => {
                                     <Alert variant="danger" className="m-3">{error}</Alert>
                                 ) : (
                                     <div id="coach-syllabus-table">
+                                    {courseGroups.length === 0 ? (
+                                        <div className="text-center p-5 text-muted">
+                                            {searchTerm.trim()
+                                                ? <p>Sin coincidencias para &ldquo;<strong>{searchTerm.trim()}</strong>&rdquo;.</p>
+                                                : <p>No hay sílabos registrados. Sube el primero.</p>}
+                                        </div>
+                                    ) : (
                                     <SpkTables tableClass="text-nowrap table-hover" header={[
-                                        { title: th("Archivo", "fileName") },
-                                        { title: th("Curso", "courseName") },
+                                        { title: "Curso / Versión" },
+                                        { title: "Archivo" },
                                         { title: "Hash SHA-256" },
                                         { title: "Blockchain" },
-                                        { title: th("Fecha", "uploadedAt") },
-                                        { title: th("Estado", "status") },
+                                        { title: "Fecha" },
+                                        { title: "Estado" },
                                         { title: "% Aceptación" },
                                         { title: "Acciones" },
                                     ]}>
-                                        {displaySyllabi.map((s) => (
-                                            <tr key={s.id}>
-                                                <td>
-                                                    <div className="d-flex align-items-center gap-2">
-                                                        <i className={`fs-4 ${s.fileName?.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
-                                                        <div>
-                                                            <div className="fw-medium">{s.fileName || "—"}</div>
-                                                            <small className="text-muted">{formatBytes(s.fileSize)}</small>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span className="fw-medium">{s.courseName}</span>
-                                                    <br /><small className="text-muted">{s.courseCode}</small>
-                                                </td>
-                                                <td><code className="text-muted fs-11">{s.hash ? `${s.hash.substring(0, 16)}...` : "—"}</code></td>
-                                                <td>
-                                                    {!s.hash ? (
-                                                        <span className="badge bg-danger-transparent text-danger">⚠️ Sin registrar</span>
-                                                    ) : s.fabricTxId ? (
-                                                        <div>
-                                                            <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
-                                                            <code className="text-primary fs-11">{s.fabricTxId.substring(0, 12)}...</code>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
-                                                    )}
-                                                </td>
-                                                <td className="fs-13">{formatDate(s.uploadedAt)}</td>
-                                                <td>
-                                                    <div id="coach-status-badge">
-                                                        <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
-                                                            {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
-                                                        </SpkBadge>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    {(() => {
-                                                        const cached = getValidationScore(s.id);
-                                                        if (cached) {
-                                                            const { score } = cached;
-                                                            const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
-                                                            return (
-                                                                <div style={{ minWidth: 80 }}>
-                                                                    <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
-                                                                    <ProgressBar now={score} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
-                                                                </div>
-                                                            );
-                                                        }
-                                                        const { filenameHasCourseCode } = checkFilenameHasCourseCode(s.fileName ?? '', s.courseCode ?? '');
-                                                        const partialScore = filenameHasCourseCode ? 30 : 0;
-                                                        const color = filenameHasCourseCode ? "warning" : "danger";
-                                                        return (
-                                                            <div style={{ minWidth: 80 }} title="Score parcial — solo filtro de nombre. Re-sube el archivo para análisis completo.">
-                                                                <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
-                                                                <span className="text-muted fs-11 ms-1">parcial</span>
-                                                                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
+                                        {courseGroups.map(group => {
+                                            const latest = group.syllabi[0];
+                                            const isExpanded = expandedCourseId === group.courseId;
+                                            const hasMultiple = group.syllabi.length > 1;
+                                            return (
+                                            <Fragment key={group.courseId}>
+                                                {/* ── Course summary row ── */}
+                                                <tr
+                                                    style={{ cursor: 'pointer', background: isExpanded ? 'var(--default-bg, #f8f9fa)' : '' }}
+                                                    onClick={() => setExpandedCourseId(prev => prev === group.courseId ? null : group.courseId)}
+                                                >
+                                                    <td>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <i className={`ri-arrow-${isExpanded ? 'down' : 'right'}-s-line text-primary fs-5`}></i>
+                                                            <div>
+                                                                <div className="fw-bold">{group.courseName}</div>
+                                                                <small className="text-muted">{group.courseCode}</small>
                                                             </div>
-                                                        );
-                                                    })()}
-                                                </td>
-                                                <td>
-                                                    <div className="d-flex gap-1">
-                                                        <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => setPreviewSyllabus(s)}>
-                                                            <i className="ri-eye-line"></i>
-                                                        </button>
-                                                        <button className="btn btn-sm btn-icon btn-success-light coach-download-btn" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
-                                                            {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
-                                                        </button>
-                                                        {s.status?.toLowerCase() === "confirmed" && (
-                                                            <button
-                                                                className="btn btn-sm btn-icon btn-warning-light coach-approve-btn"
-                                                                title="Aprobar sílabo (TC-02)"
-                                                                onClick={() => handleApprove(s.id)}
-                                                                disabled={approvingId === s.id}
-                                                            >
-                                                                {approvingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-checkbox-circle-line"></i>}
+                                                            <span className={`badge ms-1 ${hasMultiple ? 'bg-primary-transparent text-primary' : 'bg-light text-muted'}`}>
+                                                                {group.syllabi.length} versión{group.syllabi.length !== 1 ? 'es' : ''}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <i className={`${latest.fileName?.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
+                                                            <div>
+                                                                <div className="fw-medium">{latest.fileName || "—"}</div>
+                                                                <small className="text-muted">{formatBytes(latest.fileSize)}</small>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td><code className="text-muted fs-11">{latest.hash ? `${latest.hash.substring(0, 16)}...` : "—"}</code></td>
+                                                    <td>
+                                                        {latest.fabricTxId
+                                                            ? <span className="badge bg-success-transparent text-success">⛓ En cadena</span>
+                                                            : <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>}
+                                                    </td>
+                                                    <td className="fs-13">{formatDate(latest.uploadedAt)}</td>
+                                                    <td>
+                                                        <SpkBadge variant="" Customclass={statusBadge[latest.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                            {statusLabel[latest.status?.toLowerCase()] ?? latest.status ?? "—"}
+                                                        </SpkBadge>
+                                                    </td>
+                                                    <td>{renderAcceptanceCell(latest)}</td>
+                                                    <td onClick={e => e.stopPropagation()}>
+                                                        <div className="d-flex gap-1">
+                                                            <button className="btn btn-sm btn-icon btn-primary-light" title="Subir nueva versión" onClick={() => handleOpenUploadForCourse(group.courseId)}>
+                                                                <i className="ri-upload-cloud-2-line"></i>
                                                             </button>
-                                                        )}
-                                                        <button
-                                                            className="btn btn-sm btn-icon btn-purple-light coach-verify-btn"
-                                                            title="Verificar integridad (TC-04)"
-                                                            onClick={() => handleVerifyIntegrity(s)}
-                                                            disabled={verifyingId === s.id}
-                                                        >
-                                                            {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
-                                                        </button>
-                                                        {canDeleteSyllabus && (
-                                                            <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar sílabo" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
-                                                                {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
+                                                            <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles de última versión" onClick={() => handleOpenPreview(latest)}>
+                                                                <i className="ri-eye-line"></i>
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+
+                                                {/* ── Version sub-rows (expanded) ── */}
+                                                {isExpanded && group.syllabi.map((s, idx) => (
+                                                    <tr key={s.id} style={{ background: '#f8fafc' }}>
+                                                        <td>
+                                                            <div className="d-flex align-items-center gap-2 ps-4">
+                                                                <span className={`badge ${idx === 0 ? 'bg-primary' : 'bg-secondary-transparent text-muted'}`}>
+                                                                    v{group.syllabi.length - idx}
+                                                                </span>
+                                                                {idx === 0 && <span className="badge bg-success-transparent text-success fs-10">Última</span>}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="d-flex align-items-center gap-2">
+                                                                <i className={`${s.fileName?.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
+                                                                <div>
+                                                                    <div className="fw-medium">{s.fileName || "—"}</div>
+                                                                    <small className="text-muted">{formatBytes(s.fileSize)}</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td><code className="text-muted fs-11">{s.hash ? `${s.hash.substring(0, 16)}...` : "—"}</code></td>
+                                                        <td>
+                                                            {!s.hash ? (
+                                                                <span className="badge bg-danger-transparent text-danger">⚠️ Sin registrar</span>
+                                                            ) : s.fabricTxId ? (
+                                                                <div>
+                                                                    <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
+                                                                    <code className="text-primary fs-11">{s.fabricTxId.substring(0, 12)}...</code>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="fs-13">{formatDate(s.uploadedAt)}</td>
+                                                        <td>
+                                                            <div id="coach-status-badge">
+                                                                <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                                    {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
+                                                                </SpkBadge>
+                                                            </div>
+                                                        </td>
+                                                        <td>{renderAcceptanceCell(s)}</td>
+                                                        <td>
+                                                            <div className="d-flex gap-1">
+                                                                <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => handleOpenPreview(s)}>
+                                                                    <i className="ri-eye-line"></i>
+                                                                </button>
+                                                                <button className="btn btn-sm btn-icon btn-success-light coach-download-btn" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
+                                                                    {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
+                                                                </button>
+                                                                {s.status?.toLowerCase() === "confirmed" && (
+                                                                    <button
+                                                                        className="btn btn-sm btn-icon btn-warning-light coach-approve-btn"
+                                                                        title="Aprobar sílabo (TC-02)"
+                                                                        onClick={() => handleApprove(s.id)}
+                                                                        disabled={approvingId === s.id}
+                                                                    >
+                                                                        {approvingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-checkbox-circle-line"></i>}
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    className="btn btn-sm btn-icon btn-purple-light coach-verify-btn"
+                                                                    title="Verificar integridad (TC-04)"
+                                                                    onClick={() => handleVerifyIntegrity(s)}
+                                                                    disabled={verifyingId === s.id}
+                                                                >
+                                                                    {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
+                                                                </button>
+                                                                {canDeleteSyllabus && (
+                                                                    <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar sílabo" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
+                                                                        {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
+                                                                    </button>
+                                                                )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                            </Fragment>
+                                            );
+                                        })}
                                     </SpkTables>
+                                    )}
                                     </div>
                                 )}
                             </div>
                         </Card.Body>
-                        {!isLoading && !error && syllabi.length === 0 && (
-                            <Card.Body className="text-center text-muted py-5">
-                                <i className="ri-file-unknow-line fs-1 mb-3 d-block"></i>
-                                <p className="mb-0">No hay sílabos registrados. Sube el primero.</p>
-                            </Card.Body>
-                        )}
                     </Card>
                 </Col>
             </Row>
@@ -834,6 +960,19 @@ const SilabosPage: React.FC = () => {
                                             }
                                         </Form.Select>
                                         {coursesError && <small className="text-danger">{coursesError}</small>}
+                                        {selectedCourseId && (() => {
+                                            const existing = courseGroups.find(g => g.courseId === Number(selectedCourseId));
+                                            if (!existing) return null;
+                                            const n = existing.syllabi.length;
+                                            return (
+                                                <div className="mt-2 d-flex align-items-center gap-2 p-2 rounded border bg-info-transparent">
+                                                    <i className="ri-information-line text-info"></i>
+                                                    <span className="fs-12">
+                                                        Este curso ya tiene <strong>{n} versión{n !== 1 ? 'es' : ''}</strong>. Al subir, se registrará como la <strong>versión {n + 1}</strong>.
+                                                    </span>
+                                                </div>
+                                            );
+                                        })()}
                                     </Form.Group>
 
                                     {/* Drag and drop zone */}
@@ -1417,6 +1556,44 @@ const SilabosPage: React.FC = () => {
                         </SpkButton>
                     )}
                 </Modal.Footer>
+
+                {/* Ledger version history */}
+                {previewSyllabus && (
+                    <div className="border-top px-4 py-3">
+                        <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i className="ri-history-line text-primary"></i>
+                            Historial de Revisiones (Blockchain)
+                        </h6>
+                        {loadingPreviewVersions ? (
+                            <div className="text-center py-3"><Spinner animation="border" size="sm" /></div>
+                        ) : previewLedgerVersions.length === 0 ? (
+                            <p className="text-muted fs-13 mb-0">No hay revisiones de blockchain registradas para este sílabo.</p>
+                        ) : (
+                            <div style={{ maxHeight: 240, overflowY: 'auto' }}>
+                                {previewLedgerVersions.map((v, idx) => (
+                                    <div key={v.versionId ?? idx} className={`d-flex gap-3 pb-3 mb-3 ${idx < previewLedgerVersions.length - 1 ? 'border-bottom' : ''}`}>
+                                        <div className="flex-shrink-0 pt-1">
+                                            <span className={`badge ${idx === 0 ? 'bg-primary' : 'bg-secondary-transparent text-muted'}`}>v{v.versionNumber}</span>
+                                        </div>
+                                        <div className="flex-grow-1">
+                                            <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                                {v.isOnBlockchain
+                                                    ? <span className="badge bg-success-transparent text-success fs-10">⛓ Blockchain</span>
+                                                    : <span className="badge bg-warning-transparent text-warning fs-10">⏳ Pendiente</span>}
+                                                {v.status && <span className="badge bg-light text-muted fs-10">{v.status}</span>}
+                                                <span className="text-muted fs-11">{new Date(v.createdAt).toLocaleString('es-PE')}</span>
+                                            </div>
+                                            {v.uploadedBy && <div className="fs-12 text-muted">Por: {v.uploadedBy}</div>}
+                                            {v.fabricTxId && <code className="fs-11 text-primary d-block mt-1">{v.fabricTxId.substring(0, 24)}...</code>}
+                                            {v.fileHash && <code className="fs-11 text-muted d-block">{v.fileHash.substring(0, 24)}...</code>}
+                                            {v.notes && <div className="fs-12 mt-1 fst-italic text-muted">{v.notes}</div>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
             </Modal>
 
             {/* ── Cloud Import Modal ── */}
