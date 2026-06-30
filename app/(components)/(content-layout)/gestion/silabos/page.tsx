@@ -21,6 +21,7 @@ import { extractPdfText } from "@/shared/utils/pdfText";
 import { detectSyllabusStructure, SyllabusStructureResult } from "@/shared/utils/syllabusStructure";
 import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/utils/syllabusValidation";
 import SyllabusValidationConfig from "@/shared/components/syllabus-validation-config";
+import { saveValidationScore, getValidationScore } from "@/shared/utils/validationScoreCache";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -335,6 +336,13 @@ const SilabosPage: React.FC = () => {
             setUploadProgress(100);
             setUploadResult(result);
             setUploadVerificationStatus('pending');
+            if (result.id && heuristics) {
+                saveValidationScore(result.id, heuristics.aiConfidence, {
+                    filenameOk: heuristics.filenameHasCourseCode,
+                    contentOk: heuristics.contentHasCourseCode,
+                    structureOk: heuristics.structureLooksReasonable,
+                });
+            }
             toast.success("¡Sílabo subido y confirmado en blockchain!");
 
             // Wait 1 second to ensure database transaction is committed before fetching
@@ -607,7 +615,7 @@ const SilabosPage: React.FC = () => {
                                     <div id="coach-syllabus-table">
                                     <SpkTables tableClass="text-nowrap" header={[
                                         { title: "Archivo" }, { title: "Curso" }, { title: "Hash SHA-256" },
-                                        { title: "Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "Acciones" },
+                                        { title: "Blockchain" }, { title: "Fecha" }, { title: "Estado" }, { title: "% Aceptación" }, { title: "Acciones" },
                                     ]}>
                                         {syllabi.map((s) => (
                                             <tr key={s.id}>
@@ -644,6 +652,32 @@ const SilabosPage: React.FC = () => {
                                                             {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
                                                         </SpkBadge>
                                                     </div>
+                                                </td>
+                                                <td>
+                                                    {(() => {
+                                                        const cached = getValidationScore(s.id);
+                                                        if (!cached) return <span className="text-muted fs-12">—</span>;
+                                                        const { score, filenameOk, contentOk, structureOk } = cached;
+                                                        const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
+                                                        return (
+                                                            <div style={{ minWidth: 90 }}>
+                                                                <div className="d-flex align-items-center gap-1 mb-1">
+                                                                    <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
+                                                                </div>
+                                                                <ProgressBar
+                                                                    now={score}
+                                                                    variant={color}
+                                                                    style={{ height: 4, borderRadius: 99 }}
+                                                                    className="mb-1"
+                                                                />
+                                                                <div className="d-flex gap-1 flex-wrap">
+                                                                    <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameOk ? "✅" : "❌"} Nombre</span>
+                                                                    <span title="Contenido" style={{ fontSize: 10 }}>{contentOk ? "✅" : "❌"} Contenido</span>
+                                                                    <span title="Estructura" style={{ fontSize: 10 }}>{structureOk ? "✅" : "❌"} Estructura</span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </td>
                                                 <td>
                                                     <div className="d-flex gap-1">
