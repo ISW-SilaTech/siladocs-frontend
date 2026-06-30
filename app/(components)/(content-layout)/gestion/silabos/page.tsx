@@ -123,6 +123,10 @@ const SilabosPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [expandedCourseId, setExpandedCourseId] = useState<number | null>(null);
 
+    // Ledger version history per expanded course (fetched on expand)
+    const [expandedLedgerVersions, setExpandedLedgerVersions] = useState<Record<number, SyllabusVersion[]>>({});
+    const [loadingLedgerVersions, setLoadingLedgerVersions] = useState<Record<number, boolean>>({});
+
     // Duplicate hash detection (client-side, before any API call)
     const [duplicateWarning, setDuplicateWarning] = useState<Syllabus | null>(null);
     const [isComputingHash, setIsComputingHash] = useState(false);
@@ -639,6 +643,27 @@ const SilabosPage: React.FC = () => {
         setShowModal(true);
     };
 
+    const handleExpandCourse = async (courseId: number) => {
+        const isCurrentlyExpanded = expandedCourseId === courseId;
+        setExpandedCourseId(isCurrentlyExpanded ? null : courseId);
+
+        // Fetch ledger versions the first time this course is expanded
+        if (!isCurrentlyExpanded && expandedLedgerVersions[courseId] === undefined) {
+            const group = courseGroups.find(g => g.courseId === courseId);
+            if (!group) return;
+            const latest = group.syllabi[0];
+            setLoadingLedgerVersions(prev => ({ ...prev, [courseId]: true }));
+            try {
+                const versions = await LedgerService.getSyllabusVersions(String(latest.id));
+                setExpandedLedgerVersions(prev => ({ ...prev, [courseId]: versions }));
+            } catch {
+                setExpandedLedgerVersions(prev => ({ ...prev, [courseId]: [] }));
+            } finally {
+                setLoadingLedgerVersions(prev => ({ ...prev, [courseId]: false }));
+            }
+        }
+    };
+
     const handleOpenPreview = async (s: Syllabus) => {
         setPreviewSyllabus(s);
         setPreviewLedgerVersions([]);
@@ -760,23 +785,29 @@ const SilabosPage: React.FC = () => {
                                         {courseGroups.map(group => {
                                             const latest = group.syllabi[0];
                                             const isExpanded = expandedCourseId === group.courseId;
-                                            const hasMultiple = group.syllabi.length > 1;
+                                            const ledgerVersions = expandedLedgerVersions[group.courseId];
+                                            const isLoadingVersions = loadingLedgerVersions[group.courseId];
+                                            // Use ledger count when available, else fall back to API record count
+                                            const versionCount = ledgerVersions !== undefined ? ledgerVersions.length : group.syllabi.length;
+                                            const hasMultiple = versionCount > 1;
                                             return (
                                             <Fragment key={group.courseId}>
                                                 {/* ── Course summary row ── */}
                                                 <tr
                                                     style={{ cursor: 'pointer', background: isExpanded ? 'var(--default-bg, #f8f9fa)' : '' }}
-                                                    onClick={() => setExpandedCourseId(prev => prev === group.courseId ? null : group.courseId)}
+                                                    onClick={() => handleExpandCourse(group.courseId)}
                                                 >
                                                     <td>
                                                         <div className="d-flex align-items-center gap-2">
-                                                            <i className={`ri-arrow-${isExpanded ? 'down' : 'right'}-s-line text-primary fs-5`}></i>
+                                                            {isLoadingVersions
+                                                                ? <Spinner animation="border" size="sm" className="text-primary" style={{ width: 16, height: 16, borderWidth: 2 }} />
+                                                                : <i className={`ri-arrow-${isExpanded ? 'down' : 'right'}-s-line text-primary fs-5`}></i>}
                                                             <div>
                                                                 <div className="fw-bold">{group.courseName}</div>
                                                                 <small className="text-muted">{group.courseCode}</small>
                                                             </div>
                                                             <span className={`badge ms-1 ${hasMultiple ? 'bg-primary-transparent text-primary' : 'bg-light text-muted'}`}>
-                                                                {group.syllabi.length} versión{group.syllabi.length !== 1 ? 'es' : ''}
+                                                                {versionCount} versión{versionCount !== 1 ? 'es' : ''}
                                                             </span>
                                                         </div>
                                                     </td>
@@ -814,83 +845,136 @@ const SilabosPage: React.FC = () => {
                                                     </td>
                                                 </tr>
 
-                                                {/* ── Version sub-rows (expanded) ── */}
-                                                {isExpanded && group.syllabi.map((s, idx) => (
-                                                    <tr key={s.id} style={{ background: '#f8fafc' }}>
-                                                        <td>
-                                                            <div className="d-flex align-items-center gap-2 ps-4">
-                                                                <span className={`badge ${idx === 0 ? 'bg-primary' : 'bg-secondary-transparent text-muted'}`}>
-                                                                    v{group.syllabi.length - idx}
-                                                                </span>
-                                                                {idx === 0 && <span className="badge bg-success-transparent text-success fs-10">Última</span>}
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <div className="d-flex align-items-center gap-2">
-                                                                <i className={`${s.fileName?.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
-                                                                <div>
-                                                                    <div className="fw-medium">{s.fileName || "—"}</div>
-                                                                    <small className="text-muted">{formatBytes(s.fileSize)}</small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td><code className="text-muted fs-11">{s.hash ? `${s.hash.substring(0, 16)}...` : "—"}</code></td>
-                                                        <td>
-                                                            {!s.hash ? (
-                                                                <span className="badge bg-danger-transparent text-danger">⚠️ Sin registrar</span>
-                                                            ) : s.fabricTxId ? (
-                                                                <div>
-                                                                    <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
-                                                                    <code className="text-primary fs-11">{s.fabricTxId.substring(0, 12)}...</code>
-                                                                </div>
-                                                            ) : (
-                                                                <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
-                                                            )}
-                                                        </td>
-                                                        <td className="fs-13">{formatDate(s.uploadedAt)}</td>
-                                                        <td>
-                                                            <div id="coach-status-badge">
-                                                                <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
-                                                                    {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
-                                                                </SpkBadge>
-                                                            </div>
-                                                        </td>
-                                                        <td>{renderAcceptanceCell(s)}</td>
-                                                        <td>
-                                                            <div className="d-flex gap-1">
-                                                                <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => handleOpenPreview(s)}>
-                                                                    <i className="ri-eye-line"></i>
-                                                                </button>
-                                                                <button className="btn btn-sm btn-icon btn-success-light coach-download-btn" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
-                                                                    {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
-                                                                </button>
-                                                                {s.status?.toLowerCase() === "confirmed" && (
-                                                                    <button
-                                                                        className="btn btn-sm btn-icon btn-warning-light coach-approve-btn"
-                                                                        title="Aprobar sílabo (TC-02)"
-                                                                        onClick={() => handleApprove(s.id)}
-                                                                        disabled={approvingId === s.id}
-                                                                    >
-                                                                        {approvingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-checkbox-circle-line"></i>}
-                                                                    </button>
-                                                                )}
-                                                                <button
-                                                                    className="btn btn-sm btn-icon btn-purple-light coach-verify-btn"
-                                                                    title="Verificar integridad (TC-04)"
-                                                                    onClick={() => handleVerifyIntegrity(s)}
-                                                                    disabled={verifyingId === s.id}
-                                                                >
-                                                                    {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
-                                                                </button>
-                                                                {canDeleteSyllabus && (
-                                                                    <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar sílabo" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
-                                                                        {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
-                                                                    </button>
-                                                                )}
+                                                {/* ── Version sub-rows from blockchain ledger ── */}
+                                                {isExpanded && (
+                                                    isLoadingVersions ? (
+                                                        <tr style={{ background: '#f8fafc' }}>
+                                                            <td colSpan={8} className="text-center py-3 text-muted fs-13">
+                                                                <Spinner animation="border" size="sm" className="me-2" />
+                                                                Cargando historial de versiones desde blockchain...
+                                                            </td>
+                                                        </tr>
+                                                    ) : ledgerVersions && ledgerVersions.length > 0 ? (
+                                                        ledgerVersions.map((v, idx) => (
+                                                            <tr key={v.versionId ?? idx} style={{ background: '#f8fafc' }}>
+                                                                <td>
+                                                                    <div className="d-flex align-items-center gap-2 ps-4">
+                                                                        <span className={`badge ${idx === 0 ? 'bg-primary' : 'bg-secondary-transparent text-muted'}`}>
+                                                                            v{v.versionNumber ?? (ledgerVersions.length - idx)}
+                                                                        </span>
+                                                                        {idx === 0 && <span className="badge bg-success-transparent text-success fs-10">Última</span>}
+                                                                        {v.uploadedBy && <small className="text-muted fs-10">{v.uploadedBy}</small>}
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <i className="ri-file-pdf-2-line text-danger"></i>
+                                                                        <div>
+                                                                            <div className="fw-medium fs-13">{latest.fileName || "—"}</div>
+                                                                            {v.notes && <small className="text-muted fst-italic">{v.notes}</small>}
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td><code className="text-muted fs-11">{v.fileHash ? `${v.fileHash.substring(0, 16)}...` : "—"}</code></td>
+                                                                <td>
+                                                                    {v.isOnBlockchain ? (
+                                                                        <div>
+                                                                            <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
+                                                                            {v.fabricTxId && <code className="text-primary fs-11">{v.fabricTxId.substring(0, 12)}...</code>}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="fs-13">{formatDate(v.createdAt)}</td>
+                                                                <td>
+                                                                    {v.status ? (
+                                                                        <SpkBadge variant="" Customclass={statusBadge[v.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                                            {statusLabel[v.status?.toLowerCase()] ?? v.status}
+                                                                        </SpkBadge>
+                                                                    ) : <span className="text-muted fs-12">—</span>}
+                                                                </td>
+                                                                <td>{idx === 0 ? renderAcceptanceCell(latest) : <span className="text-muted fs-12">—</span>}</td>
+                                                                <td>
+                                                                    <div className="d-flex gap-1">
+                                                                        <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => handleOpenPreview(latest)}>
+                                                                            <i className="ri-eye-line"></i>
+                                                                        </button>
+                                                                        {v.fileUrl && (
+                                                                            <a className="btn btn-sm btn-icon btn-success-light" href={v.fileUrl} target="_blank" rel="noreferrer" title="Descargar esta versión">
+                                                                                <i className="ri-download-2-line"></i>
+                                                                            </a>
+                                                                        )}
                                                                     </div>
                                                                 </td>
                                                             </tr>
-                                                        ))}
+                                                        ))
+                                                    ) : (
+                                                        /* Fallback: ledger empty or unavailable — show API records */
+                                                        group.syllabi.map((s, idx) => (
+                                                            <tr key={s.id} style={{ background: '#f8fafc' }}>
+                                                                <td>
+                                                                    <div className="d-flex align-items-center gap-2 ps-4">
+                                                                        <span className={`badge ${idx === 0 ? 'bg-primary' : 'bg-secondary-transparent text-muted'}`}>
+                                                                            v{group.syllabi.length - idx}
+                                                                        </span>
+                                                                        {idx === 0 && <span className="badge bg-success-transparent text-success fs-10">Última</span>}
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <div className="d-flex align-items-center gap-2">
+                                                                        <i className={`${s.fileName?.endsWith(".pdf") ? "ri-file-pdf-2-line text-danger" : "ri-file-word-line text-primary"}`}></i>
+                                                                        <div>
+                                                                            <div className="fw-medium">{s.fileName || "—"}</div>
+                                                                            <small className="text-muted">{formatBytes(s.fileSize)}</small>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td><code className="text-muted fs-11">{s.hash ? `${s.hash.substring(0, 16)}...` : "—"}</code></td>
+                                                                <td>
+                                                                    {s.fabricTxId ? (
+                                                                        <div>
+                                                                            <span className="badge bg-success-transparent text-success mb-1 d-block">⛓ En cadena</span>
+                                                                            <code className="text-primary fs-11">{s.fabricTxId.substring(0, 12)}...</code>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="badge bg-warning-transparent text-warning">⏳ Pendiente</span>
+                                                                    )}
+                                                                </td>
+                                                                <td className="fs-13">{formatDate(s.uploadedAt)}</td>
+                                                                <td>
+                                                                    <SpkBadge variant="" Customclass={statusBadge[s.status?.toLowerCase()] ?? "bg-light text-default"}>
+                                                                        {statusLabel[s.status?.toLowerCase()] ?? s.status ?? "—"}
+                                                                    </SpkBadge>
+                                                                </td>
+                                                                <td>{renderAcceptanceCell(s)}</td>
+                                                                <td>
+                                                                    <div className="d-flex gap-1">
+                                                                        <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => handleOpenPreview(s)}>
+                                                                            <i className="ri-eye-line"></i>
+                                                                        </button>
+                                                                        <button className="btn btn-sm btn-icon btn-success-light" title="Descargar" onClick={() => handleDownload(s)} disabled={downloadingId === s.id}>
+                                                                            {downloadingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-download-2-line"></i>}
+                                                                        </button>
+                                                                        {s.status?.toLowerCase() === "confirmed" && (
+                                                                            <button className="btn btn-sm btn-icon btn-warning-light" title="Aprobar (TC-02)" onClick={() => handleApprove(s.id)} disabled={approvingId === s.id}>
+                                                                                {approvingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-checkbox-circle-line"></i>}
+                                                                            </button>
+                                                                        )}
+                                                                        <button className="btn btn-sm btn-icon btn-purple-light" title="Verificar integridad (TC-04)" onClick={() => handleVerifyIntegrity(s)} disabled={verifyingId === s.id}>
+                                                                            {verifyingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-shield-check-line"></i>}
+                                                                        </button>
+                                                                        {canDeleteSyllabus && (
+                                                                            <button className="btn btn-sm btn-icon btn-danger-light" title="Eliminar" onClick={() => openDeleteConfirm(s.id)} disabled={deletingId === s.id}>
+                                                                                {deletingId === s.id ? <Spinner as="span" animation="border" size="sm" /> : <i className="ri-delete-bin-line"></i>}
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        ))
+                                                    )
+                                                )}
                                             </Fragment>
                                             );
                                         })}
