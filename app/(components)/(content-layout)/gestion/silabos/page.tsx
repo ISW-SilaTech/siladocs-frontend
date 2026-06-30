@@ -22,6 +22,7 @@ import { detectSyllabusStructure, SyllabusStructureResult } from "@/shared/utils
 import { evaluateSyllabusHeuristics, SyllabusHeuristicResult } from "@/shared/utils/syllabusValidation";
 import SyllabusValidationConfig from "@/shared/components/syllabus-validation-config";
 import { saveValidationScore, getValidationScore } from "@/shared/utils/validationScoreCache";
+import { checkFilenameHasCourseCode } from "@/shared/utils/syllabusValidation";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -656,24 +657,38 @@ const SilabosPage: React.FC = () => {
                                                 <td>
                                                     {(() => {
                                                         const cached = getValidationScore(s.id);
-                                                        if (!cached) return <span className="text-muted fs-12">—</span>;
-                                                        const { score, filenameOk, contentOk, structureOk } = cached;
-                                                        const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
-                                                        return (
-                                                            <div style={{ minWidth: 90 }}>
-                                                                <div className="d-flex align-items-center gap-1 mb-1">
-                                                                    <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
+                                                        if (cached) {
+                                                            const { score, filenameOk, contentOk, structureOk } = cached;
+                                                            const color = score >= 70 ? "success" : score >= 40 ? "warning" : "danger";
+                                                            return (
+                                                                <div style={{ minWidth: 100 }}>
+                                                                    <div className="d-flex align-items-center gap-1 mb-1">
+                                                                        <span className={`fw-bold fs-13 text-${color}`}>{score}%</span>
+                                                                    </div>
+                                                                    <ProgressBar now={score} variant={color} style={{ height: 4, borderRadius: 99 }} className="mb-1" />
+                                                                    <div className="d-flex gap-1 flex-wrap">
+                                                                        <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameOk ? "✅" : "❌"} Nombre</span>
+                                                                        <span title="Contenido" style={{ fontSize: 10 }}>{contentOk ? "✅" : "❌"} Contenido</span>
+                                                                        <span title="Estructura" style={{ fontSize: 10 }}>{structureOk ? "✅" : "❌"} Estructura</span>
+                                                                    </div>
                                                                 </div>
-                                                                <ProgressBar
-                                                                    now={score}
-                                                                    variant={color}
-                                                                    style={{ height: 4, borderRadius: 99 }}
-                                                                    className="mb-1"
-                                                                />
+                                                            );
+                                                        }
+                                                        // Fallback para sílabos existentes: solo filtro 1 (nombre de archivo)
+                                                        const { filenameHasCourseCode } = checkFilenameHasCourseCode(s.fileName ?? '', s.courseCode ?? '');
+                                                        const partialScore = filenameHasCourseCode ? 30 : 0;
+                                                        const color = filenameHasCourseCode ? "warning" : "danger";
+                                                        return (
+                                                            <div style={{ minWidth: 100 }}>
+                                                                <div className="d-flex align-items-center gap-1 mb-1">
+                                                                    <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
+                                                                    <span className="badge bg-light text-muted fs-10" title="Solo filtro de nombre disponible para sílabos existentes. Vuelve a subir el archivo para el análisis completo.">parcial</span>
+                                                                </div>
+                                                                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99 }} className="mb-1" />
                                                                 <div className="d-flex gap-1 flex-wrap">
-                                                                    <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameOk ? "✅" : "❌"} Nombre</span>
-                                                                    <span title="Contenido" style={{ fontSize: 10 }}>{contentOk ? "✅" : "❌"} Contenido</span>
-                                                                    <span title="Estructura" style={{ fontSize: 10 }}>{structureOk ? "✅" : "❌"} Estructura</span>
+                                                                    <span title="Nombre de archivo" style={{ fontSize: 10 }}>{filenameHasCourseCode ? "✅" : "❌"} Nombre</span>
+                                                                    <span title="Requiere re-subir para analizar" style={{ fontSize: 10, color: '#94a3b8' }}>⬜ Contenido</span>
+                                                                    <span title="Requiere re-subir para analizar" style={{ fontSize: 10, color: '#94a3b8' }}>⬜ Estructura</span>
                                                                 </div>
                                                             </div>
                                                         );
