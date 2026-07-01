@@ -12,6 +12,8 @@ import { CoursesService, Course } from "@/shared/services/courses.service";
 import { CareersService, Career } from "@/shared/services/careers.service";
 import { CertificatesService, Certificate } from "@/shared/services/certificates.service";
 import { EmissionCreditsService, EmissionCredit } from "@/shared/services/emission-credits.service";
+import { LedgerService } from "@/shared/services/ledger.service";
+import { SyllabusVersion } from "@/shared/types/ledger";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 
@@ -31,15 +33,15 @@ const fmtRelative = (iso?: string) => {
     return fmtDate(iso);
 };
 
-const groupByMonth = (syllabi: Syllabus[]) => {
+const groupByMonth = (versions: { createdAt: string; isOnBlockchain: boolean }[]) => {
     const MONTHS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
     const counts = new Array(12).fill(0);
     const confirmed = new Array(12).fill(0);
-    syllabi.forEach((s) => {
-        if (!s.uploadedAt) return;
-        const m = new Date(s.uploadedAt).getMonth();
+    versions.forEach((v) => {
+        if (!v.createdAt) return;
+        const m = new Date(v.createdAt).getMonth();
         counts[m]++;
-        if (s.fabricTxId) confirmed[m]++;
+        if (v.isOnBlockchain) confirmed[m]++;
     });
     const now = new Date().getMonth();
     return {
@@ -169,6 +171,7 @@ const School: React.FC = () => {
     const [isClient, setIsClient] = useState(false);
 
     const [syllabi, setSyllabi] = useState<Syllabus[]>([]);
+    const [allVersions, setAllVersions] = useState<SyllabusVersion[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [careers, setCareers] = useState<Career[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
@@ -184,28 +187,44 @@ const School: React.FC = () => {
             CareersService.getAll(),
             CertificatesService.getCertificates(),
             EmissionCreditsService.getCredits(),
-        ]).then(([s, c, ca, cert, cr]) => {
-            if (s.status === "fulfilled") setSyllabi(s.value);
+        ]).then(async ([s, c, ca, cert, cr]) => {
             if (c.status === "fulfilled") setCourses(c.value);
             if (ca.status === "fulfilled") setCareers(ca.value);
             if (cert.status === "fulfilled") setCertificates(cert.value);
             if (cr.status === "fulfilled" && cr.value.length > 0) setCredits(cr.value[0]);
+            if (s.status === "fulfilled") {
+                setSyllabi(s.value);
+                // Fetch ledger versions for each syllabus to get real upload history
+                const versionArrays = await Promise.allSettled(
+                    s.value.map((syl: Syllabus) => LedgerService.getSyllabusVersions(String(syl.id)))
+                );
+                const combined: SyllabusVersion[] = [];
+                versionArrays.forEach((r) => {
+                    if (r.status === "fulfilled") combined.push(...r.value);
+                });
+                setAllVersions(combined);
+            }
         }).finally(() => setLoading(false));
     }, []);
 
     // ── Derived metrics ───────────────────────────────────────────────────────
     const total = syllabi.length;
+    const totalVersions = allVersions.length;
     const enCadena = syllabi.filter((s) => !!s.fabricTxId).length;
     const pendientes = syllabi.filter((s) => !s.fabricTxId && !!s.hash).length;
     const sinRegistrar = syllabi.filter((s) => !s.hash).length;
     const validados = syllabi.filter((s) => s.status?.toLowerCase() === "validated").length;
     const cobertura = total > 0 ? Math.round((enCadena / total) * 100) : 0;
+    const versionsEnCadena = allVersions.filter((v) => v.isOnBlockchain).length;
 
     const sorted = [...syllabi].sort(
         (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
     );
     const recentSyllabi = sorted.slice(0, 6);
-    const chartData = groupByMonth(syllabi);
+    // Use ledger versions for chart (real history); fallback to syllabi upload dates
+    const chartData = totalVersions > 0
+        ? groupByMonth(allVersions.map((v) => ({ createdAt: v.createdAt, isOnBlockchain: v.isOnBlockchain })))
+        : groupByMonth(syllabi.map((s) => ({ createdAt: s.uploadedAt, isOnBlockchain: !!s.fabricTxId })));
     const maxBlock = syllabi.reduce((m, s: any) => Math.max(m, s.blockNumber ?? 0), 0);
 
     // ── Chart config ──────────────────────────────────────────────────────────
@@ -234,14 +253,14 @@ const School: React.FC = () => {
         tooltip: {
             shared: true,
             intersect: false,
-            y: { formatter: (v: number) => `${v} sílabo${v !== 1 ? "s" : ""}` },
+            y: { formatter: (v: number) => `${v} versión${v !== 1 ? "es" : ""}` },
         },
         plotOptions: { bar: { borderRadius: 4, columnWidth: "45%" } },
     };
 
     const mixedSeries = [
-        { name: "Sílabos subidos", type: "bar", data: chartData.total },
-        { name: "Confirmados en Fabric", type: "area", data: chartData.confirmed },
+        { name: totalVersions > 0 ? "Versiones subidas" : "Sílabos subidos", type: "bar", data: chartData.total },
+        { name: "Confirmadas en Fabric", type: "area", data: chartData.confirmed },
     ];
 
     const donutOptions = {
@@ -367,17 +386,23 @@ const School: React.FC = () => {
                                 icon="ri-file-text-line" iconBg="#4767ed18" iconColor="#4767ed"
                                 label="Total Sílabos"
                                 value={total}
-                                sub={`${courses.length} cursos en ${careers.length} carreras`}
+                                sub={totalVersions > 0
+                                    ? `${totalVersions} versión${totalVersions !== 1 ? "es" : ""} · ${courses.length} cursos`
+                                    : `${courses.length} cursos en ${careers.length} carreras`}
                                 href="/gestion/silabos"
                             />
                         </Col>
                         <Col xl={3} md={6}>
                             <KpiCard
                                 icon="ri-links-line" iconBg="#10b98118" iconColor="#10b981"
-                                label="Registrados en Blockchain"
-                                value={enCadena}
-                                sub={total > 0 ? `${total - enCadena} aún no registrados` : "Sin datos"}
-                                badge={total > 0 ? { label: `${cobertura}% cobertura`, color: "#10b981" } : undefined}
+                                label="Versiones en Blockchain"
+                                value={totalVersions > 0 ? versionsEnCadena : enCadena}
+                                sub={totalVersions > 0
+                                    ? `de ${totalVersions} versiones totales`
+                                    : total > 0 ? `${total - enCadena} aún no registrados` : "Sin datos"}
+                                badge={totalVersions > 0
+                                    ? { label: `${Math.round((versionsEnCadena / Math.max(totalVersions, 1)) * 100)}% cobertura`, color: "#10b981" }
+                                    : total > 0 ? { label: `${cobertura}% cobertura`, color: "#10b981" } : undefined}
                                 href="/core/blockchain"
                             />
                         </Col>
@@ -422,7 +447,7 @@ const School: React.FC = () => {
                             <div className="d-flex align-items-center gap-3 fs-12 text-muted">
                                 <span className="d-flex align-items-center gap-1">
                                     <span style={{ width: 10, height: 10, borderRadius: 2, background: "#4767ed", display: "inline-block" }}></span>
-                                    Subidos
+                                    {totalVersions > 0 ? "Versiones" : "Subidos"}
                                 </span>
                                 <span className="d-flex align-items-center gap-1">
                                     <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981", display: "inline-block" }}></span>
