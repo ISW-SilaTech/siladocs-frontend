@@ -476,38 +476,57 @@ const BulkUploadPage: React.FC = () => {
   return (
     <Fragment>
       <ToastContainer />
-      <Pageheader title="Carga Masiva" currentpage="Carga Masiva" activepage="Dashboard" />
+      <Pageheader title="Gestión Académica" subtitle="Carga Masiva" currentpage="Carga Masiva" activepage="Carga Masiva" />
 
-      {/* ─── Phase indicator ────────────────────────────────────────────── */}
+      {/* ─── Stepper ──────────────────────────────────────────────────────── */}
       <Row className="mb-4">
         <Col xl={12}>
-          <Card className="custom-card border-0 shadow-sm">
-            <Card.Body className="py-3">
-              <div className="d-flex align-items-center">
+          <Card className="custom-card">
+            <Card.Body className="py-3 px-4">
+              <div className="d-flex align-items-center gap-0">
+                {/* Step 1 */}
                 <button
-                  className={`d-flex align-items-center gap-2 px-4 py-2 rounded-pill border-0 fw-semibold small ${activePhase === 1 ? "bg-primary text-white" : phase1Success ? "bg-success-transparent text-success" : "bg-light text-muted"}`}
+                  className="d-flex align-items-center gap-3 border-0 bg-transparent p-0 text-start"
                   onClick={() => setActivePhase(1)}
                 >
-                  <span className={`rounded-circle d-flex align-items-center justify-content-center fw-bold ${activePhase === 1 ? "bg-white text-primary" : phase1Success ? "bg-success text-white" : "bg-secondary text-white"}`}
-                    style={{ width: 22, height: 22, fontSize: 11 }}>
+                  <span
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 ${
+                      activePhase === 1 ? "bg-primary text-white" : phase1Success ? "bg-success text-white" : "bg-light text-muted border"
+                    }`}
+                    style={{ width: 32, height: 32, fontSize: 13 }}
+                  >
                     {phase1Success ? <i className="ri-check-line"></i> : "1"}
                   </span>
-                  Importar Datos (Carreras · Mallas · Cursos)
+                  <div className="text-start">
+                    <div className={`fw-semibold small lh-1 mb-1 ${activePhase === 1 ? "text-primary" : phase1Success ? "text-success" : "text-muted"}`}>
+                      Fase 1
+                    </div>
+                    <div className="text-muted" style={{ fontSize: 11 }}>Importar Carreras · Mallas · Cursos</div>
+                  </div>
                 </button>
 
-                <div className={`flex-grow-1 mx-3 border-top border-2 ${phase1Success ? "border-success" : "border-light"}`} style={{ maxWidth: 60 }} />
+                {/* Connector */}
+                <div className={`flex-grow-1 mx-3 border-top border-2 ${phase1Success ? "border-success" : "border-light"}`} style={{ maxWidth: 80 }} />
 
+                {/* Step 2 */}
                 <button
-                  className={`d-flex align-items-center gap-2 px-4 py-2 rounded-pill border-0 fw-semibold small ${activePhase === 2 ? "bg-primary text-white" : "bg-light text-muted"}`}
+                  className="d-flex align-items-center gap-3 border-0 bg-transparent p-0 text-start"
                   onClick={() => handleGoToPhase2()}
-                  style={{ opacity: 1 }}
                 >
-                  <span className={`rounded-circle d-flex align-items-center justify-content-center fw-bold ${activePhase === 2 ? "bg-white text-primary" : "bg-secondary text-white"}`}
-                    style={{ width: 22, height: 22, fontSize: 11 }}>
+                  <span
+                    className={`rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 ${
+                      activePhase === 2 ? "bg-primary text-white" : "bg-light text-muted border"
+                    }`}
+                    style={{ width: 32, height: 32, fontSize: 13 }}
+                  >
                     2
                   </span>
-                  <i className="ri-links-line me-1"></i>
-                  Registrar Sílabos en Blockchain
+                  <div className="text-start">
+                    <div className={`fw-semibold small lh-1 mb-1 ${activePhase === 2 ? "text-primary" : "text-muted"}`}>
+                      Fase 2
+                    </div>
+                    <div className="text-muted" style={{ fontSize: 11 }}>Registrar Sílabos en Blockchain</div>
+                  </div>
                 </button>
 
                 {phase1Success && activePhase === 1 && (
@@ -515,8 +534,7 @@ const BulkUploadPage: React.FC = () => {
                     className="btn btn-success btn-sm ms-auto d-flex align-items-center gap-2"
                     onClick={() => handleGoToPhase2()}
                   >
-                    <i className="ri-arrow-right-line"></i>
-                    Continuar a Fase 2
+                    Continuar a Fase 2 <i className="ri-arrow-right-line"></i>
                   </button>
                 )}
               </div>
@@ -527,305 +545,302 @@ const BulkUploadPage: React.FC = () => {
 
       {/* ═══════════════════════ PHASE 1 ═══════════════════════════════════ */}
       {activePhase === 1 && (
-        <>
-          <Row>
-            <Col xl={12}>
-              <Alert variant="info" className="border-0 shadow-sm">
-                <div className="d-flex gap-3 align-items-start">
-                  <i className="ri-information-line fs-5 mt-1 flex-shrink-0"></i>
-                  <div>
-                    <strong>Cómo funciona la carga masiva</strong>
-                    <ol className="mb-0 mt-2 small ps-3">
-                      <li>Descarga la plantilla y complétala con los datos de tus carreras, mallas y cursos.</li>
-                      <li>Sube el Excel, valídalo y luego impórtalo al sistema.</li>
-                      <li>En la <strong>Fase 2</strong>, arrastra los PDFs de los sílabos — se auto-mapean por código de curso y se registran en blockchain.</li>
-                    </ol>
+        <Row className="g-3">
+          {/* Left: Upload */}
+          <Col xl={7} lg={7}>
+            <Card className="custom-card h-100">
+              <Card.Header>
+                <Card.Title><i className="ri-file-excel-2-line me-2 text-success"></i>Subir Archivo Excel</Card.Title>
+                <div className="ms-auto">
+                  <button className="btn btn-sm btn-light d-flex align-items-center gap-1" onClick={handleDownloadTemplate}>
+                    <i className="ri-download-2-line"></i>
+                    <span className="small">Descargar Plantilla</span>
+                  </button>
+                </div>
+              </Card.Header>
+              <Card.Body className="d-flex flex-column gap-3">
+                {!file ? (
+                  <div
+                    className={`border-2 border-dashed rounded-3 text-center position-relative flex-grow-1 d-flex align-items-center justify-content-center ${isDragOver ? "border-primary bg-primary-transparent" : "border-light"}`}
+                    onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
+                    style={{ minHeight: 180, cursor: "pointer" }}
+                  >
+                    <div>
+                      <i className={`ri-file-excel-2-line fs-1 mb-2 d-block ${isDragOver ? "text-primary" : "text-success"}`}></i>
+                      <p className="fw-semibold mb-1">{isDragOver ? "Suelta el archivo aquí" : "Arrastra tu archivo .xlsx aquí"}</p>
+                      <p className="text-muted mb-0 small">o haz clic para seleccionar — Máx. 10 MB</p>
+                    </div>
+                    <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileSelect}
+                      className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: "pointer" }} />
+                  </div>
+                ) : (
+                  <div className="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
+                    <i className="ri-file-excel-2-line fs-2 text-success flex-shrink-0"></i>
+                    <div className="flex-grow-1 overflow-hidden">
+                      <p className="fw-semibold mb-0 text-truncate">{file.name}</p>
+                      <small className="text-muted">{(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                    </div>
+                    <button className="btn btn-sm btn-light flex-shrink-0" onClick={clearPhase1State} disabled={isProcessing || isSubmitting}>
+                      <i className="ri-close-line"></i>
+                    </button>
+                  </div>
+                )}
+
+                {validationResult && !validationResult.isValid && (
+                  <Alert variant="danger" className="py-2 mb-0">
+                    <i className="ri-close-circle-line me-2"></i>
+                    <strong>Error:</strong> {validationResult.errors[0]}
+                  </Alert>
+                )}
+
+                <button
+                  className="btn btn-primary w-100"
+                  onClick={processFile}
+                  disabled={!file || isProcessing || isSubmitting}
+                >
+                  {isProcessing
+                    ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Validando archivo...</>
+                    : <><i className="ri-shield-check-line me-2"></i>Validar Archivo</>}
+                </button>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Right: Guide */}
+          <Col xl={5} lg={5}>
+            <Card className="custom-card h-100">
+              <Card.Header>
+                <Card.Title><i className="ri-information-line me-2 text-info"></i>Cómo funciona</Card.Title>
+              </Card.Header>
+              <Card.Body className="d-flex flex-column gap-3">
+                {[
+                  { icon: "ri-download-cloud-line", color: "text-primary", title: "Descarga la plantilla", desc: "Usa el botón «Descargar Plantilla» y complétala con carreras, mallas y cursos." },
+                  { icon: "ri-shield-check-line", color: "text-warning", title: "Valida e importa", desc: "Sube el .xlsx, haz clic en «Validar Archivo» y luego en «Importar al Sistema»." },
+                  { icon: "ri-links-line", color: "text-success", title: "Registra en Blockchain", desc: "En la Fase 2, arrastra los PDFs de los sílabos — se auto-mapean por código de curso y quedan inmutables en Hyperledger Fabric." },
+                ].map((step, i) => (
+                  <div key={i} className="d-flex gap-3 align-items-start">
+                    <div className={`rounded-circle bg-light d-flex align-items-center justify-content-center flex-shrink-0 ${step.color}`}
+                      style={{ width: 36, height: 36 }}>
+                      <i className={`${step.icon} fs-5`}></i>
+                    </div>
+                    <div>
+                      <p className="fw-semibold mb-1 small">{step.title}</p>
+                      <p className="text-muted mb-0" style={{ fontSize: 12 }}>{step.desc}</p>
+                    </div>
+                  </div>
+                ))}
+
+                <div className="mt-auto pt-2 border-top">
+                  <p className="text-muted mb-2" style={{ fontSize: 11 }}>Formato esperado del archivo Excel:</p>
+                  <div className="d-flex flex-wrap gap-1">
+                    {["Carrera_Nombre", "Malla_Nombre", "Curso_Codigo", "Curso_Nombre", "Curso_Ciclo"].map(col => (
+                      <code key={col} className="bg-light px-2 py-1 rounded" style={{ fontSize: 10 }}>{col}</code>
+                    ))}
+                    <code className="bg-light px-2 py-1 rounded text-muted" style={{ fontSize: 10 }}>+ 11 más...</code>
                   </div>
                 </div>
-              </Alert>
-            </Col>
-          </Row>
+              </Card.Body>
+            </Card>
+          </Col>
 
-          <Row>
+          {/* Preview table */}
+          {validationResult && records.length > 0 && (
             <Col xl={12}>
               <Card className="custom-card">
                 <Card.Header>
-                  <Card.Title>
-                    <i className="ri-upload-2-line me-2"></i>Subir Archivo Excel
-                  </Card.Title>
-                </Card.Header>
-                <Card.Body>
-                  {!file ? (
-                    <div
-                      className={`border-2 border-dashed rounded-3 p-5 text-center mb-3 position-relative ${isDragOver ? "border-primary bg-primary-transparent" : "border-light"}`}
-                      onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop}
-                      style={{ minHeight: 160, display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >
-                      <div>
-                        <i className="ri-file-excel-2-line fs-1 text-success mb-2 d-block"></i>
-                        <h5 className="fw-semibold">{isDragOver ? "Suelta el archivo aquí" : "Arrastra tu archivo .xlsx aquí"}</h5>
-                        <p className="text-muted mb-0 small">o haz clic para seleccionar — Máx. 10 MB</p>
-                      </div>
-                      <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileSelect}
-                        className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: "pointer" }} />
+                  <div className="d-flex align-items-center justify-content-between w-100">
+                    <div>
+                      <Card.Title className="mb-1">Vista Previa — Registros Detectados</Card.Title>
+                      <p className="text-muted mb-0 small">
+                        {records.filter(r => !r.errors?.length).length} filas válidas
+                        {formattingErrors.length > 0 && <span className="text-danger ms-1">· {formattingErrors.length} con errores</span>}
+                      </p>
                     </div>
-                  ) : (
-                    <div className="d-flex align-items-center justify-content-between p-3 bg-light rounded-3 mb-3">
-                      <div className="d-flex align-items-center gap-3">
-                        <i className="ri-file-excel-2-line fs-3 text-success"></i>
-                        <div>
-                          <h6 className="fw-semibold mb-0">{file.name}</h6>
-                          <small className="text-muted">{(file.size / 1024 / 1024).toFixed(2)} MB</small>
-                        </div>
-                      </div>
-                      <SpkButton Buttonvariant="light" Size="sm" onClickfunc={clearPhase1State} Disabled={isProcessing || isSubmitting}>
-                        <i className="ri-close-line"></i>
-                      </SpkButton>
+                    <div className="d-flex gap-2 align-items-center">
+                      <Badge bg="info-transparent" className="text-info border border-info">
+                        {new Set(records.map(r => r.carreraNombre)).size} carreras
+                      </Badge>
+                      <Badge bg="warning-transparent" className="text-warning border border-warning">
+                        {new Set(records.map(r => r.mallaNombre)).size} mallas
+                      </Badge>
+                      <Badge bg="success">{records.length} cursos</Badge>
+                    </div>
+                  </div>
+                </Card.Header>
+                <Card.Body className="p-0">
+                  <div className="table-responsive" style={{ maxHeight: 320, overflowY: "auto" }}>
+                    <Table striped hover className="text-nowrap mb-0">
+                      <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--spk-body-bg)" }}>
+                        <tr>
+                          <th className="ps-3">#</th>
+                          <th>Carrera</th>
+                          <th>Malla</th>
+                          <th>Código</th>
+                          <th>Curso</th>
+                          <th>Ciclo</th>
+                          <th>Año</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {records.map((rec, i) => (
+                          <tr key={i} className={rec.errors?.length ? "table-danger" : ""}>
+                            <td className="ps-3 text-muted small">
+                              {rec.rowNumber}
+                              {rec.errors && rec.errors.length > 0 && (
+                                <i className="ri-error-warning-fill text-danger ms-1" title={rec.errors.join("; ")}></i>
+                              )}
+                            </td>
+                            <td className="small">{rec.carreraNombre}</td>
+                            <td className="small text-muted">{rec.mallaNombre}</td>
+                            <td><Badge bg="light" className="text-dark border">{rec.cursoCodigo}</Badge></td>
+                            <td className="small">{rec.cursoNombre}</td>
+                            <td className="text-center"><Badge bg="secondary">{rec.cursoCiclo}</Badge></td>
+                            <td className="small text-muted">{rec.cursoAño}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+
+                  {formattingErrors.length > 0 && (
+                    <div className="px-3 pt-3">
+                      <Alert variant="warning" className="mb-3 py-2">
+                        <i className="ri-alert-line me-2"></i>
+                        <strong>{formattingErrors.length} fila(s) con errores:</strong>
+                        <ul className="mb-0 mt-1 ps-3">
+                          {formattingErrors.slice(0, 5).map((err, i) => <li key={i} className="text-muted small">{err}</li>)}
+                          {formattingErrors.length > 5 && <li className="text-muted small">...y {formattingErrors.length - 5} más</li>}
+                        </ul>
+                      </Alert>
                     </div>
                   )}
 
-                  <div className="d-flex gap-3">
-                    <SpkButton Buttonvariant="primary" onClickfunc={processFile} Disabled={!file || isProcessing || isSubmitting} Customclass="flex-fill">
-                      {isProcessing
-                        ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Validando...</>
-                        : <><i className="ri-shield-check-line me-2"></i>Validar Archivo</>}
-                    </SpkButton>
-                    <SpkButton Buttonvariant="light" onClickfunc={handleDownloadTemplate}>
-                      <i className="ri-download-2-line me-2"></i>Descargar Plantilla
+                  {backendResult && (
+                    <div className="px-3 pt-3">
+                      <Alert variant={backendResult.errors?.length ? "warning" : "success"} className="d-flex align-items-center gap-2 mb-0 py-2">
+                        <i className={`ri-${backendResult.errors?.length ? "alert-line text-warning" : "checkbox-circle-line text-success"} fs-5`}></i>
+                        <div>
+                          <strong>{backendResult.successCount} cursos importados correctamente</strong>
+                          {backendResult.errors?.length > 0 && (
+                            <span className="text-muted ms-2">— {backendResult.errors.length} con errores</span>
+                          )}
+                        </div>
+                      </Alert>
+                    </div>
+                  )}
+
+                  <div className="d-flex justify-content-between align-items-center p-3 border-top">
+                    <button
+                      className="btn btn-outline-success btn-sm"
+                      onClick={() => handleGoToPhase2()}
+                      disabled={!phase1Success}
+                    >
+                      <i className="ri-links-line me-1"></i>
+                      {phase1Success ? `Ir a Fase 2 (${backendResult?.successCount} cursos)` : "Importa primero para continuar"}
+                    </button>
+                    <SpkButton
+                      Buttonvariant="primary"
+                      onClickfunc={handleSubmitData}
+                      Disabled={isSubmitting || isProcessing || !records.length || !!backendResult}
+                    >
+                      {isSubmitting
+                        ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Importando...</>
+                        : <><i className="ri-send-plane-line me-2"></i>Importar al Sistema</>}
                     </SpkButton>
                   </div>
                 </Card.Body>
               </Card>
             </Col>
-          </Row>
-
-          {validationResult && records.length > 0 && (
-            <Row>
-              <Col xl={12}>
-                <Card className="custom-card">
-                  <Card.Header>
-                    <div className="d-flex align-items-center justify-content-between w-100">
-                      <div>
-                        <Card.Title className="mb-1">Vista Previa — Registros Cargados</Card.Title>
-                        <p className="text-muted mb-0 small">
-                          {records.filter(r => !r.errors?.length).length} cursos válidos
-                          {formattingErrors.length > 0 && ` — ${formattingErrors.length} fila(s) con errores`}
-                        </p>
-                      </div>
-                      <div className="d-flex gap-2 align-items-center">
-                        {/* Unique carreras count */}
-                        <Badge bg="info-transparent" className="text-info border border-info">
-                          {new Set(records.map(r => r.carreraNombre)).size} carreras
-                        </Badge>
-                        <Badge bg="warning-transparent" className="text-warning border border-warning">
-                          {new Set(records.map(r => r.mallaNombre)).size} mallas
-                        </Badge>
-                        <Badge bg="success">{records.length} cursos</Badge>
-                      </div>
-                    </div>
-                  </Card.Header>
-                  <Card.Body className="p-0">
-                    <div className="table-responsive" style={{ maxHeight: 380, overflowY: "auto" }}>
-                      <Table striped hover className="text-nowrap mb-0">
-                        <thead style={{ position: "sticky", top: 0, zIndex: 1, background: "var(--spk-body-bg)" }}>
-                          <tr>
-                            <th className="ps-3">#</th>
-                            <th>Carrera</th>
-                            <th>Malla</th>
-                            <th>Código</th>
-                            <th>Curso</th>
-                            <th>Ciclo</th>
-                            <th>Año</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {records.map((rec, i) => (
-                            <tr key={i} className={rec.errors?.length ? "table-danger" : ""} title={rec.errors?.length ? rec.errors.join("; ") : ""}>
-                              <td className="ps-3 text-muted small">
-                                {rec.rowNumber}
-                                {rec.errors && rec.errors.length > 0 && <i className="ri-error-warning-fill text-danger ms-1" title={rec.errors.join("; ")}></i>}
-                              </td>
-                              <td className="small">{rec.carreraNombre}</td>
-                              <td className="small text-muted">{rec.mallaNombre}</td>
-                              <td><Badge bg="light" className="text-dark border">{rec.cursoCodigo}</Badge></td>
-                              <td className="small">{rec.cursoNombre}</td>
-                              <td className="text-center"><Badge bg="secondary">{rec.cursoCiclo}</Badge></td>
-                              <td className="small text-muted">{rec.cursoAño}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </Table>
-                    </div>
-
-                    {formattingErrors.length > 0 && (
-                      <div className="px-3 pt-3">
-                        <Alert variant="warning" className="mb-3">
-                          <i className="ri-alert-line me-2"></i>
-                          <strong>{formattingErrors.length} fila(s) con errores de validación:</strong>
-                          <ul className="mb-0 mt-2 ps-3">
-                            {formattingErrors.map((err, i) => <li key={i} className="text-muted small">{err}</li>)}
-                          </ul>
-                        </Alert>
-                      </div>
-                    )}
-
-                    {backendResult && (
-                      <div className="px-3 pt-3">
-                        <Alert variant={backendResult.errors?.length ? "warning" : "success"} className="d-flex align-items-center gap-2 mb-0">
-                          <i className={`ri-${backendResult.errors?.length ? "alert-line text-warning" : "checkbox-circle-line text-success"} fs-5`}></i>
-                          <div>
-                            <strong>{backendResult.successCount} cursos importados correctamente</strong>
-                            {backendResult.errors?.length > 0 && (
-                              <span className="text-muted ms-2">— {backendResult.errors.length} con errores</span>
-                            )}
-                          </div>
-                        </Alert>
-                      </div>
-                    )}
-
-                    <div className="d-flex justify-content-between align-items-center p-3 border-top mt-3">
-                      <SpkButton
-                        Buttonvariant="success"
-                        onClickfunc={() => handleGoToPhase2()}
-                        Disabled={!phase1Success}
-                      >
-                        <i className="ri-links-line me-2"></i>
-                        {phase1Success ? `Ir a Fase 2 — Subir Sílabos (${backendResult?.successCount} cursos)` : "Importa primero para continuar"}
-                      </SpkButton>
-                      <SpkButton
-                        Buttonvariant="primary"
-                        Size="lg"
-                        onClickfunc={handleSubmitData}
-                        Disabled={isSubmitting || isProcessing || !records.length || !!backendResult}
-                      >
-                        {isSubmitting
-                          ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Importando...</>
-                          : <><i className="ri-send-plane-line me-2"></i>Importar al Sistema</>}
-                      </SpkButton>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
           )}
-
-          {validationResult && !validationResult.isValid && (
-            <Row>
-              <Col xl={12}>
-                <Alert variant="danger">
-                  <i className="ri-close-circle-line me-2"></i>
-                  <strong>Error de validación:</strong> {validationResult.errors.join(" — ")}
-                </Alert>
-              </Col>
-            </Row>
-          )}
-        </>
+        </Row>
       )}
 
       {/* ═══════════════════════ PHASE 2 ═══════════════════════════════════ */}
       {activePhase === 2 && (
-        <>
-          {/* Header */}
-          <Row className="mb-3">
-            <Col xl={12}>
-              <Card className="custom-card border-0 shadow-sm" style={{ background: "linear-gradient(135deg, #6366f1 0%, #3b82f6 100%)" }}>
-                <Card.Body className="py-4 text-white">
-                  <div className="d-flex align-items-center gap-4">
-                    <div className="p-3 bg-white bg-opacity-25 rounded-3">
-                      <i className="ri-links-fill fs-2"></i>
+        <Row className="g-3">
+          {/* Drop zone + info */}
+          <Col xl={5} lg={5}>
+            <Card className="custom-card h-100">
+              <Card.Header>
+                <Card.Title><i className="ri-file-pdf-line me-2 text-danger"></i>Sílabos PDF</Card.Title>
+                {isLoadingCourses && <Spinner animation="border" size="sm" className="ms-auto" />}
+                {!isLoadingCourses && availableCourses.length > 0 && (
+                  <span className="ms-auto badge bg-light text-muted border small">{availableCourses.length} cursos disponibles</span>
+                )}
+              </Card.Header>
+              <Card.Body className="d-flex flex-column gap-3">
+                <div
+                  className={`rounded-3 border-2 border-dashed text-center position-relative flex-grow-1 d-flex align-items-center justify-content-center ${isPdfDragOver ? "border-primary bg-primary-transparent" : "border-light"}`}
+                  onDragOver={handlePDFDragOver} onDragLeave={handlePDFDragLeave} onDrop={handlePDFDrop}
+                  style={{ minHeight: 200, cursor: "pointer" }}
+                >
+                  <div>
+                    <i className={`ri-file-pdf-2-line fs-1 mb-2 d-block ${isPdfDragOver ? "text-primary" : "text-danger"}`}></i>
+                    <p className="fw-semibold mb-1">{isPdfDragOver ? "¡Suelta los PDFs!" : "Arrastra múltiples PDFs aquí"}</p>
+                    <p className="text-muted mb-3 small">o haz clic para seleccionar</p>
+                    <div className="d-flex gap-1 justify-content-center flex-wrap">
+                      {["SIS101.pdf", "MAT101.pdf", "Silabo_FIS201.pdf"].map(ex => (
+                        <code key={ex} className="bg-light px-2 py-1 rounded" style={{ fontSize: 10 }}>{ex}</code>
+                      ))}
                     </div>
-                    <div className="flex-grow-1">
-                      <h4 className="fw-bold mb-1">Registro de Sílabos en Blockchain</h4>
-                      <p className="mb-0 opacity-75">
-                        Arrastra los PDFs de los sílabos. El sistema los mapeará automáticamente por código de curso
-                        y los registrará en Hyperledger Fabric — cada sílabo obtiene un hash y un Transaction ID único e inmutable.
+                  </div>
+                  <input ref={pdfInputRef} type="file" accept=".pdf" multiple onChange={handlePDFSelect}
+                    className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: "pointer" }} />
+                </div>
+
+                <div className="border rounded-3 p-3 bg-light">
+                  <p className="fw-semibold small mb-2"><i className="ri-lightbulb-line me-1 text-warning"></i>Auto-mapeo por código</p>
+                  <p className="text-muted mb-0" style={{ fontSize: 12 }}>
+                    Los archivos se asignan automáticamente al curso cuyo código esté en el nombre del PDF.
+                    Si no se detecta, puedes asignarlo manualmente en la tabla.
+                  </p>
+                </div>
+
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => setActivePhase(1)}>
+                  <i className="ri-arrow-left-line me-1"></i>Volver a Fase 1
+                </button>
+              </Card.Body>
+            </Card>
+          </Col>
+
+          {/* Table or empty state */}
+          <Col xl={7} lg={7}>
+            <Card className="custom-card h-100">
+              <Card.Header>
+                <div className="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
+                  <div>
+                    <Card.Title className="mb-1">Sílabos para Blockchain</Card.Title>
+                    {pdfItems.length > 0 && (
+                      <p className="text-muted mb-0 small">
+                        {pdfItems.filter(i => i.courseId).length} de {pdfItems.length} mapeados
                       </p>
-                    </div>
-                    {isLoadingCourses ? (
-                      <Spinner animation="border" variant="light" />
-                    ) : (
-                      <div className="text-center text-white opacity-75">
-                        <h5 className="fw-bold mb-0">{availableCourses.length}</h5>
-                        <small>cursos disponibles</small>
-                      </div>
                     )}
                   </div>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* PDF Drop Zone */}
-          <Row>
-            <Col xl={12}>
-              <Card className="custom-card">
-                <Card.Header>
-                  <Card.Title>
-                    <i className="ri-file-pdf-line me-2 text-danger"></i>Arrastrar PDFs de Sílabos
-                  </Card.Title>
-                </Card.Header>
-                <Card.Body>
-                  <div
-                    className={`rounded-3 border-2 border-dashed p-5 text-center position-relative ${isPdfDragOver ? "border-primary bg-primary-transparent" : "border-light"}`}
-                    onDragOver={handlePDFDragOver} onDragLeave={handlePDFDragLeave} onDrop={handlePDFDrop}
-                    style={{ minHeight: 160, display: "flex", alignItems: "center", justifyContent: "center" }}
-                  >
-                    <div>
-                      <i className="ri-file-pdf-2-line fs-1 text-danger mb-2 d-block"></i>
-                      <h5 className="fw-semibold">{isPdfDragOver ? "¡Suelta los PDFs!" : "Arrastra múltiples PDFs aquí"}</h5>
-                      <p className="text-muted mb-2 small">Nombra los archivos con el código del curso para auto-mapeo automático</p>
-                      <div className="d-flex gap-2 justify-content-center flex-wrap">
-                        {["SIS101.pdf", "MAT101.pdf", "Silabo_FIS201_2024.pdf"].map(ex => (
-                          <code key={ex} className="bg-light px-2 py-1 rounded small">{ex}</code>
-                        ))}
-                      </div>
-                    </div>
-                    <input ref={pdfInputRef} type="file" accept=".pdf" multiple onChange={handlePDFSelect}
-                      className="position-absolute top-0 start-0 w-100 h-100 opacity-0" style={{ cursor: "pointer" }} />
+                  <div className="d-flex gap-2">
+                    {readyCount > 0 && <Badge bg="warning">{readyCount} listos</Badge>}
+                    {confirmedCount > 0 && <Badge bg="success">{confirmedCount} en blockchain</Badge>}
+                    {errorCount > 0 && <Badge bg="danger">{errorCount} error</Badge>}
+                    {unmappedCount > 0 && <Badge bg="secondary">{unmappedCount} sin mapear</Badge>}
                   </div>
-
-                  {pdfItems.length === 0 && !isLoadingCourses && (
-                    <div className="mt-3 text-center text-muted small">
-                      <i className="ri-information-line me-1"></i>
-                      Puedes arrastrar múltiples PDFs a la vez. También puedes acceder a esta fase sin haber hecho una carga masiva.
-                    </div>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Mapping + Upload table */}
-          {pdfItems.length > 0 && (
-            <Row>
-              <Col xl={12}>
-                <Card className="custom-card">
-                  <Card.Header>
-                    <div className="d-flex align-items-center justify-content-between w-100 flex-wrap gap-2">
-                      <div>
-                        <Card.Title className="mb-1">Sílabos para Registrar en Blockchain</Card.Title>
-                        <p className="text-muted mb-0 small">
-                          {pdfItems.filter(i => i.courseId).length} de {pdfItems.length} mapeados a un curso
-                        </p>
-                      </div>
-                      <div className="d-flex gap-2">
-                        {readyCount > 0 && <Badge bg="warning">{readyCount} listos</Badge>}
-                        {confirmedCount > 0 && <Badge bg="success">{confirmedCount} confirmados</Badge>}
-                        {errorCount > 0 && <Badge bg="danger">{errorCount} con error</Badge>}
-                        {unmappedCount > 0 && <Badge bg="secondary">{unmappedCount} sin mapear</Badge>}
-                      </div>
-                    </div>
-                  </Card.Header>
-                  <Card.Body className="p-0">
+                </div>
+              </Card.Header>
+              <Card.Body className={pdfItems.length === 0 ? "d-flex align-items-center justify-content-center" : "p-0"}>
+                {pdfItems.length === 0 ? (
+                  <div className="text-center text-muted py-4">
+                    <i className="ri-inbox-line fs-1 d-block mb-2 opacity-50"></i>
+                    <p className="small mb-0">Aún no hay PDFs cargados.<br />Arrástralos en el panel izquierdo.</p>
+                  </div>
+                ) : (
+                  <>
                     <div className="table-responsive">
                       <Table hover className="mb-0">
                         <thead className="bg-light">
                           <tr>
                             <th className="ps-3">Archivo PDF</th>
-                            <th>Código Detectado</th>
-                            <th style={{ minWidth: 240 }}>Curso Asignado</th>
+                            <th>Código</th>
+                            <th style={{ minWidth: 210 }}>Curso</th>
                             <th>Estado</th>
-                            <th>TX Blockchain</th>
+                            <th>TX Hash</th>
                             <th></th>
                           </tr>
                         </thead>
@@ -857,7 +872,7 @@ const BulkUploadPage: React.FC = () => {
                                     disabled={isUploading}
                                     className={!item.courseId ? "border-warning" : ""}
                                   >
-                                    <option value="">— Seleccionar curso —</option>
+                                    <option value="">— Seleccionar —</option>
                                     {availableCourses.map(c => (
                                       <option key={c.id} value={c.id}>{c.code} — {c.name}</option>
                                     ))}
@@ -871,33 +886,27 @@ const BulkUploadPage: React.FC = () => {
                                   </Badge>
                                 )}
                                 {item.status === "uploading" && (
-                                  <div className="d-flex align-items-center gap-2">
+                                  <div className="d-flex align-items-center gap-1">
                                     <Spinner animation="border" size="sm" variant="primary" />
-                                    <small className="text-primary fw-semibold">Registrando...</small>
+                                    <small className="text-primary fw-semibold">Subiendo...</small>
                                   </div>
                                 )}
                                 {item.status === "confirmed" && (
-                                  <Badge bg="success">
-                                    <i className="ri-checkbox-circle-line me-1"></i>En blockchain
-                                  </Badge>
+                                  <Badge bg="success"><i className="ri-checkbox-circle-line me-1"></i>En blockchain</Badge>
                                 )}
                                 {item.status === "error" && (
-                                  <Badge bg="danger" title={item.error}>
-                                    <i className="ri-close-circle-line me-1"></i>Error
-                                  </Badge>
+                                  <Badge bg="danger" title={item.error}><i className="ri-close-circle-line me-1"></i>Error</Badge>
                                 )}
                               </td>
                               <td>
                                 {item.txId && (
                                   <div>
-                                    <code className="text-success small d-block">{item.txId.substring(0, 18)}...</code>
-                                    {item.hash && <small className="text-muted">SHA: {item.hash.substring(0, 12)}...</small>}
+                                    <code className="text-success small d-block">{item.txId.substring(0, 14)}...</code>
+                                    {item.hash && <small className="text-muted">SHA: {item.hash.substring(0, 10)}...</small>}
                                   </div>
                                 )}
                                 {item.status === "error" && item.error && (
-                                  <small className="text-danger" title={item.error}>
-                                    {item.error.substring(0, 35)}...
-                                  </small>
+                                  <small className="text-danger" title={item.error}>{item.error.substring(0, 28)}...</small>
                                 )}
                               </td>
                               <td>
@@ -915,7 +924,7 @@ const BulkUploadPage: React.FC = () => {
 
                     {isUploading && (
                       <div className="p-3 border-top bg-primary-transparent">
-                        <div className="d-flex align-items-center justify-content-between mb-2">
+                        <div className="d-flex justify-content-between mb-2">
                           <div className="d-flex align-items-center gap-2">
                             <Spinner animation="border" size="sm" variant="primary" />
                             <small className="fw-semibold text-primary">Registrando en Hyperledger Fabric...</small>
@@ -927,38 +936,34 @@ const BulkUploadPage: React.FC = () => {
                     )}
 
                     {confirmedCount > 0 && !isUploading && (
-                      <div className="p-3 border-top">
-                        <Alert variant="success" className="mb-0 d-flex align-items-center gap-2">
-                          <i className="ri-shield-check-line fs-5 text-success"></i>
+                      <div className="px-3 pt-3 pb-0">
+                        <Alert variant="success" className="d-flex align-items-center gap-2 py-2 mb-0">
+                          <i className="ri-shield-check-line fs-5 text-success flex-shrink-0"></i>
                           <div>
                             <strong>{confirmedCount} sílabo{confirmedCount > 1 ? "s" : ""} registrado{confirmedCount > 1 ? "s" : ""} en blockchain</strong>
-                            <p className="mb-0 small text-muted">Cada sílabo tiene un Transaction ID único e inmutable en Hyperledger Fabric.</p>
+                            <p className="mb-0 small text-muted">Cada sílabo tiene un Transaction ID único e inmutable.</p>
                           </div>
                         </Alert>
                       </div>
                     )}
 
-                    <div className="d-flex justify-content-between align-items-center p-3 border-top">
-                      <button className="btn btn-light" onClick={() => setActivePhase(1)}>
-                        <i className="ri-arrow-left-line me-2"></i>Volver a Fase 1
-                      </button>
+                    <div className="d-flex justify-content-end p-3 border-top">
                       <SpkButton
                         Buttonvariant="primary"
-                        Size="lg"
                         onClickfunc={handleStartBlockchainUpload}
                         Disabled={isUploading || readyCount === 0}
                       >
                         {isUploading
-                          ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Registrando en blockchain...</>
+                          ? <><Spinner as="span" animation="border" size="sm" className="me-2" />Registrando...</>
                           : <><i className="ri-links-line me-2"></i>Registrar {readyCount} sílabo{readyCount !== 1 ? "s" : ""} en Blockchain</>}
                       </SpkButton>
                     </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          )}
-        </>
+                  </>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
       )}
 
       {/* ─── Validation modal ──────────────────────────────────────────────── */}
