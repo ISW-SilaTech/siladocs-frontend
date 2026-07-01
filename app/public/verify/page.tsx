@@ -11,6 +11,8 @@ import Swal from "sweetalert2";
 
 const PublicVerifyContent: React.FC = () => {
   const searchParams = useSearchParams();
+  const dataParam = searchParams.get("data");
+  // Legacy support for old URLs with ?id=&version=
   const syllabusId = searchParams.get("id");
   const versionParam = searchParams.get("version");
 
@@ -20,20 +22,60 @@ const PublicVerifyContent: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("preview");
+  const [activeTab, setActiveTab] = useState("timeline");
   const [highlightedVersionNumber, setHighlightedVersionNumber] = useState<number | null>(null);
+  const [embeddedVersion, setEmbeddedVersion] = useState<any | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
+      setIsLoading(true);
+
+      // ── New format: ?data=<base64 JSON payload> ──────────────────────────
+      if (dataParam) {
+        try {
+          const decoded = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
+          setEmbeddedVersion(decoded);
+          setHighlightedVersionNumber(decoded.versionNumber);
+          const syntheticTrace: SyllabusTrace = {
+            id: String(decoded.id),
+            courseName: decoded.courseName ?? "—",
+            courseCode: decoded.courseCode ?? "—",
+            career: decoded.career ?? "—",
+            fileName: decoded.fileUrl ? decoded.fileUrl.split("/").pop() : "—",
+            fileUrl: decoded.fileUrl ?? "",
+            currentHash: decoded.fileHash ?? "",
+            blockNumber: 0,
+            channel: decoded.channel ?? "silabos-channel",
+            status: decoded.isOnBlockchain ? "Inmutable" : "Pendiente",
+            history: [],
+          };
+          setResult(syntheticTrace);
+          if (decoded.fileUrl) {
+            try {
+              const [preview, download] = await Promise.all([
+                AzureBlobService.getPreviewUrl(decoded.fileUrl),
+                AzureBlobService.getDownloadUrl(decoded.fileUrl),
+              ]);
+              setPreviewUrl(preview);
+              setDownloadUrl(download);
+            } catch { /* preview not critical */ }
+          }
+        } catch {
+          setError("El enlace de verificación no es válido o está dañado.");
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // ── Legacy format: ?id=&version= (requires auth — show friendly error) ─
       if (!syllabusId) {
-        setError("ID de sílabo no proporcionado");
+        setError("No se proporcionaron datos de verificación en el enlace.");
         setIsLoading(false);
         return;
       }
 
-      setIsLoading(true);
       try {
-        // Use unauthenticated requests so the public verify URL works without login
         const syllabusRes = await publicApi.get<any>(`/syllabi/${syllabusId}`);
         const s = syllabusRes.data;
         const fileUrl = s.fileUrl ?? "";
@@ -51,36 +93,28 @@ const PublicVerifyContent: React.FC = () => {
           history: [],
         };
         setResult(syllabus);
-
-        let versionsData: SyllabusVersion[] = [];
+        if (versionParam) setHighlightedVersionNumber(parseInt(versionParam, 10));
         try {
           const versRes = await publicApi.get<SyllabusVersion[]>(`/syllabi/${syllabusId}/versions`);
-          versionsData = versRes.data || [];
+          setVersions(versRes.data || []);
         } catch { /* versions not critical */ }
-        setVersions(versionsData);
-
-        if (versionParam) {
-          const versionNum = parseInt(versionParam, 10);
-          setHighlightedVersionNumber(versionNum);
-          setActiveTab("timeline");
-        }
-
-        if (syllabus.fileUrl) {
-          const preview = await AzureBlobService.getPreviewUrl(syllabus.fileUrl);
-          const download = await AzureBlobService.getDownloadUrl(syllabus.fileUrl);
+        if (fileUrl) {
+          const [preview, download] = await Promise.all([
+            AzureBlobService.getPreviewUrl(fileUrl),
+            AzureBlobService.getDownloadUrl(fileUrl),
+          ]);
           setPreviewUrl(preview);
           setDownloadUrl(download);
         }
-      } catch (err) {
-        console.error("Error cargando datos:", err);
-        setError("No se encontró el sílabo o no está disponible públicamente");
+      } catch {
+        setError("No se encontró el sílabo o no está disponible públicamente.");
       } finally {
         setIsLoading(false);
       }
     };
 
     loadData();
-  }, [syllabusId, versionParam]);
+  }, [dataParam, syllabusId, versionParam]);
 
   const getStatusColor = (status: string) => {
     return status === "Inmutable" ? "success" : status === "Pendiente" ? "warning" : "secondary";
@@ -233,7 +267,34 @@ const PublicVerifyContent: React.FC = () => {
 
                     {/* TIMELINE TAB */}
                     <Tab.Pane eventKey="timeline">
-                      {versions && versions.length > 0 ? (
+                      {/* When data comes from QR payload, show just that version */}
+                      {embeddedVersion && versions.length === 0 ? (
+                        <div className="border rounded-3 p-4">
+                          <div className="d-flex align-items-center gap-3 mb-3">
+                            <div className={`rounded-circle d-flex align-items-center justify-content-center text-white ${embeddedVersion.isOnBlockchain ? "bg-success" : "bg-warning"}`}
+                              style={{ width: 44, height: 44, flexShrink: 0 }}>
+                              <i className={embeddedVersion.isOnBlockchain ? "ri-shield-check-fill fs-5" : "ri-time-line fs-5"}></i>
+                            </div>
+                            <div>
+                              <h6 className="fw-bold mb-0">Versión {embeddedVersion.versionNumber}</h6>
+                              <small className="text-muted">{embeddedVersion.uploadedBy ?? "Sistema"} · {new Date(embeddedVersion.createdAt).toLocaleDateString("es-ES", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</small>
+                            </div>
+                            {embeddedVersion.isOnBlockchain && (
+                              <Badge bg="success" className="ms-auto"><i className="ri-shield-check-fill me-1"></i>Blockchain</Badge>
+                            )}
+                          </div>
+                          {embeddedVersion.fabricTxId && (
+                            <div className="mb-3">
+                              <p className="text-muted fs-11 fw-bold mb-1">TRANSACTION ID</p>
+                              <code className="text-success small text-break d-block bg-light p-2 rounded">{embeddedVersion.fabricTxId}</code>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-muted fs-11 fw-bold mb-1">HASH SHA-256</p>
+                            <code className="text-dark small text-break d-block bg-light p-2 rounded">{embeddedVersion.fileHash}</code>
+                          </div>
+                        </div>
+                      ) : versions && versions.length > 0 ? (
                         <div className="timeline-container ps-4">
                           {versions.map((version, index) => {
                             const versionDate = new Date(version.createdAt);

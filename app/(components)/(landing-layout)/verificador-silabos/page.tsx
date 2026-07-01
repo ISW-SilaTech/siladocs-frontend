@@ -637,48 +637,59 @@ const VerificadorSilabus: React.FC = () => {
         <Modal.Body className="text-center py-4">
           {selectedVersionForQR && result && (
             <>
-              <div id="qr-share-container" className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
-                <QRCodeSVG
-                  value={`${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
-                  size={256}
-                  level="H"
-                  includeMargin={true}
-                />
-              </div>
-              <p className="text-muted mb-2">
-                <i className="ri-information-line me-2"></i>
-                Escanea este código QR para acceder a la versión {selectedVersionForQR.versionNumber}
-              </p>
-              <code className="d-block bg-light p-2 rounded text-break fs-11 mb-3">
-                {`${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`}
-              </code>
-              <div className="d-flex gap-2">
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  onClick={async () => {
-                    const shareUrl = `${window.location.origin}/public/verify?id=${result.id}&version=${selectedVersionForQR.versionNumber}`;
-                    try {
-                      await navigator.clipboard.writeText(shareUrl);
-                    } catch {
-                      const textarea = document.createElement("textarea");
-                      textarea.value = shareUrl;
-                      document.body.appendChild(textarea);
-                      textarea.select();
-                      document.execCommand("copy");
-                      document.body.removeChild(textarea);
-                    }
-                    Swal.fire({
-                      title: "URL Copiada",
-                      text: "La URL pública se copió al portapapeles",
-                      icon: "success",
-                      confirmButtonColor: "#198754",
-                    });
-                  }}
-                >
-                  <i className="ri-file-copy-line me-2"></i>
-                  Copiar URL
-                </Button>
+              {(() => {
+                const payload = {
+                  id: result.id,
+                  courseName: result.courseName,
+                  courseCode: result.courseCode,
+                  career: result.career,
+                  versionNumber: selectedVersionForQR.versionNumber,
+                  fileHash: selectedVersionForQR.fileHash,
+                  fabricTxId: selectedVersionForQR.fabricTxId ?? null,
+                  isOnBlockchain: selectedVersionForQR.isOnBlockchain,
+                  uploadedBy: selectedVersionForQR.uploadedBy ?? null,
+                  createdAt: selectedVersionForQR.createdAt,
+                  fileUrl: selectedVersionForQR.fileUrl ?? result.fileUrl ?? null,
+                  channel: result.channel,
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+                const shareUrl = `${window.location.origin}/public/verify?data=${encoded}`;
+                return (
+                  <>
+                    <div id="qr-share-container" className="mb-4 p-3 bg-white border rounded d-flex justify-content-center">
+                      <QRCodeSVG value={shareUrl} size={256} level="H" includeMargin={true} />
+                    </div>
+                    <p className="text-muted mb-2">
+                      <i className="ri-information-line me-2"></i>
+                      Escanea este código QR para acceder a la versión {selectedVersionForQR.versionNumber}
+                    </p>
+                    <code className="d-block bg-light p-2 rounded text-break fs-11 mb-3">{shareUrl}</code>
+                    <div className="d-flex gap-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(shareUrl);
+                          } catch {
+                            const textarea = document.createElement("textarea");
+                            textarea.value = shareUrl;
+                            document.body.appendChild(textarea);
+                            textarea.select();
+                            document.execCommand("copy");
+                            document.body.removeChild(textarea);
+                          }
+                          Swal.fire({
+                            title: "URL Copiada",
+                            text: "La URL pública se copió al portapapeles",
+                            icon: "success",
+                            confirmButtonColor: "#198754",
+                          });
+                        }}
+                      >
+                        <i className="ri-file-copy-line me-2"></i>
+                        Copiar URL
+                      </Button>
                 <Button
                   variant="outline-primary"
                   size="sm"
@@ -693,10 +704,13 @@ const VerificadorSilabus: React.FC = () => {
                     }
                   }}
                 >
-                  <i className="ri-download-2-line me-2"></i>
-                  Descargar QR
-                </Button>
-              </div>
+                      <i className="ri-download-2-line me-2"></i>
+                      Descargar QR
+                    </Button>
+                  </div>
+                  </>
+                );
+              })()}
             </>
           )}
         </Modal.Body>
