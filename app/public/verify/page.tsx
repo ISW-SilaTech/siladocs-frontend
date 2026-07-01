@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { Container, Row, Col, Card, Alert, Badge, Spinner, Button, Nav, Tab } from "react-bootstrap";
-import { LedgerService } from "@/shared/services/ledger.service";
+import publicApi from "@/shared/config/axios-public";
 import { AzureBlobService } from "@/shared/services/azure-blob.service";
 import { SyllabusTrace, SyllabusVersion } from "@/shared/types/ledger";
 import Seo from "@/shared/layouts-components/seo/seo";
@@ -33,11 +33,31 @@ const PublicVerifyContent: React.FC = () => {
 
       setIsLoading(true);
       try {
-        const syllabus = await LedgerService.getSyllabusHistory(syllabusId);
+        // Use unauthenticated requests so the public verify URL works without login
+        const syllabusRes = await publicApi.get<any>(`/syllabi/${syllabusId}`);
+        const s = syllabusRes.data;
+        const fileUrl = s.fileUrl ?? "";
+        const syllabus: SyllabusTrace = {
+          id: String(s.id),
+          courseName: s.courseName ?? "—",
+          courseCode: s.courseCode ?? "—",
+          career: s.careerName ?? "—",
+          fileName: s.fileName ?? fileUrl.split("/").pop() ?? "—",
+          fileUrl,
+          currentHash: s.currentHash ?? s.hash ?? "",
+          blockNumber: s.blockNumber ?? 0,
+          channel: s.channelName ?? "silabos-channel",
+          status: s.fabricTxId ? "Inmutable" : "Pendiente",
+          history: [],
+        };
         setResult(syllabus);
 
-        const versionsData = await LedgerService.getSyllabusVersions(syllabusId);
-        setVersions(versionsData || []);
+        let versionsData: SyllabusVersion[] = [];
+        try {
+          const versRes = await publicApi.get<SyllabusVersion[]>(`/syllabi/${syllabusId}/versions`);
+          versionsData = versRes.data || [];
+        } catch { /* versions not critical */ }
+        setVersions(versionsData);
 
         if (versionParam) {
           const versionNum = parseInt(versionParam, 10);
