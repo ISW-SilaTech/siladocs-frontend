@@ -285,14 +285,13 @@ const CursosList: React.FC = () => {
             <Row>
                 <Col xl={12}>
                     <Card className="custom-card overflow-hidden">
-                        <Card.Header className="justify-content-between">
-                            <div className="card-title">Lista de Cursos</div>
-                            <div className="d-flex flex-wrap gap-2 align-items-center">
-                                <SpkButton Customclass="btn btn-primary btn-wave" onClick={handleOpenCreateModal}>
-                                    <i className="ri-add-line me-1 align-middle"></i>Crear Curso
-                                </SpkButton>
+                        <Card.Body className="p-3">
+                            <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                <button type="button" className="btn btn-primary" onClick={handleOpenCreateModal}>
+                                    <i className="ri-add-line me-1 fw-medium align-middle"></i>Crear Curso
+                                </button>
                                 <Form.Control
-                                    style={{ maxWidth: "240px" }}
+                                    style={{ maxWidth: "280px" }}
                                     type="search"
                                     placeholder="Buscar por nombre o código"
                                     aria-label="Buscar curso"
@@ -300,7 +299,7 @@ const CursosList: React.FC = () => {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-                        </Card.Header>
+                        </Card.Body>
                         <Card.Body className="p-0">
                             <div className="table-responsive">
                                 {isLoading ? (
