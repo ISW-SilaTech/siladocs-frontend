@@ -50,15 +50,10 @@ const PublicVerifyContent: React.FC = () => {
             history: [],
           };
           setResult(syntheticTrace);
+          // Use the fileUrl directly — it's already an Azure Blob URL, no SAS needed for public blobs
           if (decoded.fileUrl) {
-            try {
-              const [preview, download] = await Promise.all([
-                AzureBlobService.getPreviewUrl(decoded.fileUrl),
-                AzureBlobService.getDownloadUrl(decoded.fileUrl),
-              ]);
-              setPreviewUrl(preview);
-              setDownloadUrl(download);
-            } catch { /* preview not critical */ }
+            setPreviewUrl(decoded.fileUrl);
+            setDownloadUrl(decoded.fileUrl);
           }
         } catch {
           setError("El enlace de verificación no es válido o está dañado.");
