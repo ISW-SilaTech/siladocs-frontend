@@ -614,6 +614,52 @@ const SilabosPage: React.FC = () => {
         return Array.from(map.values()).sort((a, b) => a.courseName.localeCompare(b.courseName, 'es'));
     }, [filteredSyllabi]);
 
+    const [analyzingId, setAnalyzingId] = useState<number | null>(null);
+
+    const handleAnalyze = async (s: Syllabus) => {
+        if (!s.fileUrl || !s.courseCode) return;
+        setAnalyzingId(s.id);
+        try {
+            // Download file from Azure Blob and re-run the 3-filter validation
+            const res = await fetch(s.fileUrl);
+            const blob = await res.blob();
+            const file = new File([blob], s.fileName ?? 'silabo.pdf', { type: blob.type });
+
+            let contentAnalysis: { isMatch: boolean; confidence: number } | null = null;
+            let structureScore: number | undefined;
+
+            try {
+                const result = await SyllabiService.analyzeFile(file, s.courseCode);
+                contentAnalysis = { isMatch: result.isMatch, confidence: result.confidence };
+            } catch { /* content analysis unavailable */ }
+
+            try {
+                const text = await extractPdfText(file);
+                const struct = detectSyllabusStructure(text);
+                structureScore = struct.structureScore;
+            } catch { /* structure analysis unavailable */ }
+
+            const h = evaluateSyllabusHeuristics({
+                fileName: s.fileName ?? '',
+                fileSize: s.fileSize ?? 0,
+                courseCode: s.courseCode,
+                contentAnalysis,
+                structureScore,
+            });
+            saveValidationScore(s.id, h.aiConfidence, {
+                filenameOk: h.filenameHasCourseCode,
+                contentOk: h.contentHasCourseCode,
+                structureOk: h.structureLooksReasonable,
+            });
+            // Force re-render by refreshing syllabi list
+            setSyllabi(prev => [...prev]);
+        } catch {
+            toast.error("No se pudo analizar el sílabo. Verifica que el archivo esté disponible.");
+        } finally {
+            setAnalyzingId(null);
+        }
+    };
+
     const renderAcceptanceCell = (s: Syllabus) => {
         const cached = getValidationScore(s.id);
         if (cached) {
@@ -626,14 +672,28 @@ const SilabosPage: React.FC = () => {
                 </div>
             );
         }
-        const { filenameHasCourseCode } = checkFilenameHasCourseCode(s.fileName ?? '', s.courseCode ?? '');
-        const partialScore = filenameHasCourseCode ? 30 : 0;
-        const color = filenameHasCourseCode ? "warning" : "danger";
+        // No cached score — show neutral state with analyze button
+        if (analyzingId === s.id) {
+            return (
+                <div className="d-flex align-items-center gap-1 text-muted fs-12">
+                    <Spinner animation="border" size="sm" style={{ width: 12, height: 12, borderWidth: 1 }} />
+                    Analizando...
+                </div>
+            );
+        }
         return (
-            <div style={{ minWidth: 80 }} title="Score parcial — solo filtro de nombre. Re-sube para análisis completo.">
-                <span className={`fw-bold fs-13 text-${color}`}>{partialScore}%</span>
-                <span className="text-muted fs-11 ms-1">parcial</span>
-                <ProgressBar now={partialScore} max={30} variant={color} style={{ height: 4, borderRadius: 99, marginTop: 4 }} />
+            <div className="d-flex align-items-center gap-1">
+                <span className="badge bg-light text-muted border fs-11">Sin análisis</span>
+                {s.fileUrl && (
+                    <button
+                        className="btn btn-sm btn-icon btn-light p-0"
+                        style={{ width: 20, height: 20, lineHeight: 1 }}
+                        title="Analizar este sílabo"
+                        onClick={(e) => { e.stopPropagation(); handleAnalyze(s); }}
+                    >
+                        <i className="ri-refresh-line fs-11"></i>
+                    </button>
+                )}
             </div>
         );
     };
@@ -1589,29 +1649,51 @@ const SilabosPage: React.FC = () => {
                             <Col xs={12}>
                                 {(() => {
                                     const cached = getValidationScore(previewSyllabus.id);
-                                    const { filenameHasCourseCode } = checkFilenameHasCourseCode(previewSyllabus.fileName ?? '', previewSyllabus.courseCode ?? '');
-                                    const isPartial = !cached;
-                                    const score = cached ? cached.score : (filenameHasCourseCode ? 30 : 0);
-                                    const filenameOk = cached ? cached.filenameOk : filenameHasCourseCode;
-                                    const contentOk = cached?.contentOk ?? null;
-                                    const structureOk = cached?.structureOk ?? null;
+                                    if (!cached) {
+                                        return (
+                                            <div className="border rounded p-3">
+                                                <div className="d-flex align-items-center gap-2 mb-3">
+                                                    <i className="ri-percent-line fs-5 text-info"></i>
+                                                    <span className="fw-semibold fs-13">% Aceptación del Estándar</span>
+                                                </div>
+                                                <div className="text-center py-3">
+                                                    {analyzingId === previewSyllabus.id ? (
+                                                        <div className="d-flex align-items-center justify-content-center gap-2 text-muted fs-13">
+                                                            <Spinner animation="border" size="sm" />
+                                                            Analizando el sílabo...
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <p className="text-muted fs-13 mb-2">
+                                                                Este sílabo aún no tiene análisis de validación. El análisis se ejecuta automáticamente al subir el archivo.
+                                                            </p>
+                                                            {previewSyllabus.fileUrl && (
+                                                                <button
+                                                                    className="btn btn-sm btn-primary"
+                                                                    onClick={() => handleAnalyze(previewSyllabus)}
+                                                                >
+                                                                    <i className="ri-refresh-line me-1"></i>Analizar ahora
+                                                                </button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    const { score, filenameOk, contentOk, structureOk } = cached;
                                     const color = score >= 70 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#ef4444";
                                     return (
                                         <div className="border rounded p-3">
                                             <div className="d-flex align-items-center gap-2 mb-3">
                                                 <i className="ri-percent-line fs-5 text-info"></i>
                                                 <span className="fw-semibold fs-13">% Aceptación del Estándar</span>
-                                                {isPartial && (
-                                                    <span className="badge bg-light text-muted ms-auto fs-11" title="Score parcial — solo filtro de nombre disponible. Re-sube el archivo para análisis completo.">
-                                                        parcial
-                                                    </span>
-                                                )}
                                             </div>
                                             <div className="d-flex align-items-center gap-3 mb-3">
                                                 <div style={{ fontSize: 36, fontWeight: 700, color }}>{score}%</div>
                                                 <div className="flex-grow-1">
-                                                    <ProgressBar now={score} max={isPartial ? 30 : 100} style={{ height: 10, borderRadius: 99, background: '#e2e8f0' }}>
-                                                        <div style={{ width: `${isPartial ? (score / 30) * 100 : score}%`, background: color, height: '100%', borderRadius: 99 }} />
+                                                    <ProgressBar now={score} max={100} style={{ height: 10, borderRadius: 99, background: '#e2e8f0' }}>
+                                                        <div style={{ width: `${score}%`, background: color, height: '100%', borderRadius: 99 }} />
                                                     </ProgressBar>
                                                 </div>
                                             </div>
@@ -1638,12 +1720,6 @@ const SilabosPage: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                            {isPartial && (
-                                                <p className="text-muted fs-11 mt-2 mb-0">
-                                                    <i className="ri-information-line me-1"></i>
-                                                    Vuelve a subir el archivo para obtener el análisis completo de contenido y estructura.
-                                                </p>
-                                            )}
                                         </div>
                                     );
                                 })()}
