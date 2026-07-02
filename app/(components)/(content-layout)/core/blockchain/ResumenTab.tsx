@@ -24,22 +24,24 @@ const ResumenTab: React.FC = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
-        // Obtener todos los sílabos incluyendo eliminados para métricas completas de auditoría.
-        // El endpoint requiere rol "Administrador Académico".
         const data = await LedgerService.getAllSyllabus(true);
         setSyllabi(data);
 
         const totalSyllabi = data.length;
         const verifiedOnBlockchain = data.filter((s) => s.status === "Inmutable").length;
         const pendingSyllabi = data.filter((s) => s.status === "Pendiente").length;
+        const blockchainCoverage = totalSyllabi > 0 ? (verifiedOnBlockchain / totalSyllabi) * 100 : 0;
 
-        let totalVersions = 0;
-        data.forEach((s) => {
-          if (s.versions) totalVersions += s.versions.length;
-        });
+        // Fetch real version counts from ledger for each syllabus in parallel
+        const versionResults = await Promise.allSettled(
+          data.map((s) => LedgerService.getSyllabusVersions(s.id))
+        );
+        const totalVersions = versionResults.reduce((sum, r) => {
+          if (r.status === "fulfilled") return sum + r.value.length;
+          return sum;
+        }, 0);
 
         const avgVersionsPerSyllabus = totalSyllabi > 0 ? totalVersions / totalSyllabi : 0;
-        const blockchainCoverage = totalSyllabi > 0 ? (verifiedOnBlockchain / totalSyllabi) * 100 : 0;
 
         setMetrics({
           totalSyllabi,
