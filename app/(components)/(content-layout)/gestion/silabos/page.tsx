@@ -25,6 +25,7 @@ import { saveValidationScore, getValidationScore } from "@/shared/utils/validati
 import { checkFilenameHasCourseCode } from "@/shared/utils/syllabusValidation";
 import { LedgerService } from "@/shared/services/ledger.service";
 import { SyllabusVersion } from "@/shared/types/ledger";
+import { API_BASE_URL } from "@/shared/config/api";
 
 interface CourseOption { id: number; name: string; code: string; }
 
@@ -960,11 +961,9 @@ const SilabosPage: React.FC = () => {
                                                                         <button className="btn btn-sm btn-icon btn-info-light" title="Ver detalles" onClick={() => handleOpenPreview(latest)}>
                                                                             <i className="ri-eye-line"></i>
                                                                         </button>
-                                                                        {v.fileUrl && (
-                                                                            <a className="btn btn-sm btn-icon btn-success-light" href={v.fileUrl} target="_blank" rel="noreferrer" title="Descargar esta versión">
-                                                                                <i className="ri-download-2-line"></i>
-                                                                            </a>
-                                                                        )}
+                                                                        <a className="btn btn-sm btn-icon btn-success-light" href={`${API_BASE_URL}/public/syllabi/${latest.id}/file`} target="_blank" rel="noreferrer" title="Descargar esta versión">
+                                                                            <i className="ri-download-2-line"></i>
+                                                                        </a>
                                                                     </div>
                                                                 </td>
                                                             </tr>
