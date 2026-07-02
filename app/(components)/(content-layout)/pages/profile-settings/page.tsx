@@ -21,7 +21,7 @@ interface PasswordFormValues {
 }
 
 const ProfileSettings: React.FC = () => {
-    const { user, institution, loading: authLoading } = useAuth();
+    const { user, institution, loading: authLoading, updateUserAvatar } = useAuth();
 
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -59,6 +59,7 @@ const ProfileSettings: React.FC = () => {
                 const data = await ProfileService.getProfile();
                 setProfile(data);
                 setFullName(data.fullName || user?.email?.split('@')[0] || '');
+                if (data.avatarUrl) updateUserAvatar(data.avatarUrl);
                 if (data.language) {
                     const lang = Languagedata.find(l => l.value === data.language);
                     if (lang) setSelectedLanguage(lang);
@@ -88,10 +89,13 @@ const ProfileSettings: React.FC = () => {
         setAvatarPreview(URL.createObjectURL(file));
         setIsUploadingAvatar(true);
         try {
-            await ProfileService.uploadAvatar(file);
+            const result = await ProfileService.uploadAvatar(file);
+            updateUserAvatar(result.avatarUrl);
+            setProfile(prev => prev ? { ...prev, avatarUrl: result.avatarUrl } : prev);
+            setAvatarPreview(null); // switch to real URL from server
             toast.success("Foto de perfil actualizada.");
         } catch {
-            toast.error("No se pudo subir la foto. El servidor no soporta avatares aún.");
+            toast.error("No se pudo subir la foto. Intenta de nuevo.");
             setAvatarPreview(null);
         } finally {
             setIsUploadingAvatar(false);
