@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { Container, Row, Col, Spinner } from "react-bootstrap";
+import { Container, Spinner } from "react-bootstrap";
 import publicApi from "@/shared/config/axios-public";
-import { AzureBlobService } from "@/shared/services/azure-blob.service";
-import { SyllabusTrace, SyllabusVersion } from "@/shared/types/ledger";
+import { SyllabusVersion } from "@/shared/types/ledger";
 import Seo from "@/shared/layouts-components/seo/seo";
 import { useSearchParams } from "next/navigation";
+import { API_BASE_URL } from "@/shared/config/api";
 
 interface EmbeddedPayload {
   id: string;
@@ -141,6 +141,7 @@ const PublicVerifyContent: React.FC = () => {
   if (error || !payload) return <ErrorScreen message={error ?? "Sílabo no encontrado."} />;
 
   const isVerified = payload.isOnBlockchain && !!payload.fabricTxId;
+  const documentUrl = `${API_BASE_URL}/public/syllabi/${payload.id}/file`;
 
   return (
     <>
@@ -279,36 +280,34 @@ const PublicVerifyContent: React.FC = () => {
             </div>
 
             {/* PDF preview */}
-            {payload.fileUrl && (
-              <div style={{ padding: "24px 40px 0" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                  <p className="section-title mb-0">Documento</p>
-                  <a href={payload.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-download">
-                    <i className="ri-download-2-line"></i>Descargar PDF
+            <div style={{ padding: "24px 40px 0" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                <p className="section-title mb-0">Documento</p>
+                <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn-download">
+                  <i className="ri-download-2-line"></i>Descargar PDF
+                </a>
+              </div>
+              {!pdfFailed ? (
+                <div style={{ border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden" }}>
+                  <iframe
+                    src={`${documentUrl}#toolbar=0`}
+                    className="pdf-frame"
+                    title="Vista previa del sílabo"
+                    onError={() => setPdfFailed(true)}
+                  />
+                </div>
+              ) : (
+                <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "32px 24px", textAlign: "center" }}>
+                  <i className="ri-file-pdf-line" style={{ fontSize: 40, color: "#cbd5e1", display: "block", marginBottom: 8 }}></i>
+                  <p style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>
+                    La vista previa no está disponible en este navegador.
+                  </p>
+                  <a href={documentUrl} target="_blank" rel="noopener noreferrer" className="btn-download">
+                    <i className="ri-external-link-line"></i>Abrir PDF en nueva pestaña
                   </a>
                 </div>
-                {!pdfFailed ? (
-                  <div style={{ border: "1px solid #e2e8f0", borderRadius: 8, overflow: "hidden" }}>
-                    <iframe
-                      src={`${payload.fileUrl}#toolbar=0`}
-                      className="pdf-frame"
-                      title="Vista previa del sílabo"
-                      onError={() => setPdfFailed(true)}
-                    />
-                  </div>
-                ) : (
-                  <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "32px 24px", textAlign: "center" }}>
-                    <i className="ri-file-pdf-line" style={{ fontSize: 40, color: "#cbd5e1", display: "block", marginBottom: 8 }}></i>
-                    <p style={{ fontSize: 13, color: "#64748b", marginBottom: 12 }}>
-                      La vista previa no está disponible en este navegador.
-                    </p>
-                    <a href={payload.fileUrl} target="_blank" rel="noopener noreferrer" className="btn-download">
-                      <i className="ri-external-link-line"></i>Abrir PDF en nueva pestaña
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Footer actions */}
             <div style={{ padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
